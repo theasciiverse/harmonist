@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/ui"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/ui"
 )
 
 var invalidPos = gruid.Point{-1, -1}

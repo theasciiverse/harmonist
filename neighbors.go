@@ -1,6 +1,6 @@
 package main
 
-import "github.com/anaseto/gruid"
+import "codeberg.org/anaseto/gruid"
 
 func (g *game) cardinalNeighbors(p gruid.Point) []gruid.Point {
 	return g.nbs.Cardinal(p, valid)

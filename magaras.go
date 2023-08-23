@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 type magara struct {

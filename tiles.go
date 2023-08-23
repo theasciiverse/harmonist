@@ -12,7 +12,7 @@ import (
 	"image/png"
 	"log"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 const Tiles = true

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 func (g *game) DamagePlayer(damage int) {

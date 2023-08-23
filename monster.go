@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 type monsterState int

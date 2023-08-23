@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 // Thoses are the colors of the main palette. They are given 16-palette color

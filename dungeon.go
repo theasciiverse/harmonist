@@ -12,9 +12,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/paths"
-	"github.com/anaseto/gruid/rl"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/paths"
+	"codeberg.org/anaseto/gruid/rl"
 )
 
 type dungeon struct {

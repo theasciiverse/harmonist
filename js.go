@@ -11,9 +11,9 @@ import (
 	"log"
 	"syscall/js"
 
-	"github.com/anaseto/gruid"
-	jsd "github.com/anaseto/gruid-js"
-	"github.com/anaseto/gruid/ui"
+	"codeberg.org/anaseto/gruid"
+	jsd "codeberg.org/anaseto/gruid-js"
+	"codeberg.org/anaseto/gruid/ui"
 )
 
 var driver gruid.Driver

@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 func (g *game) Autoexplore() (again bool, err error) {

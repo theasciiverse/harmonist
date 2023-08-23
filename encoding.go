@@ -5,7 +5,7 @@ import (
 	"compress/zlib"
 	"encoding/gob"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 func init() {

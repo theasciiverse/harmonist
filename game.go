@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/paths"
-	"github.com/anaseto/gruid/rl"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/paths"
+	"codeberg.org/anaseto/gruid/rl"
 )
 
 var Version string = "v0.5.0"

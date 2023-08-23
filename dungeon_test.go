@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/paths"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/paths"
 )
 
 var Rounds = 40

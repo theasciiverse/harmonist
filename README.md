@@ -39,7 +39,7 @@ In all cases, you need first to perform the following preliminaries:
 + Install the [go compiler](https://golang.org/).
 + Add `$(go env GOPATH)/bin` to your `$PATH` (for example `export PATH="$PATH:$(go env GOPATH)/bin"`).
 
-Harmonist uses the [gruid](https://github.com/anaseto/gruid) library for
+Harmonist uses the [gruid](https://codeberg.org/anaseto/gruid) library for
 grid-based user interfaces, which offers three different rendering drivers:
 terminal, graphical SDL2, and browser.
 

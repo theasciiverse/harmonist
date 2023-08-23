@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 type objects struct {

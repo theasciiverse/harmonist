@@ -2,7 +2,7 @@ package main
 
 //import "log"
 import "testing"
-import "github.com/anaseto/gruid"
+import "codeberg.org/anaseto/gruid"
 
 func init() {
 	Testing = true

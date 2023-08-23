@@ -5,8 +5,8 @@ package main
 import (
 	"runtime"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid-tcell"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid-tcell"
 	tc "github.com/gdamore/tcell/v2"
 )
 

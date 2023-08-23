@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/anaseto/gruid"
+	"codeberg.org/anaseto/gruid"
 )
 
 func distance(from, to gruid.Point) int {

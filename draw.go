@@ -5,8 +5,8 @@ import (
 	//"log"
 	//"time"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/ui"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/ui"
 )
 
 func (md *model) Draw() gruid.Grid {

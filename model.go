@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anaseto/gruid"
-	"github.com/anaseto/gruid/ui"
+	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/ui"
 )
 
 const (
