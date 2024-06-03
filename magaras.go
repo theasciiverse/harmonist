@@ -560,6 +560,10 @@ func (g *game) EvokeSwapping() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot use this magara while lignified.")
 	}
+	switch t := terrain(g.Dungeon.Cell(g.Player.P)); t {
+	case BarrelCell, TableCell, HoledWallCell:
+		return errors.New("You cannot use this magara in a cramped place.")
+	}
 	ms := g.MonstersInLOS()
 	var mons *monster
 	best := 0
