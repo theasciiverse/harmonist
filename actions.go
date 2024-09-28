@@ -378,6 +378,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				err = errors.New("There is no safe path to the nearest stairs.")
 			} else if !g.MoveToTarget() {
 				err = errors.New("You could not move toward stairs.")
+			} else {
+				md.CancelExamine()
+				again = false
 			}
 		} else {
 			err = errors.New("You cannot go to any stairs.")
