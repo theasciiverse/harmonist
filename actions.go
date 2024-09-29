@@ -27,7 +27,7 @@ const (
 	ActionRunE
 	ActionWaitTurn
 	ActionDescend
-	ActionGoToStairs
+	ActionTargetNearestStairs
 	ActionExplore
 	ActionExamine
 	ActionEvoke
@@ -82,7 +82,7 @@ var ConfigurableKeyActions = [...]action{
 	ActionInteract,
 	ActionInventory,
 	ActionExamine,
-	ActionGoToStairs,
+	ActionTargetNearestStairs,
 	ActionExplore,
 	ActionLogs,
 	ActionDump,
@@ -103,7 +103,7 @@ func (k action) normalModeAction() bool {
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
 		ActionWaitTurn,
 		ActionDescend,
-		ActionGoToStairs,
+		ActionTargetNearestStairs,
 		ActionExplore,
 		ActionExamine,
 		ActionEvoke,
@@ -152,8 +152,8 @@ func (k action) String() (text string) {
 		text = "Wait a turn"
 	case ActionDescend:
 		text = "Descend stairs"
-	case ActionGoToStairs:
-		text = "Go to nearest stairs"
+	case ActionTargetNearestStairs:
+		text = "Target nearest stairs"
 	case ActionExplore:
 		text = "Autoexplore"
 	case ActionExamine:
@@ -348,6 +348,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionNextObject:
 		again = true
 		md.nextObject(md.targ.ex.p, md.targ.ex)
+	case ActionNextStairs:
+		again = true
+		md.nextStair(md.targ.ex)
 	case ActionTarget:
 		again = true
 		err = md.target()
@@ -362,7 +365,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.CancelExamine()
 	case ActionWaitTurn:
 		g.WaitTurn()
-	case ActionGoToStairs:
+	case ActionTargetNearestStairs:
 		again = true
 		stairs := g.StairsSlice()
 		sortedStairs := g.SortedNearestTo(stairs, g.Player.P)
@@ -372,18 +375,12 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				err = errors.New("You are already on the stairs.")
 				break
 			}
-			md.targ.ex.p = stair
-			err = md.target()
-			if err != nil {
-				err = errors.New("There is no safe path to the nearest stairs.")
-			} else if !g.MoveToTarget() {
-				err = errors.New("You could not move toward stairs.")
-			} else {
-				md.CancelExamine()
-				again = false
+			if valid(stair) {
+				md.KeyboardExamine()
+				md.Examine(stair)
 			}
 		} else {
-			err = errors.New("You cannot go to any stairs.")
+			err = errors.New("You cannot target any stairs.")
 		}
 	case ActionInteract:
 		c := g.Dungeon.Cell(g.Player.P)
@@ -892,7 +889,7 @@ func (md *model) KeysHelp() {
 		"Advanced Commands", "",
 		"Save and Quit", "S",
 		"View previous messages", "m",
-		"Go to nearest stairs", "G",
+		"Target nearest stairs", "G",
 		"Run in a direction", "shift+arrows or HJKL",
 		"Autoexplore (use with caution)", "o",
 		"Write game statistics to file", "#",
