@@ -709,6 +709,11 @@ func (g *game) EndTurn() {
 		ev, r := g.Events.PopR()
 		g.Turn = r
 		switch ev := ev.(type) {
+		case *playerEvent:
+			ev.Handle(g)
+			if ev.Action == AbyssFall {
+				return
+			}
 		case endTurnEvent:
 			return
 		case event:

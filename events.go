@@ -75,7 +75,7 @@ func (sev *statusEvent) Handle(g *game) {
 		switch st {
 		case StatusLevitation:
 			if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
-				g.FallAbyss(DescendFall)
+				g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 			}
 		case StatusLignification:
 			g.Player.HPbonus -= LignificationHPbonus
