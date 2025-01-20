@@ -24,7 +24,7 @@ will go smoothly...*
 Website
 -------
 
-![Harmonist introduction screen](https://raw.codeberg.page/anaseto/games/harmonist/intro-screen-tiles.png)
+![Harmonist introduction screen](https://anaseto.codeberg.page/games/harmonist/intro-screen-tiles.png)
 
 You can visit the [game's
 website](https://anaseto.codeberg.page/games/harmonist)
