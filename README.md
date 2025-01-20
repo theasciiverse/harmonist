@@ -24,10 +24,10 @@ will go smoothly...*
 Website
 -------
 
-[![Introduction Screen](https://download.tuxfamily.org/harmonist/intro-screen-tiles.png)](https://harmonist.tuxfamily.org/index.html)
+![Harmonist introduction screen](https://raw.codeberg.page/anaseto/games/harmonist/intro-screen-tiles.png)
 
 You can visit the [game's
-website](https://harmonist.tuxfamily.org/index.html)
+website](https://anaseto.codeberg.page/games/harmonist)
 for more informations, tips, screenshots and asciicasts. You will also be able
 to play in the browser and download pre-built binaries for the latest release.
 
