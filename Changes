@@ -1,3 +1,10 @@
+v? ?
+
+* Fix v0.4 regression when falling in abyss after levitation.
+* Make G enter examine mode and select nearest stairs. Previous behavior with G
+  was buggy and not suited for Harmonist's stealth gameplay.
+* Disallow swapping from a cramped place (like a table).
+
 v0.5.0 2023-06-16
 
 * Add detailed descriptions in examine mode.
