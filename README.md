@@ -28,8 +28,7 @@ Website
 
 You can visit the [game's
 website](https://anaseto.codeberg.page/games/harmonist)
-for more informations, tips, screenshots and asciicasts. You will also be able
-to play in the browser and download pre-built binaries for the latest release.
+for more information and tips about the game.
 
 Install from Sources
 --------------------
