@@ -33,27 +33,22 @@ for more information and tips about the game.
 Install from Sources
 --------------------
 
-In all cases, you need first to perform the following preliminaries:
-
-+ Install the [go compiler](https://golang.org/).
-+ Add `$(go env GOPATH)/bin` to your `$PATH` (for example `export PATH="$PATH:$(go env GOPATH)/bin"`).
+First, you need to install the [go compiler](https://golang.org/), so that the
+`go` command is available.
 
 Harmonist uses the [gruid](https://codeberg.org/anaseto/gruid) library for
 grid-based user interfaces, which offers three different rendering drivers:
-terminal, graphical SDL2, and browser.
+terminal, graphical SDL2, and browser. You don't need to install it manually.
 
 ### Terminal (ASCII)
 
 You can build a native ASCII version from source by using the following
 command:
 
-	go install
+	go build
 
-Alternatively, you may use the `go build -o /path/to/bin/harmonist` to put the
-resulting binary in a particular place.
-
-The `harmonist` command should now be available (you may have to rename it to
-remove the `.git` suffix).
+You should now have a working `harmonist` executable in the current directory.
+Use the `--help` option for command-line usage.
 
 This version uses the [tcell](https://github.com/gdamore/tcell) terminal
 library.
@@ -63,10 +58,7 @@ library.
 You can build a graphical version depending on SDL2 by using the following
 command:
 
-	go install --tags sdl
-
-Alternatively, you may use the `go build --tags sdl -o /path/to/bin/harmonist`
-to put the resulting binary in a particular place.
+	go build --tags sdl
 
 This will install the [go-sdl2](https://github.com/veandco/go-sdl2/sdl) Go
 bindings for SDL2. You need to install
