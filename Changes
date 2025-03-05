@@ -1,4 +1,4 @@
-v? ?
+v0.6.0 2025-03-05
 
 * Fix v0.4 regression when falling in abyss after levitation.
 * Make G enter examine mode and select nearest stairs. Previous behavior with G
