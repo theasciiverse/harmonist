@@ -68,11 +68,12 @@ bindings for SDL2. You need to install
 
 You can also build a WebAssembly version with:
 
-    GOOS=js GOARCH=wasm go build --tags js -o harmonist.wasm
+    GOOS=js GOARCH=wasm go build --tags js -o play-wasm/harmonist.wasm
 
-You can then play by serving a directory containing the wasm file via http. The
-directory should contain some other files that you can find in the main
-website instance (some HTML and js).
+You can then play by serving the `play-wasm` directory containing the wasm file
+via http. The directory should also contain the `wasm_exec.js` file from your
+Go distribution, as explained in [Go Wiki:
+WebAssembly](https://go.dev/wiki/WebAssembly).
 
 Colors
 ------
