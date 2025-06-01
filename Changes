@@ -1,3 +1,7 @@
+v? ?
+
+* Fix map drawing refresh issue when interrupting chained animations early.
+
 v0.6.0 2025-03-05
 
 * Fix v0.4 regression when falling in abyss after levitation.

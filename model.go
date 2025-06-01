@@ -338,13 +338,11 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	anims := !md.anims.Done()
 	if anims && md.interrupt(msg) {
 		md.anims.Finish()
+		anims = false
 	}
 	eff := md.update(msg)
-	cmd := md.animCmd()
-	if !anims {
-		if cmd != nil {
-			return gruid.Batch(eff, cmd)
-		}
+	if cmd := md.animCmd(); !anims && cmd != nil {
+		return gruid.Batch(eff, cmd)
 	}
 	return eff
 }
