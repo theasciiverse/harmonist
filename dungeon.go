@@ -60,7 +60,7 @@ func (dg *dgen) WallCell() gruid.Point {
 }
 
 func (d *dungeon) HasFreeNeighbor(nbs *paths.Neighbors, p gruid.Point) bool {
-	nb := nbs.All(p, valid)
+	nb := nbs.Cardinal(p, valid)
 	for _, q := range nb {
 		if d.Cell(q).IsPassable() {
 			return true
