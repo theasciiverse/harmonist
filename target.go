@@ -276,7 +276,7 @@ func (m *monster) traits() string {
 	var info string
 	info += fmt.Sprintf("Their size is %s.", m.Kind.Size())
 	if m.Kind.Peaceful() {
-		info += "They are peaceful."
+		info += " " + "They are peaceful."
 	}
 	if m.Kind.CanOpenDoors() {
 		info += " " + "They can open doors."
