@@ -67,7 +67,7 @@ func init() {
 	ColorBgLOS = ColorBackgroundSecondary
 	ColorFg = ColorForeground
 	ColorFgDark = ColorForegroundSecondary
-	ColorFgLOS = ColorForegroundEmph
+	ColorFgLOS = ColorForeground
 	ColorFgLOSLight = ColorYellow
 	ColorFgObject = ColorYellow
 	ColorFgTree = ColorGreen
