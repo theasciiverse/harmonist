@@ -1,10 +1,10 @@
+//go:build !js
 // +build !js
 
 package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -90,7 +90,7 @@ func (g *game) Load() (bool, error) {
 		// no save file, new game
 		return false, nil
 	}
-	data, err := ioutil.ReadFile(saveFile)
+	data, err := os.ReadFile(saveFile)
 	if err != nil {
 		return false, err
 	}
@@ -124,7 +124,7 @@ func LoadConfig() (bool, error) {
 		// no save file, new game
 		return false, nil
 	}
-	data, err := ioutil.ReadFile(saveFile)
+	data, err := os.ReadFile(saveFile)
 	if err != nil {
 		return false, err
 	}
@@ -160,7 +160,7 @@ func (g *game) WriteDump() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(dataDir, "dump"), []byte(g.Dump()), 0644)
+	err = os.WriteFile(filepath.Join(dataDir, "dump"), []byte(g.Dump()), 0644)
 	if err != nil {
 		return fmt.Errorf("writing dump statistics: %v", err)
 	}
