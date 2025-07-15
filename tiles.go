@@ -1,4 +1,4 @@
-// +build js sdl
+//go:build js || sdl
 
 package main
 
@@ -30,55 +30,94 @@ func (md *model) ApplyToggleTiles() {
 	clearCache()
 }
 
+// ColorToRGBA  maps to colors from selenized palette:
+//
+//	https://github.com/jan-warchol/selenized
 func ColorToRGBA(c gruid.Color, fg bool) color.Color {
 	cl := color.RGBA{}
 	opaque := uint8(255)
 	switch c {
 	case ColorBackgroundSecondary:
 		if GameConfig.DarkLOS {
-			cl = color.RGBA{7, 54, 66, opaque}
+			cl = color.RGBA{24, 73, 86, opaque}
 		} else {
-			cl = color.RGBA{238, 232, 213, opaque}
+			cl = color.RGBA{236, 227, 204, opaque}
 		}
 	case ColorRed:
-		cl = color.RGBA{220, 50, 47, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{250, 87, 80, opaque}
+		} else {
+			cl = color.RGBA{210, 33, 45, opaque}
+		}
 	case ColorGreen:
-		cl = color.RGBA{133, 153, 0, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{117, 185, 56, opaque}
+		} else {
+			cl = color.RGBA{72, 145, 0, opaque}
+		}
 	case ColorYellow:
-		cl = color.RGBA{181, 137, 0, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{219, 179, 45, opaque}
+		} else {
+			cl = color.RGBA{173, 137, 0, opaque}
+		}
 	case ColorBlue:
-		cl = color.RGBA{38, 139, 210, opaque}
+		if GameConfig.DarkLOS {
+			// cl = color.RGBA{70, 149, 247, opaque}
+			// We use the bright version for blue:
+			cl = color.RGBA{88, 163, 255, opaque}
+		} else {
+			cl = color.RGBA{0, 114, 212, opaque}
+		}
 	case ColorMagenta:
-		cl = color.RGBA{211, 54, 130, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{242, 117, 190, opaque}
+		} else {
+			cl = color.RGBA{202, 72, 152, opaque}
+		}
 	case ColorCyan:
-		cl = color.RGBA{42, 161, 152, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{65, 199, 185, opaque}
+		} else {
+			cl = color.RGBA{0, 156, 143, opaque}
+		}
 	case ColorOrange:
-		cl = color.RGBA{203, 75, 22, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{237, 134, 73, opaque}
+		} else {
+			cl = color.RGBA{194, 93, 30, opaque}
+		}
 	case ColorViolet:
-		cl = color.RGBA{108, 113, 196, opaque}
+		if GameConfig.DarkLOS {
+			cl = color.RGBA{175, 136, 235, opaque}
+		} else {
+			cl = color.RGBA{135, 98, 198, opaque}
+		}
 	case ColorForegroundEmph:
 		if GameConfig.DarkLOS {
-			cl = color.RGBA{147, 161, 161, opaque}
+			cl = color.RGBA{202, 216, 217, opaque}
 		} else {
-			cl = color.RGBA{88, 110, 117, opaque}
+			cl = color.RGBA{58, 77, 83, opaque}
 		}
 	case ColorForegroundSecondary:
 		if GameConfig.DarkLOS {
-			cl = color.RGBA{88, 110, 117, opaque}
+			cl = color.RGBA{114, 137, 143, opaque}
 		} else {
-			cl = color.RGBA{147, 161, 161, opaque}
+			cl = color.RGBA{144, 153, 149, opaque}
 		}
 	default:
+		if fg {
+			if GameConfig.DarkLOS {
+				cl = color.RGBA{173, 188, 188, opaque}
+			} else {
+				cl = color.RGBA{83, 103, 109, opaque}
+			}
+			break
+		}
 		if GameConfig.DarkLOS {
-			cl = color.RGBA{0, 43, 54, opaque}
-			if fg {
-				cl = color.RGBA{131, 148, 150, opaque}
-			}
+			cl = color.RGBA{16, 60, 72, opaque}
 		} else {
-			cl = color.RGBA{253, 246, 227, opaque}
-			if fg {
-				cl = color.RGBA{101, 123, 131, opaque}
-			}
+			cl = color.RGBA{251, 243, 219, opaque}
 		}
 	}
 	return cl
