@@ -1,5 +1,6 @@
 v? ?
 
+* Add "Messages" title to message pager.
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
 
