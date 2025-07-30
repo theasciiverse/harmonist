@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"testing"
-	"time"
 
 	"codeberg.org/anaseto/gruid"
 	"codeberg.org/anaseto/gruid/paths"
@@ -117,7 +116,7 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 
 func (g *game) initrand() {
 	if g.rand == nil {
-		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
 }
 
