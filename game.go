@@ -2,8 +2,7 @@ package main
 
 import (
 	"log"
-	"math/rand"
-	"time"
+	"math/rand/v2"
 
 	"codeberg.org/anaseto/gruid"
 	"codeberg.org/anaseto/gruid/paths"
@@ -411,7 +410,7 @@ var Testing = false
 
 func (g *game) InitLevel() {
 	if g.rand == nil {
-		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
 	// Starting data
 	if g.Depth == 0 {
@@ -744,5 +743,5 @@ func (g *game) randInt(n int) int {
 	if n <= 0 {
 		return 0
 	}
-	return g.rand.Intn(n)
+	return g.rand.IntN(n)
 }

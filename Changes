@@ -1,5 +1,6 @@
 v? ?
 
+* Update to latest gruid version and require Go 1.23 or later.
 * Add "Messages" title to message pager.
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.

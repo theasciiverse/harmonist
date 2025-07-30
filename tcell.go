@@ -1,3 +1,4 @@
+//go:build !sdl && !js
 // +build !sdl,!js
 
 package main

@@ -1,8 +1,7 @@
 package main
 
 import (
-	"math/rand"
-	"time"
+	"math/rand/v2"
 )
 
 func abs(x int) int {
@@ -12,15 +11,11 @@ func abs(x int) int {
 	return x
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func RandInt(n int) int {
 	if n <= 0 {
 		return 0
 	}
-	x := rand.Intn(n)
+	x := rand.IntN(n)
 	return x
 }
 

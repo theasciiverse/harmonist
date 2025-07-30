@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
+	"math/rand/v2"
 	"runtime"
 	"strings"
 	"time"
@@ -270,7 +270,7 @@ func (md *model) init() gruid.Effect {
 		g.InitLevel()
 		g.checks()
 	} else {
-		g.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
 	if err != nil {
 		g.PrintStyled("Warning: could not load old saved game… starting new game.", logError)
