@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -113,7 +112,7 @@ func RunGame(logfile string) {
 	}
 
 	if !Tiles && !LogGame {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 	app := gruid.NewApp(gruid.AppConfig{
 		Driver:      driver,
