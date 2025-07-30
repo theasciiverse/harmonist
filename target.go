@@ -478,7 +478,7 @@ func (md *model) excludeZone(p gruid.Point) {
 
 func (md *model) clearExcludeZone(p gruid.Point) {
 	rg := visionRange(p, DefaultMonsterLOSRange)
-	rg.Iter(func(p gruid.Point) {
+	for p := range rg.Points() {
 		delete(md.g.ExclusionsMap, p)
-	})
+	}
 }
