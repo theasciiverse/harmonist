@@ -382,7 +382,7 @@ func (md *model) target() error {
 	return errors.New("Invalid destination.")
 }
 
-func (md *model) nextMonster(key gruid.Key, p gruid.Point, data *examination) {
+func (md *model) nextMonster(key gruid.Key, data *examination) {
 	nmonster := data.nmonster
 	ms := md.targetMonsters()
 	if len(ms) == 0 {
@@ -399,7 +399,7 @@ func (md *model) nextMonster(key gruid.Key, p gruid.Point, data *examination) {
 		nmonster = len(ms) - 1
 	}
 	mons := ms[nmonster]
-	p = mons.P
+	p := mons.P
 	data.nmonster = nmonster
 	md.Examine(p)
 }

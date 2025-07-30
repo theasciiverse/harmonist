@@ -341,10 +341,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.clearExcludeZone(md.targ.ex.p)
 	case ActionPreviousMonster:
 		again = true
-		md.nextMonster("-", md.targ.ex.p, md.targ.ex)
+		md.nextMonster("-", md.targ.ex)
 	case ActionNextMonster:
 		again = true
-		md.nextMonster("+", md.targ.ex.p, md.targ.ex)
+		md.nextMonster("+", md.targ.ex)
 	case ActionNextObject:
 		again = true
 		md.nextObject(md.targ.ex.p, md.targ.ex)
