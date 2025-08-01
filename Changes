@@ -2,6 +2,10 @@ v? ?
 
 * Update to latest gruid version and require Go 1.23 or later.
 * Add "Messages" title to message pager.
+* Make the various kinds of menus always open with first item as the active
+  one. Previously, previous active item was remembered, but it wasn't
+  done in a consistent or useful manner (different menus shared the same
+  memory).
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
 
