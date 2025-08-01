@@ -682,6 +682,7 @@ func (md *model) openSettings() {
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeSettings
 }
@@ -723,6 +724,7 @@ func (md *model) openKeyBindings() {
 	altBgEntries(entries)
 	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.keysMenu.SetEntries(entries)
+	md.keysMenu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeKeys
 }
@@ -749,6 +751,7 @@ func (md *model) openMenu() {
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeGameMenu
 }
@@ -768,9 +771,10 @@ func (md *model) openIventory() {
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Inventory").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeInventory
-	it := items[md.menu.Active()]
+	it := items[0]
 	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 	md.description.Box = &ui.Box{Title: ui.Text(it.String())}
 }
@@ -789,9 +793,10 @@ func (md *model) evokeMagaraMenu() {
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeEvocation
-	it := items[md.menu.Active()]
+	it := items[0]
 	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 	md.description.Box = &ui.Box{Title: ui.Text(it.String())}
 }
@@ -810,9 +815,10 @@ func (md *model) equipMagaraMenu() {
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Replace which magara?").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeEquip
-	it := items[md.menu.Active()]
+	it := items[0]
 	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 	md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
 }
@@ -835,6 +841,7 @@ func (md *model) openWizardMenu() {
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Wizard Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
 	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeWizard
 }
