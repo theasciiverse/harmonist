@@ -213,7 +213,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		r = '@'
 		fgColor = ColorFgPlayer
 	default:
-		// TODO: maybe some wrong knowledge issues
+		// XXX: maybe some wrong knowledge issues
 		r, fgTerrain = c.Style(g, p)
 		if fgTerrain != ColorFgLOS {
 			fgColor = fgTerrain

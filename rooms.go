@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/paths"
 	"codeberg.org/anaseto/gruid/rl"
 )
 
@@ -50,8 +51,7 @@ type place struct {
 }
 
 func roomDistance(r1, r2 *room) int {
-	// TODO: use the center?
-	return abs(r1.p.X+r1.w/2-r2.p.X-r2.w/2) + abs(r1.p.Y+r1.h/2-r2.p.Y-r2.h/2)
+	return paths.DistanceManhattan(r1.p.Add(gruid.Point{r1.w / 2, r1.h / 2}), r2.p.Add(gruid.Point{r2.w / 2, r2.h / 2}))
 }
 
 func (r *room) HasSpace(dg *dgen) bool {
@@ -711,8 +711,6 @@ c###_._###c
 ?.P..-..P.?
 `
 )
-
-// TODO: add indestructible walls?
 
 var roomCellTemplates = []string{CellShaedra, CellShaedra2, CellShaedra3, CellShaedra4}
 

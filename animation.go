@@ -214,7 +214,6 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 		return
 	}
 	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.P)
-	//md.startAnimSeq()
 	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
 	for i := 0; i < 2; i++ {
 		for _, p := range noises {
@@ -296,7 +295,7 @@ const (
 	WaveConfusion
 	WaveSlowing
 	WaveTree
-	WaveSleeping // TODO: check if really useful
+	WaveSleeping
 )
 
 func (md *model) WaveAnimation(wave []int, ws wavestyle) {
@@ -348,7 +347,6 @@ func (md *model) WallExplosionAnimation(p gruid.Point) {
 	colors := [2]gruid.Color{ColorFgExplosionWallStart, ColorFgExplosionWallEnd}
 	for _, fg := range colors {
 		_, _, bgColor := md.positionDrawing(p)
-		//md.anims.Draw(pos, '☼', fg, bgColor)
 		md.anims.DrawReverse(p, '%', fg, bgColor)
 		md.anims.Frame(AnimDurShort)
 	}
@@ -434,7 +432,6 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	}
 	g := md.g
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
 	for i := 0; i < len(ray); i++ {
 		p := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(p)
@@ -442,7 +439,7 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 		md.anims.Frame(AnimDurShort)
 		md.anims.Draw(p, r, fgColor, bgColor)
 	}
-	//md.anims.Frame(AnimDurShort)
+	md.anims.Frame(AnimDurShort)
 }
 
 func (md *model) WoundedAnimation() {
@@ -507,19 +504,6 @@ func (md *model) FoundFakeStairsAnimation() {
 	md.anims.Frame(AnimDurMediumLong)
 }
 
-func (md *model) MusicAnimation(p gruid.Point) {
-	if DisableAnimations {
-		return
-	}
-	// TODO: not convinced by this animation
-	//r, fg, bg := ui.PositionDrawing(pos)
-	//ui.DrawAtPosition(pos, false, '♪', ColorCyan, bg)
-	//ui.Flush()
-	//	//time.Sleep(AnimDurMediumLong)
-	//ui.DrawAtPosition(pos, false, r, fg, bg)
-	//ui.Flush()
-}
-
 func (md *model) PushAnimation(path []gruid.Point) {
 	if DisableAnimations {
 		return
@@ -535,7 +519,6 @@ func (md *model) PushAnimation(path []gruid.Point) {
 	}
 	md.anims.Draw(path[len(path)-1], '@', ColorFgPlayer, bg)
 	md.anims.Frame(AnimDurMediumLong)
-	//log.Print("anims: %+v", md.anims)
 }
 
 func (md *model) MagicMappingAnimation() {

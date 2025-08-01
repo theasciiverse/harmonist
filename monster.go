@@ -588,8 +588,7 @@ func (m *monster) TeleportAway(g *game) {
 	}
 
 	switch m.State {
-	case Hunting:
-		// TODO: change the target or state?
+	case Hunting: // XXX: change the target or state?
 	case Resting, Wandering:
 		m.MakeWander()
 		m.Target = m.P
@@ -963,7 +962,6 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 		if g.Player.Sees(m.P) && RandInt(2) == 0 && !m.Status(MonsConfused) && !m.Status(MonsExhausted) {
 			g.PrintStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
 			g.MakeNoise(SingingNoise, m.P)
-			//g.ui.MusicAnimation(m.Pos)
 			m.Exhaust(g)
 		}
 	}
@@ -1270,7 +1268,7 @@ func (m *monster) HitPlayer(g *game) {
 	switch g.Player.Inventory.Neck {
 	case AmuletConfusion:
 		m.EnterConfusion(g)
-		// TODO: maybe affect all monsters in sight?
+		// XXX: maybe affect all monsters in sight?
 		g.PrintfStyled("Your amulet releases confusing harmonies.", logNotable)
 	case AmuletFog:
 		g.PrintStyled("Your amulet feels warm.", logNotable)
@@ -1415,7 +1413,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 		}
 	}
 	if p == g.Player.P {
-		// TODO: do more interesting things, perhaps?
+		// XXX: pushing: do more interesting things, perhaps?
 		return
 	}
 	g.Stats.TimesPushed++
@@ -1534,7 +1532,6 @@ func (g *game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 }
 
 func (m *monster) CreateBarrier(g *game) bool {
-	// TODO: add noise?
 	dir := dirnorm(m.P, g.Player.P)
 	candidates := g.BarrierCandidates(g.Player.P, dir)
 	done := false
@@ -1737,20 +1734,6 @@ func (m *monster) MakeHunt(g *game) (noticed bool) {
 	m.Search = g.Player.P
 	m.Target = g.Player.P
 	return noticed
-}
-
-func (m *monster) MakeWatchIfHurt(g *game) {
-	// TODO: not used now.
-	if m.Exists() && m.State != Hunting {
-		m.MakeHunt(g)
-		if m.State == Resting {
-			g.Printf("%s awakens.", m.Kind.Definite(true))
-		}
-		if m.Kind == MonsDog {
-			g.Printf("%s barks.", m.Kind.Definite(true))
-			g.MakeNoise(BarkNoise, m.P)
-		}
-	}
 }
 
 func (m *monster) MakeAware(g *game) {

@@ -387,8 +387,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		switch terrain(c) {
 		case StairCell:
 			if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair {
-				// TODO: animation
-				//ui.MenuSelectedAnimation(MenuInteract, true)
 				strt := g.Objects.Stairs[g.Player.P]
 				err = md.checkShaedra(strt)
 				if err != nil {
@@ -398,27 +396,18 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				if g.Descend(DescendNormal) {
 					md.win()
 				}
-				//ui.DrawDungeonView(NormalMode)
 			} else if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
 				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
 			} else {
 				err = errors.New("No stairs here.")
 			}
 		case BarrelCell:
-			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.Rest()
-			//if err != nil {
-			//ui.MenuSelectedAnimation(MenuInteract, false)
-			//}
 		case MagaraCell:
 			again = true
 			md.equipMagaraMenu()
 		case StoneCell:
-			//ui.MenuSelectedAnimation(MenuInteract, true)
 			err = g.ActivateStone()
-			//if err != nil {
-			//ui.MenuSelectedAnimation(MenuInteract, false)
-			//}
 		case ScrollCell:
 			again = true
 			md.readScroll()

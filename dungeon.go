@@ -1,8 +1,5 @@
 // many ideas here from articles found at http://www.roguebasin.com/
 
-// TODO: some algorithms could use gruid's rl package, though it may not be
-// worth the trouble.
-
 package main
 
 import (

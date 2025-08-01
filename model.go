@@ -265,7 +265,7 @@ func (md *model) init() gruid.Effect {
 
 	md.applyConfig()
 	load, err := g.Load()
-	md.g.md = md // TODO: avoid this? (though it's handy)
+	md.g.md = md // handy cycle
 	if !load {
 		g.InitLevel()
 		g.checks()
