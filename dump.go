@@ -386,7 +386,7 @@ func (g *game) SimplifedDump(err error) string {
 			if dataDir == "" {
 				fmt.Fprintf(buf, "Full game statistics written below.\n")
 			} else {
-				fmt.Fprintf(buf, "Full game statistics dump written to:\n    %s", filepath.Join(dataDir, "dump"))
+				fmt.Fprintf(buf, "Full game statistics dump written to:\n    %s", filepath.Join(dataDir, "dump.txt"))
 			}
 		}
 	}

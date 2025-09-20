@@ -8,6 +8,8 @@ v? ?
   memory).
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
+* In native builds, rename game statistic's dump file to `dump.txt`
+  so that it's clearer that the file is text, unlike the other ones.
 
 v0.6.0 2025-03-05
 

@@ -160,7 +160,7 @@ func (g *game) WriteDump() error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filepath.Join(dataDir, "dump"), []byte(g.Dump()), 0644)
+	err = os.WriteFile(filepath.Join(dataDir, "dump.txt"), []byte(g.Dump()), 0644)
 	if err != nil {
 		return fmt.Errorf("writing dump statistics: %v", err)
 	}

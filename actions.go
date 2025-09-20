@@ -484,7 +484,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		} else {
 			dataDir, _ := DataDir()
 			if dataDir != "" {
-				g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump"))
+				g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump.txt"))
 			} else {
 				g.Print("Game statistics written.")
 			}
