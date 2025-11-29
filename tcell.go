@@ -24,7 +24,7 @@ func (md *model) updateZoom() {
 var driver gruid.Driver
 var color8 bool
 
-func initDriver(fullscreen bool) {
+func initDriver(_, _ bool) {
 	st := styler{}
 	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
 	//dr.PreventQuit()

@@ -26,12 +26,14 @@ func main() {
 	optLogFile := flag.String("o", "", "log to output file")
 	opt16colors := new(bool)
 	opt256colors := new(bool)
+	optNoAcceleration := new(bool)
 	optFullscreen := new(bool)
 	if Terminal {
 		opt16colors = flag.Bool("s", false, "use 16-color simple palette")
 		opt256colors = flag.Bool("x", false, "use xterm 256-color palette (solarized approximation)")
 	} else {
 		optFullscreen = flag.Bool("F", false, "fullscreen")
+		optNoAcceleration = flag.Bool("noaccel", false, "disable graphic acceleration")
 	}
 	flag.Parse()
 
@@ -60,7 +62,7 @@ func main() {
 		log.Print(err)
 	}
 	applyThemeConf()
-	initDriver(*optFullscreen)
+	initDriver(*optFullscreen, *optNoAcceleration)
 	if *optReplay != "" {
 		RunReplay(*optReplay)
 	} else {

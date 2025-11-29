@@ -13,7 +13,7 @@ import (
 var driver gruid.Driver
 var isFullscreen bool
 
-func initDriver(fullscreen bool) {
+func initDriver(fullscreen, noaccel bool) {
 	isFullscreen = fullscreen
 	icon, err := base64pngToRGBA(TileImgs["favicon"])
 	if err != nil {
@@ -24,6 +24,7 @@ func initDriver(fullscreen bool) {
 		Fullscreen:  fullscreen,
 		WindowTitle: "Harmonist",
 		WindowIcon:  icon,
+		Accelerated: !noaccel,
 	})
 	driver = dr
 }

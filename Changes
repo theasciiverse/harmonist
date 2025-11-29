@@ -9,6 +9,8 @@ v? ?
 * Change color of out-of-view monster memory to light grey unless the monster
   was resting, to make it clearer that it's out of view (inspired from similar
   change in Shamogu).
+* SDL2 version now uses graphic acceleration by default unless the -noaccel
+  flag is provided. It should work better on modern systems.
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
 * In native builds, rename game statistic's dump file to `dump.txt`
