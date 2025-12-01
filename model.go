@@ -138,14 +138,16 @@ func (md *model) initKeys() {
 		"I":                 ActionInventory,
 		"m":                 ActionLogs,
 		"M":                 ActionMenu,
+		gruid.KeySpace:      ActionMenu,
 		"#":                 ActionDump,
 		"?":                 ActionHelp,
+		"t":                 ActionMenuTargetingHelp,
 		"S":                 ActionSave,
 		"Q":                 ActionQuit,
 		"W":                 ActionWizard,
 		"@":                 ActionWizardMenu,
 		">":                 ActionWizardDescend,
-		"=":                 ActionSettings,
+		"C":                 ActionSettings,
 		"+":                 ActionZoomIncrease,
 		"-":                 ActionZoomDecrease,
 		gruid.KeyEscape:     ActionEscape,
@@ -175,16 +177,8 @@ func (md *model) initKeys() {
 		"-":                 ActionPreviousMonster,
 		"+":                 ActionNextMonster,
 		"o":                 ActionNextObject,
-		"]":                 ActionNextObject,
-		")":                 ActionNextObject,
-		"(":                 ActionNextObject,
-		"[":                 ActionNextObject,
-		"_":                 ActionNextObject,
-		"=":                 ActionNextObject,
 		".":                 ActionTarget,
 		gruid.KeyEnter:      ActionTarget,
-		"t":                 ActionTarget,
-		"g":                 ActionTarget,
 		"e":                 ActionExclude,
 		"r":                 ActionClearExclude,
 		gruid.KeySpace:      ActionEscape,
@@ -192,6 +186,7 @@ func (md *model) initKeys() {
 		"x":                 ActionEscape,
 		"X":                 ActionEscape,
 		"?":                 ActionHelp,
+		"t":                 ActionMenuTargetingHelp,
 	}
 	CustomKeys = false
 }
@@ -414,6 +409,7 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 			eff = md.updateMenu(msg)
 		}
 	}
+	md.updateStatusInfo()
 	return eff
 }
 
@@ -684,7 +680,7 @@ func (md *model) EndTurn() gruid.Effect {
 		md.confirm = true
 	}
 	if md.confirm {
-		md.g.PrintStyled("[(x) to continue]", logConfirm)
+		md.g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 		md.confirm = false
 	}
 	md.g.LogNextTick = md.g.LogIndex
@@ -695,7 +691,6 @@ func (md *model) updateMapInfo() {
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
-	md.updateStatusInfo()
 	if md.g.Highlight != nil {
 		md.examine(md.targ.ex.p)
 	}
@@ -881,7 +876,11 @@ func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff g
 	}
 	again, eff, err = md.normalModeAction(action)
 	if _, ok := err.(actionError); ok {
-		err = fmt.Errorf("Key '%s' does nothing. Type ? for help.", key)
+		if md.targ.kbTargeting {
+			err = fmt.Errorf("Key '%s' does nothing. Type t for help.", key)
+		} else {
+			err = fmt.Errorf("Key '%s' does nothing. Type ? for help.", key)
+		}
 	}
 	return again, eff, err
 }
@@ -893,7 +892,7 @@ func (md *model) death() {
 		NoAchievement.Get(g)
 	}
 	g.PrintStyled("You die...", logSpecial)
-	g.PrintStyled("[(x) to continue]", logConfirm)
+	g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	md.mode = modeEnd
 }
 
@@ -901,10 +900,10 @@ func (md *model) win() {
 	g := md.g
 	if g.Wizard {
 		g.PrintStyled("You escape by the magic portal! **WIZARD**", logSpecial)
-		g.PrintStyled("[(x) to continue]", logConfirm)
+		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	} else {
 		g.PrintStyled("You escape by the magic portal!", logSpecial)
-		g.PrintStyled("[(x) to continue]", logConfirm)
+		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	}
 	md.mode = modeEnd
 }

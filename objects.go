@@ -637,7 +637,7 @@ func (it item) ShortDesc(g *game) string {
 func (it item) Desc(g *game) (desc string) {
 	switch it {
 	case NoItem:
-		return "You do not have an item equipped on this slot."
+		return "You do not have an item equipped on this slot yet."
 	case CloakMagic:
 		desc = "increases your magical reserves."
 	case CloakHear:

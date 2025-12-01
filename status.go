@@ -356,6 +356,10 @@ func (md *model) updateStatusInfo() {
 		entries = append(entries, ui.MenuEntry{Text: stt.WithText(sttext), Disabled: true})
 	}
 
+	if md.targ.kbTargeting {
+		entries = append(entries, ui.MenuEntry{Text: stt.WithText("@B[Examine]@N"), Disabled: true})
+	}
+
 	//altBgEntries(entries)
 	md.status.SetEntries(entries)
 }

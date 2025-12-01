@@ -294,13 +294,16 @@ func (mag magara) String() (desc string) {
 }
 
 func (mag magara) ShortDesc() string {
+	if mag.Kind == NoMagara {
+		return mag.String()
+	}
 	return fmt.Sprintf("%s (%d)", mag.String(), mag.Charges)
 }
 
 func (mag magara) Desc(g *game) (desc string) {
 	switch mag.Kind {
 	case NoMagara:
-		desc = "can be used for a new magara."
+		return "You do not have a magara equipped on this slot yet."
 	case BlinkMagara:
 		desc = "makes you blink away within your line of sight by using an oric energy disturbance. The magara is more susceptible to send you to the cells that are most far from you."
 	case DigMagara:

@@ -165,21 +165,19 @@ func (k action) String() (text string) {
 	case ActionInventory:
 		text = "Inventory"
 	case ActionLogs:
-		text = "View previous messages"
+		text = "View messages"
 	case ActionDump:
 		text = "Write game statistics to file"
 	case ActionSave:
-		text = "Save and Quit"
+		text = "Save and quit"
 	case ActionQuit:
-		text = "Quit without saving"
-	case ActionHelp:
-		text = "Help (keys and mouse)"
-	case ActionMenuCommandHelp:
+		text = "Quit (without saving)"
+	case ActionHelp, ActionMenuCommandHelp:
 		text = "Help (keyboard normal mode)"
 	case ActionMenuTargetingHelp:
 		text = "Help (keyboard examine mode)"
 	case ActionSettings:
-		text = "Settings and key bindings"
+		text = "Configure settings"
 	case ActionWizard:
 		text = "Wizard (debug) mode"
 	case ActionWizardMenu:
@@ -189,9 +187,9 @@ func (k action) String() (text string) {
 	case ActionSetKeys:
 		text = "Change key bindings"
 	case ActionInvertLOS:
-		text = "Toggle dark/light LOS"
+		text = "Toggle dark/light theme"
 	case ActionToggleTiles:
-		text = "Toggle tiles/ascii display"
+		text = "Toggle tiles/ASCII display"
 	case ActionToggleShowNumbers:
 		text = "Toggle hearts/numbers"
 	case ActionWizardInfo:
@@ -440,11 +438,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.KeyboardExamine()
 	case ActionHelp, ActionMenuCommandHelp:
 		again = true
-		if md.targ.kbTargeting {
-			md.ExamineHelp()
-		} else {
-			md.KeysHelp()
-		}
+		md.KeysHelp()
 	case ActionMenuTargetingHelp:
 		again = true
 		md.ExamineHelp()
@@ -738,15 +732,16 @@ var menuActions = []action{
 	ActionQuit,
 }
 
+var menuKeys = []rune{'m', '?', 't', 'C', 'S', 'Q'}
+
 func (md *model) openMenu() {
 	entries := []ui.MenuEntry{}
-	r := 'a'
-	for _, it := range menuActions {
+	for i, it := range menuActions {
+		r := menuKeys[i]
 		entries = append(entries, ui.MenuEntry{
 			Text: ui.Textf("%c - %s", r, it),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
-		r++
 	}
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
@@ -884,14 +879,14 @@ func (md *model) KeysHelp() {
 		"Close/Cancel inventory, evocation...", "X or esc or space",
 		"Menu", "M",
 		"Advanced Commands", "",
-		"Save and Quit", "S",
+		"Save and quit", "S",
 		"View previous messages", "m",
 		"Target nearest stairs", "G",
 		"Run in a direction", "shift+arrows or HJKL",
 		"Autoexplore (use with caution)", "o",
 		"Write game statistics to file", "#",
-		"Quit without saving", "Q",
-		"Change settings and key bindings", "=",
+		"Quit (without saving)", "Q",
+		"Configure settings", "C",
 	}
 	if Tiles && runtime.GOOS != "js" {
 		entries = append(entries, "Increase/decrease zoom", "+ and -")
