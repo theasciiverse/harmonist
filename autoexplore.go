@@ -10,15 +10,12 @@ func (g *game) Autoexplore() (again bool, err error) {
 	if mons := g.MonsterInLOS(); mons.Exists() {
 		return again, errors.New("You cannot auto-explore while there are monsters in view.")
 	}
-	if g.ExclusionsMap[g.Player.P] {
-		return again, errors.New("You cannot auto-explore while in an excluded area.")
-	}
 	if g.AllExplored() {
 		return again, errors.New("Nothing left to explore.")
 	}
 	sources := g.AutoexploreSources()
 	if len(sources) == 0 {
-		return again, errors.New("Some excluded places remain unexplored.")
+		return again, errors.New("Some unreachable places remain unexplored.")
 	}
 	g.BuildAutoexploreMap(sources)
 	n, finished := g.NextAuto()
@@ -59,9 +56,6 @@ func (g *game) AutoexploreSources() []gruid.Point {
 			if len(np.Neighbors(p)) == 0 {
 				continue
 			}
-		}
-		if g.ExclusionsMap[p] {
-			continue
 		}
 		if !explored(c) || g.Player.Bananas < MaxBananas && g.Objects.Bananas[p] {
 			// TODO: add more sources (potions, magaras) in some cases.

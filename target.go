@@ -37,9 +37,9 @@ func (md *model) SetCursor(p gruid.Point) {
 func (md *model) CancelExamine() {
 	md.g.Highlight = nil
 	md.g.MonsterTargLOS = nil
+	*md.targ.ex = examination{}
 	md.HideCursor()
 	md.targ.kbTargeting = false
-	md.targ.ex.scroll = false
 }
 
 // Examine targets a given position with the cursor.
@@ -98,29 +98,16 @@ func (md *model) targetMonsters() []*monster {
 	return tms
 }
 
-// KeyboardExamine starts keyboard examination mode, with a sensible default
-// target.
+// KeyboardExamine toggels keyboard examination mode on the player.
 func (md *model) KeyboardExamine() {
+	if md.targ.kbTargeting {
+		md.CancelExamine()
+		return
+	}
 	md.targ.kbTargeting = true
-	g := md.g
-	p := g.Player.P
-	for _, mons := range md.targetMonsters() {
-		p = mons.P
-		break
-	}
-	md.targ.ex = &examination{
-		p:       p,
-		objects: []gruid.Point{},
-	}
-	if p == g.Player.P {
-		md.nextObject(invalidPos, md.targ.ex)
-		if !valid(md.targ.ex.p) {
-			md.nextStair(md.targ.ex)
-		}
-		if valid(md.targ.ex.p) && distance(p, md.targ.ex.p) < DefaultLOSRange+5 {
-			p = md.targ.ex.p
-		}
-	}
+	p := md.g.Player.P
+	md.targ.ex.p = p
+	md.targ.ex.objects = []gruid.Point{}
 	md.examine(p)
 }
 
@@ -383,6 +370,10 @@ func (md *model) target() error {
 }
 
 func (md *model) nextMonster(key gruid.Key, data *examination) {
+	if !md.targ.kbTargeting {
+		md.targ.kbTargeting = true
+		data.nmonster = -1
+	}
 	nmonster := data.nmonster
 	ms := md.targetMonsters()
 	if len(ms) == 0 {
@@ -405,6 +396,11 @@ func (md *model) nextMonster(key gruid.Key, data *examination) {
 }
 
 func (md *model) nextStair(data *examination) {
+	if !md.targ.kbTargeting {
+		md.targ.kbTargeting = true
+		data.stairIndex = 0
+	}
+	md.targ.kbTargeting = true
 	g := md.g
 	if data.sortedStairs == nil {
 		stairs := g.StairsSlice()
@@ -420,15 +416,10 @@ func (md *model) nextStair(data *examination) {
 }
 
 func (md *model) nextObject(np gruid.Point, data *examination) {
+	md.targ.kbTargeting = true
 	g := md.g
 	nobject := data.nobject
 	if len(data.objects) == 0 {
-		for p := range g.Objects.Stairs {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.FakeStairs {
-			data.objects = append(data.objects, p)
-		}
 		for p := range g.Objects.Stones {
 			data.objects = append(data.objects, p)
 		}
@@ -465,20 +456,4 @@ func (md *model) nextObject(np gruid.Point, data *examination) {
 	}
 	data.nobject = nobject
 	md.Examine(np)
-}
-
-func (md *model) excludeZone(p gruid.Point) {
-	g := md.g
-	if !explored(g.Dungeon.Cell(p)) {
-		g.Print("You cannot choose an unexplored cell for exclusion.")
-	} else {
-		g.ComputeExclusion(p)
-	}
-}
-
-func (md *model) clearExcludeZone(p gruid.Point) {
-	rg := visionRange(p, DefaultMonsterLOSRange)
-	for p := range rg.Points() {
-		delete(md.g.ExclusionsMap, p)
-	}
 }

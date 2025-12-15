@@ -253,6 +253,7 @@ func (md *model) updateStatusInfo() {
 		'o': st.WithFg(ColorFgStatusOther),
 		'b': st.WithFg(ColorFgStatusBad),
 		'B': st.WithFg(ColorCyan),
+		'Y': st.WithFg(ColorYellow),
 		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
 	})
 	// depth
@@ -319,9 +320,15 @@ func (md *model) updateStatusInfo() {
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(bananas), Disabled: true})
 
 	// menus
-	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[M]")})
-	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[I]")})
-	entries = append(entries, ui.MenuEntry{Text: stt.WithText("[V]")})
+	letter := func(r rune, active bool) string {
+		if !active {
+			return fmt.Sprintf("[%c]", r)
+		}
+		return fmt.Sprintf("@Y[%c]@N", r)
+	}
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(letter('M', md.mode == modeMenu && md.menuMode == modeGameMenu))})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(letter('I', md.mode == modeMenu && md.menuMode == modeInventory))})
+	entries = append(entries, ui.MenuEntry{Text: stt.WithText(letter('V', md.mode == modeMenu && md.menuMode == modeEvocation))})
 	_, interact := md.interact()
 	interactstt := stt.WithText("")
 	if interact {

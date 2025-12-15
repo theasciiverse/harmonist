@@ -13,21 +13,33 @@ import (
 )
 
 const (
-	UIWidth  = 80
-	UIHeight = 24
+	UIWidth  = 80 // UI width
+	UIHeight = 24 // UI height
 )
 
 var (
-	DisableAnimations bool = false
-	Xterm256Color          = false
-	Terminal               = false
-	LogGame                = false
+	DisableAnimations bool = false       // whether to disable animations
+	LogGame                = false       // write game logs to file
+	ColorMode              = ColorMode16 // default 16-color palette
+)
+
+// colorMode represents various color compatibility modes.
+type colorMode int
+
+const (
+	ColorMode16    colorMode = iota
+	ColorMode8               // use 8-color compatibility mode (default for windows)
+	ColorMode256             // use solarized 256-color approximation
+	ColorMode24bit           // use true color selenized palette
 )
 
 // CustomKeys tracks whether we're using custom key bindings.
 var CustomKeys bool
+
+// GameConfig contains the current game config.
 var GameConfig config
 
+// mode represents the main model mode
 type mode int
 
 const (
@@ -90,7 +102,6 @@ type model struct {
 	statusFocus bool
 	anims       Animations
 	story       int
-	zoomlevel   int
 	critical    bool
 	auto        bool
 	confirm     bool
@@ -111,21 +122,12 @@ func (md *model) initKeys() {
 		"j":                 ActionS,
 		"k":                 ActionN,
 		"l":                 ActionE,
-		"a":                 ActionW,
-		"s":                 ActionS,
-		"w":                 ActionN,
-		"d":                 ActionE,
-		"4":                 ActionW,
-		"2":                 ActionS,
-		"8":                 ActionN,
-		"6":                 ActionE,
 		"H":                 ActionRunW,
 		"J":                 ActionRunS,
 		"K":                 ActionRunN,
 		"L":                 ActionRunE,
 		".":                 ActionWaitTurn,
 		gruid.KeyEnter:      ActionWaitTurn,
-		"5":                 ActionWaitTurn,
 		"G":                 ActionTargetNearestStairs,
 		"o":                 ActionExplore,
 		"x":                 ActionExamine,
@@ -141,52 +143,22 @@ func (md *model) initKeys() {
 		gruid.KeySpace:      ActionMenu,
 		"#":                 ActionDump,
 		"?":                 ActionHelp,
-		"t":                 ActionMenuTargetingHelp,
+		"-":                 ActionPreviousMonster,
+		"+":                 ActionNextMonster,
+		">":                 ActionNextStairs,
+		"n":                 ActionNextObject,
 		"S":                 ActionSave,
 		"Q":                 ActionQuit,
 		"W":                 ActionWizard,
 		"@":                 ActionWizardMenu,
-		">":                 ActionWizardDescend,
+		"»":                 ActionWizardDescend,
 		"C":                 ActionSettings,
-		"+":                 ActionZoomIncrease,
-		"-":                 ActionZoomDecrease,
+		gruid.KeyTab:        ActionSettings,
 		gruid.KeyEscape:     ActionEscape,
 	}
 	md.keysTarget = map[gruid.Key]action{
-		gruid.KeyArrowLeft:  ActionW,
-		gruid.KeyArrowDown:  ActionS,
-		gruid.KeyArrowUp:    ActionN,
-		gruid.KeyArrowRight: ActionE,
-		"h":                 ActionW,
-		"j":                 ActionS,
-		"k":                 ActionN,
-		"l":                 ActionE,
-		"a":                 ActionW,
-		"s":                 ActionS,
-		"w":                 ActionN,
-		"d":                 ActionE,
-		"4":                 ActionW,
-		"2":                 ActionS,
-		"8":                 ActionN,
-		"6":                 ActionE,
-		"H":                 ActionRunW,
-		"J":                 ActionRunS,
-		"K":                 ActionRunN,
-		"L":                 ActionRunE,
-		">":                 ActionNextStairs,
-		"-":                 ActionPreviousMonster,
-		"+":                 ActionNextMonster,
-		"o":                 ActionNextObject,
-		".":                 ActionTarget,
-		gruid.KeyEnter:      ActionTarget,
-		"e":                 ActionExclude,
-		"r":                 ActionClearExclude,
-		gruid.KeySpace:      ActionEscape,
-		gruid.KeyEscape:     ActionEscape,
-		"x":                 ActionEscape,
-		"X":                 ActionEscape,
-		"?":                 ActionHelp,
-		"t":                 ActionMenuTargetingHelp,
+		".":            ActionTarget,
+		gruid.KeyEnter: ActionTarget,
 	}
 	CustomKeys = false
 }
@@ -230,7 +202,7 @@ func (md *model) initWidgets() {
 	})
 }
 
-func initConfig() error {
+func InitConfig() error {
 	GameConfig.DarkLOS = true
 	GameConfig.Version = Version
 	GameConfig.Tiles = true
@@ -493,6 +465,7 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	if msg.P.Y == UIHeight-1 {
 		return md.updateStatusMouse(msg)
 	}
+	md.status.SetActive(0)
 	md.statusFocus = false
 	p := msg.P.Add(gruid.Point{0, -2}) // relative position ignoring log
 	switch msg.Action {
@@ -510,6 +483,8 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 		} else {
 			md.CancelExamine()
 		}
+	case gruid.MouseSecondary:
+		md.openMenu()
 	case gruid.MouseMain:
 		if !valid(p) {
 			return nil
@@ -609,7 +584,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.statusDesc.SetText("Need to eat one before sleeping in barrels.")
 			md.statusFocus = true
 		case i == statusMenu:
-			md.statusDesc.Box = &ui.Box{Title: ui.Text("Menu (M)")}
+			md.statusDesc.Box = &ui.Box{Title: ui.Text("Menu (SPACE or M)")}
 			md.statusDesc.SetText("Click to open menu.")
 			md.statusFocus = true
 		case i == statusInventory:
@@ -824,7 +799,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			if act != ui.MenuInvoke {
 				break
 			}
-			_, eff, err := md.normalModeAction(menuActions[md.menu.Active()])
+			_, eff, err := md.normalModeAction(menuActions[md.menu.ActiveInvokable()])
 			if err != nil {
 				// should not happen
 				md.g.Printf("%v", err)
@@ -860,7 +835,9 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff gruid.Effect, err error) {
 	action := md.keysNormal[key]
 	if md.targ.kbTargeting {
-		action = md.keysTarget[key]
+		if a, ok := md.keysTarget[key]; ok {
+			action = a
+		}
 	}
 	if shift && !key.IsRune() {
 		switch action {
@@ -916,6 +893,7 @@ func (md *model) dump(err error) {
 		stts = append(stts, ui.Text(l))
 	}
 	md.pager.SetLines(stts)
+	md.pager.SetBox(&ui.Box{Title: ui.Text("Game Summary").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.pager.SetCursor(gruid.Point{0, 0})
 	//log.Printf("%v", s)
 	//log.Printf("%v", stts)
@@ -924,14 +902,13 @@ func (md *model) dump(err error) {
 func (md *model) applyConfig() {
 	if GameConfig.NormalModeKeys != nil {
 		md.keysNormal = GameConfig.NormalModeKeys
+		// For ensuring menu access and esc functionality.
+		md.keysNormal[gruid.KeySpace] = ActionMenu
+		md.keysNormal[gruid.KeyEscape] = ActionEscape
 	}
 	if GameConfig.TargetModeKeys != nil {
 		md.keysTarget = GameConfig.TargetModeKeys
-	}
-}
-
-func applyThemeConf() {
-	if Only8Colors && !Tiles {
-		ColorFgLOS = ColorGreen
+		// For ensuring back to normal mode.
+		md.keysTarget[gruid.KeyEscape] = ActionExamine
 	}
 }

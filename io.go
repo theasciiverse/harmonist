@@ -110,7 +110,7 @@ func SaveConfig() error {
 	if err != nil {
 		return err
 	}
-	return SaveFile("config.gob", data)
+	return SaveFile("config", data)
 }
 
 func LoadConfig() (bool, error) {
@@ -118,7 +118,7 @@ func LoadConfig() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	saveFile := filepath.Join(dataDir, "config.gob")
+	saveFile := filepath.Join(dataDir, "config")
 	_, err = os.Stat(saveFile)
 	if err != nil {
 		// no save file, new game

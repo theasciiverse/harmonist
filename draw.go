@@ -186,9 +186,6 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		fgColor = ColorFgDark
 		bgColor = ColorBgDark
 	}
-	if g.ExclusionsMap[p] && c.IsPlayerPassable() {
-		fgColor = ColorFgExcluded
-	}
 	if trkn, okTrkn := g.TerrainKnowledge[p]; okTrkn && (!g.Wizard || g.WizardMode == WizardNormal) {
 		c = trkn | c&Explored
 	}

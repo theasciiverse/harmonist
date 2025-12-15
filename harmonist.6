@@ -11,7 +11,7 @@
 .\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd Feb 21, 2021
+.Dd December 15, 2025
 .Dt HARMONIST 6
 .Os
 .Sh NAME
@@ -20,12 +20,16 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl F
-.Op Fl o
+.Op Fl l
 .Op Fl n
 .Op Fl s
-.Op Fl v
+.Op Fl t
 .Op Fl x
+.Op Fl h Ar scale
+.Op Fl w Ar scale
 .Op Fl r Ar file
+.Op Fl noaccel
+.Op Fl version
 .Sh DESCRIPTION
 Harmonist is a stealth coffee-break roguelike game.
 The game has a heavy focus on tactical positioning, light and noise mechanisms,
@@ -51,9 +55,9 @@ will go smoothly...”
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl F
-Launch game in fullscreen (SDL version only).
-.It Fl o Ar file
-Log game actions to output file.
+Launch game in fullscreen (SDL2 version only).
+.It Fl l
+Write game logs to logs file.
 .It Fl n
 No animations.
 .It Fl r Ar file
@@ -80,22 +84,35 @@ and
 for exiting the program.
 .It Fl s
 Use the 16-color simple palette (terminal version only).
-.It Fl v
-Print version number.
+.It Fl t
+Use the “true color” selenized palette (terminal version only).
 .It Fl x
 Use xterm 256-color palette (solarized approximation, terminal version only).
-This is the default on non-windows platforms.
+.It Fl h Ar scale
+Use the given window height scale factor (SDL2 version only). The default is
+.Cm 1.0 .
+Integer values work better.
+.It Fl w Ar scale
+Use the given window width scale factor (SDL2 version only). The default is
+.Cm 1.0 .
+Integer values work better.
+.It Fl noaccel
+Disable graphic acceleration and use software rendering (SDL2 version only).
+.It Fl version
+Prints build information.
 .El
 .Sh FILES
 .Bl -tag -width Ds -compact
-.It Pa "$XDG_DATA_HOME/harmonist/save"
-Last saved game.
-.It Pa "$XDG_DATA_HOME/harmonist/dump"
+.It Pa "$XDG_DATA_HOME/harmonist/dump.txt"
 Last game character and statistics.
-.It Pa "$XDG_DATA_HOME/harmonist/config.gob"
-Configuration file.
+.It Pa "$XDG_DATA_HOME/harmonist/config"
+Configuration (binary file).
+.It Pa "$XDG_DATA_HOME/harmonist/logs.txt"
+Game logs.
 .It Pa "$XDG_DATA_HOME/harmonist/replay"
-Last finished game replay file.
+Last finished game's replay (binary file).
 .It Pa "$XDG_DATA_HOME/harmonist/replay.part"
-Current's game replay file.
+Current game's replay (binary file).
+.It Pa "$XDG_DATA_HOME/harmonist/save"
+Last saved game (binary file).
 .El

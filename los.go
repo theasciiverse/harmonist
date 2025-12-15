@@ -401,22 +401,6 @@ func (g *game) SeePosition(p gruid.Point) {
 	}
 }
 
-func (g *game) SSCExclusionPassable(p gruid.Point) bool {
-	c := g.Dungeon.Cell(p)
-	return terrain(c) != WallCell || !explored(c)
-}
-
-func (g *game) ComputeExclusion(p gruid.Point) {
-	g.mfovSetCenter(p)
-	for _, q := range g.mfov.SSCVisionMap(
-		p, DefaultMonsterLOSRange,
-		g.blocksSSCLOS,
-		false,
-	) {
-		g.ExclusionsMap[q] = true
-	}
-}
-
 func (g *game) Ray(p gruid.Point) []gruid.Point {
 	c := g.Dungeon.Cell(g.Player.P)
 	rs := NormalPlayerRay

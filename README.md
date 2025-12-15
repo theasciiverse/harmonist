@@ -51,7 +51,11 @@ You should now have a working `harmonist` executable in the current directory.
 Use the `--help` option for command-line usage.
 
 This version uses the [tcell](https://github.com/gdamore/tcell) terminal
-library.
+library. If your terminal supports true color, the `-t` option will provide the
+same [selenized color palette](https://github.com/jan-warchol/selenized/) as
+the tiles build. Otherwise, configuring your terminal to use the same colors is
+recommended, but other color schemes may look nice too. As a last resort,
+option `-x` may produce good enough colors as well.
 
 ### SDL2 (Tiles or ASCII)
 
@@ -64,6 +68,10 @@ This will install the [go-sdl2](https://github.com/veandco/go-sdl2/sdl) Go
 bindings for SDL2. You need to install
 [SDL2](https://libsdl.org/download-2.0.php) first.
 
+You should now have a working `harmonist` executable in the current directory.
+Use the `-help` option for command-line usage. In particular, `-noaccel`
+disables graphic acceleration in case it cause issues.
+
 ### Browser (Tiles or ASCII)
 
 You can also build a WebAssembly version with:
@@ -74,14 +82,6 @@ You can then play by serving the `play-wasm` directory containing the wasm file
 via http. The directory should also contain the `wasm_exec.js` file from your
 Go distribution, as explained in [Go Wiki:
 WebAssembly](https://go.dev/wiki/WebAssembly).
-
-Colors
-------
-
-If the default colors do not display nicely on your terminal emulator, you can
-check the available options as documented in the manual page.
-
-Check also the other color options.
 
 Documentation
 -------------

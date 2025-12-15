@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	//"time"
@@ -46,15 +45,11 @@ const (
 	ActionNextMonster
 	ActionNextObject
 	ActionTarget
-	ActionExclude
-	ActionClearExclude
 	ActionEscape
 
 	ActionSettings
 	ActionMenu
 	ActionNextStairs
-	ActionMenuCommandHelp
-	ActionMenuTargetingHelp
 
 	ActionSetKeys
 	ActionInvertLOS
@@ -63,9 +58,6 @@ const (
 
 	ActionWizardInfo
 	ActionWizardToggleMode
-
-	ActionZoomIncrease
-	ActionZoomDecrease
 )
 
 var ConfigurableKeyActions = [...]action{
@@ -93,9 +85,7 @@ var ConfigurableKeyActions = [...]action{
 	ActionNextMonster,
 	ActionNextObject,
 	ActionNextStairs,
-	ActionTarget,
-	ActionExclude,
-	ActionClearExclude}
+	ActionTarget}
 
 func (k action) normalModeAction() bool {
 	switch k {
@@ -113,17 +103,13 @@ func (k action) normalModeAction() bool {
 		ActionDump,
 		ActionHelp,
 		ActionMenu,
-		ActionMenuCommandHelp,
-		ActionMenuTargetingHelp,
 		ActionSave,
 		ActionQuit,
 		ActionSettings,
 		ActionWizard,
 		ActionWizardMenu,
 		ActionWizardInfo,
-		ActionWizardToggleMode,
-		ActionZoomIncrease,
-		ActionZoomDecrease:
+		ActionWizardToggleMode:
 		return true
 	default:
 		return false
@@ -167,15 +153,13 @@ func (k action) String() (text string) {
 	case ActionLogs:
 		text = "View messages"
 	case ActionDump:
-		text = "Write game statistics to file"
+		text = "Dump game statistics"
 	case ActionSave:
 		text = "Save and quit"
 	case ActionQuit:
 		text = "Quit (without saving)"
-	case ActionHelp, ActionMenuCommandHelp:
-		text = "Help (keyboard normal mode)"
-	case ActionMenuTargetingHelp:
-		text = "Help (keyboard examine mode)"
+	case ActionHelp:
+		text = "Help (default keybindings)"
 	case ActionSettings:
 		text = "Configure settings"
 	case ActionWizard:
@@ -196,10 +180,6 @@ func (k action) String() (text string) {
 		text = "Info"
 	case ActionWizardToggleMode:
 		text = "toggle normal/map/all wizard mode"
-	case ActionZoomIncrease:
-		text = "increase zoom"
-	case ActionZoomDecrease:
-		text = "decrease zoom"
 	}
 	return text
 }
@@ -234,10 +214,6 @@ func (k action) targetingModeDescription() (text string) {
 		text = "Target next stairs"
 	case ActionTarget:
 		text = "Go to"
-	case ActionExclude:
-		text = "exclude area from auto-travel"
-	case ActionClearExclude:
-		text = "revert exclude area from auto-travel"
 	case ActionEscape:
 		text = "Quit targeting mode"
 	}
@@ -253,8 +229,6 @@ func (k action) targetingModeAction() bool {
 		ActionNextObject,
 		ActionNextStairs,
 		ActionTarget,
-		ActionExclude,
-		ActionClearExclude,
 		ActionEscape:
 		return true
 	default:
@@ -294,9 +268,6 @@ func (md *model) interact() (string, bool) {
 	return "", false
 }
 
-const zoomMin = -1
-const zoomMax = 4
-
 func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
 	g := md.g
 	switch action {
@@ -319,7 +290,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		} else {
 			q := invalidPos
 			p := md.targ.ex.p
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				p = p.Add(keyToDir(action))
 				if !valid(p) {
 					break
@@ -331,12 +302,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			}
 			again = true
 		}
-	case ActionExclude:
-		again = true
-		md.excludeZone(md.targ.ex.p)
-	case ActionClearExclude:
-		again = true
-		md.clearExcludeZone(md.targ.ex.p)
 	case ActionPreviousMonster:
 		again = true
 		md.nextMonster("-", md.targ.ex)
@@ -374,7 +339,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				break
 			}
 			if valid(stair) {
-				md.KeyboardExamine()
+				md.targ.kbTargeting = true
 				md.Examine(stair)
 			}
 		} else {
@@ -436,12 +401,9 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionExamine:
 		again = true
 		md.KeyboardExamine()
-	case ActionHelp, ActionMenuCommandHelp:
+	case ActionHelp:
 		again = true
 		md.KeysHelp()
-	case ActionMenuTargetingHelp:
-		again = true
-		md.ExamineHelp()
 	case ActionMenu:
 		again = true
 		md.openMenu()
@@ -483,6 +445,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				g.Print("Game statistics written.")
 			}
 		}
+		md.mode = modeNormal
 	case ActionWizardMenu:
 		if g.Wizard {
 			again = true
@@ -559,22 +522,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			g.WizardMode = WizardNormal
 		}
 		md.mode = modeNormal
-	case ActionZoomIncrease:
-		again = true
-		if md.zoomlevel >= zoomMax {
-			break
-		}
-		md.zoomlevel++
-		md.updateZoom()
-		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
-	case ActionZoomDecrease:
-		again = true
-		if md.zoomlevel <= zoomMin {
-			break
-		}
-		md.zoomlevel--
-		md.updateZoom()
-		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 	default:
 		err = actionErrorUnknown
 	}
@@ -725,19 +672,32 @@ func (md *model) openKeyBindings() {
 
 var menuActions = []action{
 	ActionLogs,
-	ActionMenuCommandHelp,
-	ActionMenuTargetingHelp,
+	ActionHelp,
+	ActionDump,
 	ActionSettings,
 	ActionSave,
 	ActionQuit,
 }
 
-var menuKeys = []rune{'m', '?', 't', 'C', 'S', 'Q'}
+var menuKeys = []rune{'m', '?', '#', 'C', 'S', 'Q'}
 
 func (md *model) openMenu() {
+	hstyle := gruid.Style{}.WithFg(ColorCyan)
 	entries := []ui.MenuEntry{}
 	for i, it := range menuActions {
 		r := menuKeys[i]
+		switch r {
+		case 'm':
+			entries = append(entries, ui.MenuEntry{
+				Text:     ui.Text("Gameplay Info").WithStyle(hstyle),
+				Disabled: true,
+			})
+		case 'C':
+			entries = append(entries, ui.MenuEntry{
+				Text:     ui.Text("Other Actions").WithStyle(hstyle),
+				Disabled: true,
+			})
+		}
 		entries = append(entries, ui.MenuEntry{
 			Text: ui.Textf("%c - %s", r, it),
 			Keys: []gruid.Key{gruid.Key(r)},
@@ -869,42 +829,27 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 
 func (md *model) KeysHelp() {
 	entries := []string{
-		"Basic Commands", "",
-		"Move/Jump", "arrows or wasd or hjkl or mouse left",
+		"Basic Game Actions", "",
+		"Move/Jump", "arrows or hjkl or mouse left",
 		"Wait a turn", "“.” or 5 or enter or mouse left on @",
 		"Interact (Equip/Descend/Rest...)", "e",
 		"Evoke/Zap magara", "v or z",
 		"Inventory", "i",
-		"Examine", "x",
-		"Close/Cancel inventory, evocation...", "X or esc or space",
-		"Menu", "M",
-		"Advanced Commands", "",
-		"Save and quit", "S",
+		"Toggle keyboard examine mode", "x",
+		"Open menu", "SPACE or mouse right",
+		"Close menu, inventory...", "SPACE or ESC or mouse left outside",
+		"Advanced Game Actions", "",
 		"View previous messages", "m",
-		"Target nearest stairs", "G",
-		"Run in a direction", "shift+arrows or HJKL",
+		"Examine previous/next monster", "- +",
+		"Examine next stair/object", "> n",
+		"Run (auto-move in direction)", "shift+arrows or HJKL",
+		"Travel (auto-move to destination)", "“.” or ENTER in keyboard examine mode",
 		"Autoexplore (use with caution)", "o",
-		"Write game statistics to file", "#",
+		"Other Common Actions", "",
+		"Save and quit", "S",
 		"Quit (without saving)", "Q",
-		"Configure settings", "C",
 	}
-	if Tiles && runtime.GOOS != "js" {
-		entries = append(entries, "Increase/decrease zoom", "+ and -")
-	}
-	md.updateKeysDescription("Commands", entries)
-}
-
-func (md *model) ExamineHelp() {
-	md.updateKeysDescription("Examine Commands", []string{
-		"Move cursor", "arrows or wasd or hjkl",
-		"Go to/select target", "“.” or enter",
-		"Cycle through monsters", "+",
-		"Cycle through stairs", ">",
-		"Cycle through objects", "o",
-		"Exclude area from auto-travel", "e",
-		"Revert exclude area from auto-travel", "r",
-		"Close/cancel examination mode", "x or esc or space",
-	})
+	md.updateKeysDescription("Keybindings (default values)", entries)
 }
 
 func (md *model) checkShaedra(st stair) (err error) {

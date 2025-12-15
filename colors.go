@@ -35,7 +35,6 @@ var (
 	ColorFgLignifiedMonster,
 	ColorFgParalysedMonster,
 	ColorFgDark,
-	ColorFgExcluded,
 	ColorFgExplosionEnd,
 	ColorFgExplosionStart,
 	ColorFgExplosionWallEnd,
@@ -74,7 +73,6 @@ func init() {
 	ColorFgConfusedMonster = ColorGreen
 	ColorFgLignifiedMonster = ColorYellow
 	ColorFgParalysedMonster = ColorCyan
-	ColorFgExcluded = ColorRed
 	ColorFgExplosionEnd = ColorOrange
 	ColorFgExplosionStart = ColorYellow
 	ColorFgExplosionWallEnd = ColorMagenta
@@ -98,9 +96,9 @@ func init() {
 	ColorFgWanderingMonster = ColorOrange
 }
 
-var Only8Colors bool
-
+// Those constants represent available styling attributes.
 const (
 	AttrInMap gruid.AttrMask = 1 + iota
 	AttrReverse
+	AttrBold
 )

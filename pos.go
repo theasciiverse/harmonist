@@ -9,16 +9,6 @@ func distance(from, to gruid.Point) int {
 	return abs(delta.X) + abs(delta.Y)
 }
 
-func distanceChebyshev(from, to gruid.Point) int {
-	delta := to.Sub(from)
-	deltaX := abs(delta.X)
-	deltaY := abs(delta.Y)
-	if deltaX > deltaY {
-		return deltaX
-	}
-	return deltaY
-}
-
 // ZP is the zero value for gruid.Point.
 var ZP gruid.Point = gruid.Point{}
 

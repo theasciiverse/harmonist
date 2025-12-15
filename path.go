@@ -138,12 +138,6 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 	return distance(from, to)
 }
 
-type playerPath struct {
-	g    *game
-	nbs  paths.Neighbors
-	goal gruid.Point
-}
-
 func (g *game) ppPassable(p gruid.Point) bool {
 	d := g.Dungeon
 	t, okT := g.TerrainKnowledge[p]
@@ -154,25 +148,6 @@ func (g *game) ppPassable(p gruid.Point) bool {
 		okT && t.IsPlayerPassable() ||
 		g.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
 		g.Player.HasStatus(StatusDig) && (d.Cell(p).IsDiggable() && !okT || (okT && t.IsDiggable())))
-}
-
-func (pp *playerPath) Neighbors(p gruid.Point) []gruid.Point {
-	nbs := pp.nbs.Cardinal(p, pp.g.ppPassable)
-	sort.Slice(nbs, func(i, j int) bool {
-		return distanceChebyshev(nbs[i], pp.goal) <= distanceChebyshev(nbs[j], pp.goal)
-	})
-	return nbs
-}
-
-func (pp *playerPath) Cost(from, to gruid.Point) int {
-	if !pp.g.ExclusionsMap[from] && pp.g.ExclusionsMap[to] {
-		return unreachable
-	}
-	return 1
-}
-
-func (pp *playerPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
 }
 
 type jumpPath struct {
@@ -220,9 +195,6 @@ type autoexplorePath struct {
 }
 
 func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
-	if ap.g.ExclusionsMap[p] {
-		return nil
-	}
 	d := ap.g.Dungeon
 	keep := func(q gruid.Point) bool {
 		t, okT := ap.g.TerrainKnowledge[q]
@@ -234,8 +206,7 @@ func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 			return false
 		}
 		c := d.Cell(q)
-		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall()) &&
-			!ap.g.ExclusionsMap[q]
+		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall())
 	}
 	nbs := ap.nbs.Cardinal(p, keep)
 	return nbs
@@ -348,12 +319,7 @@ func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 
 func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	path := []gruid.Point{}
-	if !g.ExclusionsMap[from] && g.ExclusionsMap[to] {
-		pp := &playerPath{g: g, goal: to}
-		path = g.PR.AstarPath(pp, from, to)
-	} else {
-		path = g.PR.JPSPath(path, from, to, g.ppPassable, false)
-	}
+	path = g.PR.JPSPath(path, from, to, g.ppPassable, false)
 	if len(path) == 0 {
 		return nil
 	}

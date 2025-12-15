@@ -1,5 +1,4 @@
 //go:build js || sdl
-// +build js sdl
 
 // font used for letters: source code pro
 

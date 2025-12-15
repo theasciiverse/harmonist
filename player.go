@@ -165,9 +165,6 @@ func (g *game) MoveToTarget() bool {
 	var again bool
 	if len(path) > 1 {
 		again, err = g.PlayerBump(path[1])
-		if g.ExclusionsMap[path[1]] {
-			g.AutoTarget = invalidPos
-		}
 	} else {
 		g.WaitTurn()
 	}

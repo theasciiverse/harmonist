@@ -1,0 +1,170 @@
+# v? ?
+
+* Update to latest gruid version and require Go 1.23 or later.
+* Add "Messages" title to message pager.
+* Make the various kinds of menus always open with first item as the active
+  one. Previously, previous active item was remembered, but it wasn't
+  done in a consistent or useful manner (different menus shared the same
+  memory).
+* Change color of out-of-view monster memory to light grey unless the monster
+  was resting, to make it clearer that it's out of view (inspired from similar
+  change in Shamogu).
+* SDL2 version now uses graphic acceleration by default unless the -noaccel
+  flag is provided. It should work better on modern systems.
+* Various small UI improvements and fixes inspired from Shamogu, including
+  scaling command-line options for SDL2 version, and true color option for
+  terminal version.
+* Fix map drawing refresh issue when interrupting chained animations early.
+* Fix possible cases of unreachable rubble after earthquake.
+* In native builds, rename game statistic's dump file to `dump.txt`
+  so that it's clearer that the file is text, unlike the other ones.
+
+# v0.6.0 2025-03-05
+
+* Fix v0.4 regression when falling in abyss after levitation.
+* Make G enter examine mode and select nearest stairs. Previous behavior with G
+  was buggy and not suited for Harmonist's stealth gameplay.
+* Disallow swapping from a cramped place (like a table).
+
+# v0.5.0 2023-06-16
+
+* Add detailed descriptions in examine mode.
+* Fix a bug in which critical HP warning could interrupt story sequence.
+* Fix some descriptions and typos.
+* Updated minimal version of some dependencies.
+
+# v0.4.1 2021-03-05
+
+This is a bugfix release mainly based on helpful feedback by players.
+
+* Fixed the tiles SDL version on windows.
+* Improvements in the SDL version: window title and icon.
+* Remove an unfriendly error message when save is from a previous version and
+  thus cannot be loaded.
+* Mention zoom functionality for SDL version in key bindings help.
+* Fix a bug in pathfinding on map's left and right edges.
+
+# v0.4 2021-02-22
+
+Highligths:
+
+* A new field of view algorithm (symmetric shadow casting combined with the
+  previous custom one) that should offer a better stealthy experience thanks to
+  expanding shadows and less permissive vision in general.
+* Overhaul of the user interface and a lot of polishing. Among most noticeable
+  changes for players, description for items and places is now displayed just
+  by examining them, without requiring an additional keypress, and using the
+  mouse does not force examination mode for keyboard anymore.
+* Improved Replay (arrow up and down moves 1 minute forward/backward).
+* New SDL driver that replaces the Tk one as graphical native driver.
+* Many minor bug fixes (including some minor gameplay tweaks).
+
+Packaging notes: the game now uses the gruid library. This means that for the
+terminal version it will use the tcell go library, and for graphical
+applications the SDL library.
+
+# v0.3 2019-12-10
+
+Highligths:
+
+* Improved monster AI: now they remember you!
+* Limited number of charges for magaras: you'll have to adapt your playstyle.
+* New core mechanic: jump by propulsing against walls!
+* Improved map generation and special events (mist and earthquake)
+* 2 new terrain features: fake stairs and queen rock that amplifies sound.
+* 4 new monsters, a new cloak, 6 new magaras and 2 old ones reworked, and
+  potions.
+
+More detailed list:
+
+* Improve monster AI: now they behave differently after they have spotted you
+  at least once. Exact behavior depends on the type of monster, but they all
+  have a chance of exploring around the last place they saw you at, in addition
+  to their normal duties.
+* Magaras now have a maximum number of charges, to avoid spamming of a single
+  magara.
+* You can now jump 2 or 3 tiles away by propulsing yourself against walls,
+  which leaves you exhausted for a few turns, as the usual over monster jumps.
+  A significant buff for acrobatics cloak!
+* Greatly improve and diversify map generation, in particular the tunnel
+  generation algorithm used for all kind of maps.
+* New special events: mist level and earthquake.
+* New special map layouts more or less urbanised than the common ones.
+* Many new special rooms.
+* New terrain feature: fake stairs (harmonic illusions).
+* New terrain feature: queen rock, special terrain that amplifies sound, so
+  that even so you're usually very silent, your footsteps on such rocks will be
+  heard. One more use for levitation magara!
+* New unique monster: Crazy Imp that sings and plays guitar, attracting
+  unwanted attention.
+* New monster: haze cat, with very good night vision.
+* New monster: spiders, with panoramic vision and confusing bite.
+* New monster: acid mounds, whose bite corrodes magara charges.
+* Satowalga plants acidic projectiles may now corrode your magara charges,
+  instead of slowing you.
+* New cloak of conversion, that generates MP from lost HP.
+* New magara of energy that replenishes HP and MP, but only has one charge.
+* New magara of transparency that makes you transparent (visible only to
+  adjacent monsters) when standing of a lighted cell.
+* New magara of delayed noise: it will produce harmonic noise in your current
+  position after a certain number of turns.
+* New magara of disguise: it will disguise you with illusions into a guard, so
+  that most monsters that are not already chasing you will be friendly (except
+  some monsters with good flair).
+* New special magara of dispersal that makes monster hitting you blink away.
+* New special magara of delayed oric explosion that generates a big oric
+  explosion that destroys walls in a wide area.
+* Remove player and monster speed: a turn is now always 1, no half turns.
+* Replace magara of slowing with magara of paralysis, a stronger but shorter
+  variation on lignification (may change in the future).
+* Rework magara of swiftness to give several “free” moves, which is more
+  intuitive than previous behavior.
+* New potion items: they have an on-drink effect when you move onto them. You
+  cannot carry them.
+* Some monsters now have resistances/counter against some effects: satowalga
+  plants and tree mushrooms cannot be lignified, blinking frogs partially
+  reflect teleportation effects (they teleport but you too), haze cats have
+  shallow sleep (they wake up very fast after falling asleep).
+* Improved magical stone placement, and chances of getting a particular kind of
+  stone may depend on whether it's inside or outside a building.
+* Display number of remaining turns for monsters statuses too.
+* Various balance adjustments, like 1 more HP and MP, but less bananas,
+  encouraging better strategic play.
+* Fix/improve many animations.
+* Fix bug which could lead to negative number of bananas when jumping into
+  chasm.
+* Fix rare bug when blinking to the same place.
+* Make “x” key work in key settings menu too.
+* Minor UI/messages/stats improvements and other miscellaneous bug fixes.
+
+# v0.2 2019-07-22
+
+* Many new special room shapes.
+* Much improved story timeline in character game statistics.
+* Add effect duration in magara description when possible.
+* Improved fullscreen support with F11 in browser version.
+* New tile for extinguished lights, and improved tile for doors.
+* Handle window closing gracefully in Tk version.
+
+# v0.1 2019-05-11
+
+First release of Harmonist: Dayoriah Clan Infiltration.
+
+Features:
+
+* Short coffee-break runs (around half an hour).
+* 8 levels deep dungeon (+ 3 optional levels), 3 distinct map generators, 19
+  monsters, 6 magical cloaks, 6 magical amulets, and 16 magaras (evokable
+  magical items).
+* Both graphical tiles (web or Tk) and terminal ASCII versions. Animations.
+  Simple controls.  Mouse support.  Mouse-friendly 100x26 layout, and
+  traditional compact 80x24 layout.  Automatic recording for later replay.
+* Light and noise stealth mechanics. Monster footsteps can be heared.
+* A main story narrative, and many short lore texts.
+* No XP, no upstairs, no automatic regeneration, no grinding/farming.
+* Fully destructible terrain (wall destruction, foliage fire).
+* Simplified inventory management (e.g. no more than one cloak or amulet).
+* Many terrain features: dense foliage, doors, tables, barrels, windows, holes
+  in the walls, trees, chasm, …
+* 9 distinct magical stones that may be activated once with some special
+  magical effect.

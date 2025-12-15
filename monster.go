@@ -571,7 +571,7 @@ func (m *monster) Alternate() {
 }
 
 func (m *monster) TeleportAway(g *game) {
-	p := m.P
+	var p gruid.Point
 	i := 0
 	count := 0
 	for {

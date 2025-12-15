@@ -1,13 +1,10 @@
 //go:build !sdl && !js
-// +build !sdl,!js
 
 package main
 
 import (
-	"runtime"
-
 	"codeberg.org/anaseto/gruid"
-	"codeberg.org/anaseto/gruid-tcell"
+	tcell "codeberg.org/anaseto/gruid-tcell"
 	tc "github.com/gdamore/tcell/v2"
 )
 
@@ -17,22 +14,13 @@ func (md *model) ApplyToggleTiles() {
 	// do nothing
 }
 
-func (md *model) updateZoom() {
-	// do nothing
-}
-
 var driver gruid.Driver
-var color8 bool
 
-func initDriver(_, _ bool) {
+func initDriver(_ bool, _, _ float64, _ bool) {
 	st := styler{}
 	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
 	//dr.PreventQuit()
 	driver = dr
-	Terminal = true
-	if runtime.GOOS == "windows" {
-		color8 = true
-	}
 }
 
 // styler implements the tcell.StyleManager interface.
@@ -40,16 +28,21 @@ type styler struct{}
 
 func (sty styler) GetStyle(cst gruid.Style) tc.Style {
 	st := tc.StyleDefault
-	if Xterm256Color {
+	switch ColorMode {
+	case ColorMode256:
 		cst.Fg = map16ColorTo256(cst.Fg, true)
 		cst.Bg = map16ColorTo256(cst.Bg, false)
 		st = st.Background(tc.ColorValid + tc.Color(cst.Bg)).Foreground(tc.ColorValid + tc.Color(cst.Fg))
-	} else {
+	case ColorMode24bit:
+		st = st.Foreground(mapColor2TrueColor(cst.Fg, true))
+		st = st.Background(mapColor2TrueColor(cst.Bg, false))
+	default:
+		// ColorMode16 & ColorMode8
 		if !GameConfig.DarkLOS {
 			cst.Fg = map16ColorToLight(cst.Fg)
 			cst.Bg = map16ColorToLight(cst.Bg)
 		}
-		if color8 {
+		if ColorMode == ColorMode8 {
 			cst.Fg = map16ColorTo8Color(cst.Fg)
 			cst.Bg = map16ColorTo8Color(cst.Bg)
 		}
@@ -69,6 +62,9 @@ func (sty styler) GetStyle(cst gruid.Style) tc.Style {
 	if cst.Attrs&AttrReverse != 0 {
 		st = st.Reverse(true)
 	}
+	if cst.Attrs&AttrBold != 0 {
+		st = st.Bold(true)
+	}
 	return st
 }
 
@@ -86,7 +82,7 @@ func map16ColorToLight(c gruid.Color) gruid.Color {
 	case ColorForegroundSecondary:
 		return ColorBackgroundSecondary
 	case ColorForegroundEmph:
-		return 1 + 0
+		return ColorBackgroundSecondary
 	default:
 		return c
 	}
@@ -161,5 +157,98 @@ func map16ColorTo256(c gruid.Color, fg bool) gruid.Color {
 	}
 }
 
+// mapColor2TrueColor  maps to colors from selenized palette:
+//
+//	https://github.com/jan-warchol/selenized
+func mapColor2TrueColor(c gruid.Color, fg bool) tc.Color {
+	var cl tc.Color
+	switch c {
+	case ColorBackgroundSecondary:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(24, 73, 86)
+		} else {
+			cl = tc.NewRGBColor(236, 227, 204)
+		}
+	case ColorRed:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(250, 87, 80)
+		} else {
+			cl = tc.NewRGBColor(210, 33, 45)
+		}
+	case ColorGreen:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(117, 185, 56)
+		} else {
+			cl = tc.NewRGBColor(72, 145, 0)
+		}
+	case ColorYellow:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(219, 179, 45)
+		} else {
+			cl = tc.NewRGBColor(173, 137, 0)
+		}
+	case ColorBlue:
+		if GameConfig.DarkLOS {
+			// cl = color.RGBA{70, 149, 247, opaque}
+			// We use the bright version for blue:
+			cl = tc.NewRGBColor(88, 163, 255)
+		} else {
+			cl = tc.NewRGBColor(0, 114, 212)
+		}
+	case ColorMagenta:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(242, 117, 190)
+		} else {
+			cl = tc.NewRGBColor(202, 72, 152)
+		}
+	case ColorCyan:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(65, 199, 185)
+		} else {
+			cl = tc.NewRGBColor(0, 156, 143)
+		}
+	case ColorOrange:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(237, 134, 73)
+		} else {
+			cl = tc.NewRGBColor(194, 93, 30)
+		}
+	case ColorViolet:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(175, 136, 235)
+		} else {
+			cl = tc.NewRGBColor(135, 98, 198)
+		}
+	case ColorForegroundEmph:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(202, 216, 217)
+		} else {
+			cl = tc.NewRGBColor(58, 77, 83)
+		}
+	case ColorForegroundSecondary:
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(114, 137, 143)
+		} else {
+			cl = tc.NewRGBColor(144, 153, 149)
+		}
+	default:
+		if fg {
+			if GameConfig.DarkLOS {
+				cl = tc.NewRGBColor(173, 188, 188)
+			} else {
+				cl = tc.NewRGBColor(83, 103, 109)
+			}
+			break
+		}
+		if GameConfig.DarkLOS {
+			cl = tc.NewRGBColor(16, 60, 72)
+		} else {
+			cl = tc.NewRGBColor(251, 243, 219)
+		}
+	}
+	return cl
+}
+
 func clearCache() {
+	// do nothing
 }

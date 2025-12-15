@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.6.1"
+var Version string = "v0.7.0-dev"
 
 // game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -38,7 +38,6 @@ type game struct {
 	GeneratedAmulets      []item
 	GenPlan               [MaxDepth + 1]genFlavour
 	TerrainKnowledge      map[gruid.Point]cell
-	ExclusionsMap         map[gruid.Point]bool
 	Noise                 map[gruid.Point]bool
 	NoiseIllusion         map[gruid.Point]bool
 	LastMonsterKnownAt    map[gruid.Point]int
@@ -308,7 +307,7 @@ func (g *game) InitFirstLevel() {
 		g.Params.Special[3], g.Params.Special[4] = g.Params.Special[4], g.Params.Special[3]
 	}
 	g.Params.Event = map[int]specialEvent{}
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		g.Params.Event[2+5*i+RandInt(5)] = specialEvent(1 + RandInt(spEvMax))
 	}
 	g.Params.Event[2+RandInt(MaxDepth-1)] = NormalLevel
@@ -323,10 +322,10 @@ func (g *game) InitFirstLevel() {
 		}
 	}
 	g.Params.ExtraBanana = map[int]int{}
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		g.Params.ExtraBanana[1+5*i+RandInt(5)]++
 	}
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		g.Params.ExtraBanana[1+5*i+RandInt(5)]--
 	}
 
@@ -387,7 +386,6 @@ func (g *game) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
 	g.Noise = map[gruid.Point]bool{}
 	g.TerrainKnowledge = map[gruid.Point]cell{}
-	g.ExclusionsMap = map[gruid.Point]bool{}
 	g.MagicalBarriers = map[gruid.Point]cell{}
 	g.LastMonsterKnownAt = map[gruid.Point]int{}
 	g.Objects.Magaras = map[gruid.Point]magara{}
@@ -447,14 +445,14 @@ func (g *game) InitLevel() {
 	case UnstableLevel:
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		g.StoryPrint("Special event: magically unstable level")
-		for i := 0; i < 7; i++ {
+		for range 7 {
 			g.PushEvent(&posEvent{Action: ObstructionProgression},
 				g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/2))
 		}
 	case MistLevel:
 		g.PrintStyled("The air seems dense on this level.", logSpecial)
 		g.StoryPrint("Special event: mist level")
-		for i := 0; i < 20; i++ {
+		for range 20 {
 			g.PushEvent(&posEvent{Action: MistProgression},
 				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
 		}
@@ -466,7 +464,7 @@ func (g *game) InitLevel() {
 
 	// initialize LOS
 	if g.Depth == 1 {
-		g.PrintStyled("► Press ? for help on keys or use the mouse and [buttons].", logSpecial)
+		g.PrintStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
 	}
 	if g.Depth == WinDepth {
 		g.PrintStyled("Finally! Shaedra should be imprisoned somewhere around here.", logSpecial)

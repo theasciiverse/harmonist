@@ -1,5 +1,4 @@
 //go:build js
-// +build js
 
 package main
 
@@ -40,11 +39,10 @@ func (md *model) updateZoom() {
 func main() {
 	initDriver()
 	mainMenu := newMainMenu()
-	err := initConfig()
+	err := InitConfig()
 	if err != nil {
 		mainMenu.err = err
 	}
-	applyThemeConf()
 	for {
 		app := gruid.NewApp(gruid.AppConfig{
 			Driver: driver,

@@ -135,7 +135,7 @@ func (dg *dgen) ConnectRoomsShortestPath(i, j int) bool {
 	tp := &tunnelPath{dg: dg}
 	path := dg.PR.AstarPath(tp, e1pos, e2pos)
 	if len(path) == 0 {
-		log.Println(fmt.Sprintf("no path from %v to %v", e1pos, e2pos))
+		log.Printf("no path from %v to %v", e1pos, e2pos)
 		return false
 	}
 	for _, p := range path {
