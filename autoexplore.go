@@ -6,7 +6,7 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-func (g *game) Autoexplore() (again bool, err error) {
+func (g *Game) Autoexplore() (again bool, err error) {
 	if mons := g.MonsterInLOS(); mons.Exists() {
 		return again, errors.New("You cannot auto-explore while there are monsters in view.")
 	}
@@ -27,7 +27,7 @@ func (g *game) Autoexplore() (again bool, err error) {
 	return g.PlayerBump(*n)
 }
 
-func (g *game) AllExplored() bool {
+func (g *Game) AllExplored() bool {
 	np := &noisePath{g: g}
 	it := g.Dungeon.Grid.Iterator()
 	for it.Next() {
@@ -45,7 +45,7 @@ func (g *game) AllExplored() bool {
 	return true
 }
 
-func (g *game) AutoexploreSources() []gruid.Point {
+func (g *Game) AutoexploreSources() []gruid.Point {
 	g.autosources = g.autosources[:0]
 	np := &noisePath{g: g}
 	it := g.Dungeon.Grid.Iterator()
@@ -68,13 +68,13 @@ func (g *game) AutoexploreSources() []gruid.Point {
 
 const unreachable = 9999
 
-func (g *game) BuildAutoexploreMap(sources []gruid.Point) {
+func (g *Game) BuildAutoexploreMap(sources []gruid.Point) {
 	ap := &autoexplorePath{g: g}
 	g.PRauto.BreadthFirstMap(ap, sources, unreachable)
 	g.AutoexploreMapRebuild = false
 }
 
-func (g *game) NextAuto() (next *gruid.Point, finished bool) {
+func (g *Game) NextAuto() (next *gruid.Point, finished bool) {
 	ap := &autoexplorePath{g: g}
 	if g.PRauto.BreadthFirstMapAt(g.Player.P) > unreachable {
 		return nil, false

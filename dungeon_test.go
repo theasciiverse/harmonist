@@ -64,7 +64,7 @@ func (d *dungeon) String() string {
 
 func TestAutomataCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
-		g := &game{}
+		g := &Game{}
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
@@ -77,7 +77,7 @@ func TestAutomataCave(t *testing.T) {
 
 func TestRandomWalkCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
-		g := &game{}
+		g := &Game{}
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
@@ -90,7 +90,7 @@ func TestRandomWalkCave(t *testing.T) {
 
 func TestRandomWalkTreeCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
-		g := &game{}
+		g := &Game{}
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
@@ -103,7 +103,7 @@ func TestRandomWalkTreeCave(t *testing.T) {
 
 func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
-		g := &game{}
+		g := &Game{}
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
@@ -114,7 +114,7 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	}
 }
 
-func (g *game) initrand() {
+func (g *Game) initrand() {
 	if g.rand == nil {
 		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
@@ -122,7 +122,7 @@ func (g *game) initrand() {
 
 func TestNaturalCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
-		g := &game{}
+		g := &Game{}
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()

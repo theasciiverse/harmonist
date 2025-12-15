@@ -483,7 +483,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.openKeyBindings()
 	case ActionInvertLOS:
 		again = true
-		GameConfig.DarkLOS = !GameConfig.DarkLOS
+		GameConfig.DarkColors = !GameConfig.DarkColors
 		err := SaveConfig()
 		if err != nil {
 			g.Print(err.Error())

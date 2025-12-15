@@ -57,7 +57,7 @@ type stats struct {
 	TimesBlocked      int
 }
 
-func (g *game) TurnStats() {
+func (g *Game) TurnStats() {
 	g.Stats.Turns++
 	g.DepthPlayerTurn++
 	if g.Player.HP < g.Player.HPMax() {
@@ -71,7 +71,7 @@ func (g *game) TurnStats() {
 	}
 }
 
-func (g *game) LevelStats() {
+func (g *Game) LevelStats() {
 	free := 0
 	exp := 0
 	it := g.Dungeon.Grid.Iterator()
@@ -163,7 +163,7 @@ const (
 	AchAntimagicMaster     achievement = "Antimagic Master"
 )
 
-func (ach achievement) Get(g *game) {
+func (ach achievement) Get(g *Game) {
 	if g.Stats.Achievements[ach] == 0 {
 		g.Stats.Achievements[ach] = g.Turn
 		g.PrintfStyled("Achievement: %s.", logSpecial, ach)
@@ -180,7 +180,7 @@ func (c cell) ReachNotable() bool {
 	}
 }
 
-func (g *game) Reach(p gruid.Point) {
+func (g *Game) Reach(p gruid.Point) {
 	if g.Stats.AtNotablePos[p] {
 		return
 	}

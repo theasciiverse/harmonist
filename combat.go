@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-func (g *game) DamagePlayer(damage int) {
+func (g *Game) DamagePlayer(damage int) {
 	g.Stats.Damage += damage
 	g.Stats.DDamage[g.Depth] += damage
 	g.Player.HPbonus -= damage
@@ -19,7 +19,7 @@ func (g *game) DamagePlayer(damage int) {
 	}
 }
 
-func (m *monster) InflictDamage(g *game, damage, max int) {
+func (m *monster) InflictDamage(g *Game, damage, max int) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.DamagePlayer(damage)
@@ -45,7 +45,7 @@ func (md *model) criticalHPWarning() {
 	md.critical = true
 }
 
-func (g *game) MakeMonstersAware() {
+func (g *Game) MakeMonstersAware() {
 	for _, m := range g.Monsters {
 		if m.Dead {
 			continue
@@ -59,7 +59,7 @@ func (g *game) MakeMonstersAware() {
 	}
 }
 
-func (g *game) MakeNoise(noise int, at gruid.Point) {
+func (g *Game) MakeNoise(noise int, at gruid.Point) {
 	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{at}, noise)
 	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
@@ -88,7 +88,7 @@ func (g *game) MakeNoise(noise int, at gruid.Point) {
 	}
 }
 
-func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
+func (m *monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 	dij := &monPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
@@ -113,7 +113,7 @@ func (m *monster) LeaveRoomForPlayer(g *game) gruid.Point {
 	return free
 }
 
-func (g *game) FindJumpTarget(m *monster) gruid.Point {
+func (g *Game) FindJumpTarget(m *monster) gruid.Point {
 	dij := &jumpPath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
@@ -138,7 +138,7 @@ func (g *game) FindJumpTarget(m *monster) gruid.Point {
 	return free
 }
 
-func (g *game) Jump(mons *monster) (bool, error) {
+func (g *Game) Jump(mons *monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		op := mons.P
 		if terrain(g.Dungeon.Cell(op)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
@@ -196,7 +196,7 @@ func (g *game) Jump(mons *monster) (bool, error) {
 	return false, nil
 }
 
-func (g *game) WallJump(p gruid.Point) error {
+func (g *Game) WallJump(p gruid.Point) error {
 	c := g.Dungeon.Cell(g.Player.P)
 	if c.IsEnclosing() {
 		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.P))
@@ -250,7 +250,7 @@ func (g *game) WallJump(p gruid.Point) error {
 	return nil
 }
 
-func (g *game) HitNoise(clang bool) int {
+func (g *Game) HitNoise(clang bool) int {
 	noise := BaseHitNoise
 	if clang {
 		noise += 5
@@ -262,7 +262,7 @@ const (
 	DmgNormal = 1
 )
 
-func (g *game) HandleKill(mons *monster) {
+func (g *Game) HandleKill(mons *monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
 	if g.Player.Sees(mons.P) {
@@ -289,6 +289,6 @@ const (
 	OricExplosionNoise     = 20
 )
 
-func (g *game) ClangMsg() (sclang string) {
+func (g *Game) ClangMsg() (sclang string) {
 	return " Smash!"
 }

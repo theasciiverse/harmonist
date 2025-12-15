@@ -5,18 +5,18 @@ import (
 )
 
 type event interface {
-	Handle(*game)
+	Handle(*Game)
 }
 
-func (g *game) PushEvent(ev event, r int) {
+func (g *Game) PushEvent(ev event, r int) {
 	g.Events.Push(ev, r)
 }
 
-func (g *game) PushEventD(ev event, delay int) {
+func (g *Game) PushEventD(ev event, delay int) {
 	g.Events.Push(ev, g.Turn+delay)
 }
 
-func (g *game) PushEventFirst(ev event, r int) {
+func (g *Game) PushEventFirst(ev event, r int) {
 	g.Events.PushFirst(ev, r)
 }
 
@@ -35,7 +35,7 @@ type playerEvent struct {
 	Action playerEventAction
 }
 
-func (ev *playerEvent) Handle(g *game) {
+func (ev *playerEvent) Handle(g *Game) {
 	switch ev.Action {
 	case StorySequence:
 		g.ComputeLOS()
@@ -65,7 +65,7 @@ var StatusEndMsgs = [...]string{
 	StatusDispersal:     "You are no longer unstable.",
 }
 
-func (sev *statusEvent) Handle(g *game) {
+func (sev *statusEvent) Handle(g *Game) {
 	st := sev.Status
 	g.Player.Statuses[st] -= DurationStatusStep
 	if g.Player.Statuses[st] <= 0 {
@@ -92,7 +92,7 @@ type monsterTurnEvent struct {
 	Index int
 }
 
-func (mev *monsterTurnEvent) Handle(g *game) {
+func (mev *monsterTurnEvent) Handle(g *Game) {
 	mons := g.Monsters[mev.Index]
 	if mons.Exists() {
 		mons.HandleTurn(g)
@@ -104,7 +104,7 @@ type monsterStatusEvent struct {
 	Status monsterStatus
 }
 
-func (mev *monsterStatusEvent) Handle(g *game) {
+func (mev *monsterStatusEvent) Handle(g *Game) {
 	mons := g.Monsters[mev.Index]
 	st := mev.Status
 	mons.Statuses[st] -= DurationStatusStep
@@ -142,7 +142,7 @@ type posEvent struct {
 	Timer  int
 }
 
-func (cev *posEvent) Handle(g *game) {
+func (cev *posEvent) Handle(g *Game) {
 	switch cev.Action {
 	case CloudEnd:
 		delete(g.Clouds, cev.P)
@@ -271,7 +271,7 @@ func (cev *posEvent) Handle(g *game) {
 	}
 }
 
-func (g *game) NightFog(at gruid.Point, radius int) {
+func (g *Game) NightFog(at gruid.Point, radius int) {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
@@ -287,7 +287,7 @@ func (g *game) NightFog(at gruid.Point, radius int) {
 	g.ComputeLOS()
 }
 
-func (g *game) MakeCreatureSleep(p gruid.Point) {
+func (g *Game) MakeCreatureSleep(p gruid.Point) {
 	if p == g.Player.P {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 			g.Print("The clouds of night confuse you.")
@@ -308,7 +308,7 @@ func (g *game) MakeCreatureSleep(p gruid.Point) {
 	mons.ExhaustTime(g, 4+RandInt(2))
 }
 
-func (g *game) Burn(p gruid.Point) {
+func (g *Game) Burn(p gruid.Point) {
 	if _, ok := g.Clouds[p]; ok {
 		return
 	}

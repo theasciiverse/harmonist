@@ -23,7 +23,7 @@ func (ms monsSlice) Less(i, j int) bool {
 	return ms[i].Dangerousness() > ms[j].Dangerousness()
 }
 
-func (g *game) DumpStatuses() string {
+func (g *Game) DumpStatuses() string {
 	sts := sort.StringSlice{}
 	for st, c := range g.Player.Statuses {
 		if c > 0 {
@@ -37,7 +37,7 @@ func (g *game) DumpStatuses() string {
 	return "Statuses:\n" + strings.Join(sts, "\n")
 }
 
-func (g *game) SortedKilledMonsters() monsSlice {
+func (g *Game) SortedKilledMonsters() monsSlice {
 	var ms monsSlice
 	for mk, p := range g.Stats.KilledMons {
 		if p == 0 {
@@ -49,7 +49,7 @@ func (g *game) SortedKilledMonsters() monsSlice {
 	return ms
 }
 
-func (g *game) Dump() string {
+func (g *Game) Dump() string {
 	buf := &strings.Builder{}
 	fmt.Fprintf(buf, " -- Harmonist version %s character file --\n\n", Version)
 	if g.Wizard {
@@ -129,7 +129,7 @@ func (g *game) Dump() string {
 	return buf.String()
 }
 
-func (g *game) DetailedStatistics(w io.Writer) {
+func (g *Game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Statistics:\n")
 	fmt.Fprintf(w, "You evoked magaras %d times (%d oric magaras, %d harmonic, %d others).\n",
@@ -282,11 +282,11 @@ func (g *game) DetailedStatistics(w io.Writer) {
 	}
 }
 
-func (g *game) DumpStory() string {
+func (g *Game) DumpStory() string {
 	return strings.Join(g.Stats.Story, "\n")
 }
 
-func (g *game) DumpDungeon() string {
+func (g *Game) DumpDungeon() string {
 	buf := bytes.Buffer{}
 	it := g.Dungeon.Grid.Iterator()
 	i := 0
@@ -337,7 +337,7 @@ func (g *game) DumpDungeon() string {
 	return buf.String()
 }
 
-func (g *game) DumpedKilledMonsters() string {
+func (g *Game) DumpedKilledMonsters() string {
 	buf := &bytes.Buffer{}
 	fmt.Fprint(buf, "Killed Monsters:\n")
 	ms := g.SortedKilledMonsters()
@@ -347,7 +347,7 @@ func (g *game) DumpedKilledMonsters() string {
 	return buf.String()
 }
 
-func (g *game) SimplifedDump(err error) string {
+func (g *Game) SimplifedDump(err error) string {
 	buf := &strings.Builder{}
 	fmt.Fprintf(buf, " ♣ Harmonist version %s game summary ♣\n\n", Version)
 	if g.Wizard {

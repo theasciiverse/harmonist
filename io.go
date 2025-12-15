@@ -58,7 +58,7 @@ func SaveFile(filename string, data []byte) error {
 	return err
 }
 
-func (g *game) Save() error {
+func (g *Game) Save() error {
 	data, err := g.GameSave()
 	if err != nil {
 		g.Print(err.Error())
@@ -79,7 +79,7 @@ func RemoveReplay() {
 	RemoveDataFile("replay.part")
 }
 
-func (g *game) Load() (bool, error) {
+func (g *Game) Load() (bool, error) {
 	dataDir, err := DataDir()
 	if err != nil {
 		return false, err
@@ -155,7 +155,7 @@ func RemoveDataFile(file string) error {
 	return nil
 }
 
-func (g *game) WriteDump() error {
+func (g *Game) WriteDump() error {
 	dataDir, err := DataDir()
 	if err != nil {
 		return err

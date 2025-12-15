@@ -12,7 +12,7 @@ func init() {
 func TestInitLevel(t *testing.T) {
 	for i := 0; i < 50; i++ {
 		md := &model{}
-		g := &game{md: md}
+		g := &Game{md: md}
 		md.g = g
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
@@ -80,7 +80,7 @@ func TestInitLevel(t *testing.T) {
 }
 
 func BenchmarkLOS(b *testing.B) {
-	g := &game{}
+	g := &Game{}
 	g.InitLevel()
 	for i := 0; i < b.N; i++ {
 		g.ComputeLOS()
@@ -88,7 +88,7 @@ func BenchmarkLOS(b *testing.B) {
 }
 
 func BenchmarkLights(b *testing.B) {
-	g := &game{}
+	g := &Game{}
 	g.InitLevel()
 	for i := 0; i < b.N; i++ {
 		g.ComputeLights()
@@ -97,7 +97,7 @@ func BenchmarkLights(b *testing.B) {
 
 func BenchmarkInitLevel(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		g := &game{}
+		g := &Game{}
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
 			g.Depth++
@@ -107,7 +107,7 @@ func BenchmarkInitLevel(b *testing.B) {
 
 func BenchmarkEndTurn(b *testing.B) {
 	md := &model{}
-	g := &game{md: md}
+	g := &Game{md: md}
 	md.g = g
 	g.InitLevel()
 	for i := 0; i < b.N; i++ {
@@ -133,7 +133,7 @@ func randomPlayerNeighbor(p gruid.Point) gruid.Point {
 
 func BenchmarkEndTurnPlayer(b *testing.B) {
 	md := &model{}
-	g := &game{md: md}
+	g := &Game{md: md}
 	md.g = g
 	g.InitLevel()
 	for i := 0; i < b.N; i++ {

@@ -527,7 +527,7 @@ func (m *monster) Init() {
 	}
 }
 
-func (m *monster) CanPass(g *game, p gruid.Point) bool {
+func (m *monster) CanPass(g *Game, p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
@@ -570,7 +570,7 @@ func (m *monster) Alternate() {
 	}
 }
 
-func (m *monster) TeleportAway(g *game) {
+func (m *monster) TeleportAway(g *Game) {
 	var p gruid.Point
 	i := 0
 	count := 0
@@ -603,7 +603,7 @@ func (m *monster) TeleportAway(g *game) {
 	}
 }
 
-func (m *monster) MoveTo(g *game, p gruid.Point) {
+func (m *monster) MoveTo(g *Game, p gruid.Point) {
 	if g.Player.Sees(p) {
 		m.UpdateKnowledge(g, p)
 	} else if g.Player.Sees(m.P) {
@@ -644,7 +644,7 @@ func (m *monster) MoveTo(g *game, p gruid.Point) {
 	}
 }
 
-func (m *monster) PlaceAtStart(g *game, p gruid.Point) {
+func (m *monster) PlaceAtStart(g *Game, p gruid.Point) {
 	i := idx(p)
 	if g.MonstersPosCache[i] > 0 {
 		log.Printf("used monster starting position: %v", p)
@@ -661,7 +661,7 @@ func (m *monster) PlaceAtStart(g *game, p gruid.Point) {
 	}
 }
 
-func (m *monster) PlaceAt(g *game, p gruid.Point) {
+func (m *monster) PlaceAt(g *Game, p gruid.Point) {
 	if !valid(m.P) {
 		log.Printf("monster place at: bad position %v", m.P)
 		// should not happen
@@ -696,7 +696,7 @@ func (m *monster) PlaceAt(g *game, p gruid.Point) {
 	m.Waiting = 0
 }
 
-func (g *game) MonsterAt(p gruid.Point) *monster {
+func (g *Game) MonsterAt(p gruid.Point) *monster {
 	pi := idx(p)
 	if pi < 0 || pi >= len(g.MonstersPosCache) {
 		log.Printf("monster at: bad index %v for pos %v", pi, p)
@@ -714,11 +714,11 @@ func (g *game) MonsterAt(p gruid.Point) *monster {
 	return m
 }
 
-func (m *monster) EndTurn(g *game) {
+func (m *monster) EndTurn(g *Game) {
 	g.PushEventD(&monsterTurnEvent{Index: m.Index}, 1)
 }
 
-func (m *monster) AttackAction(g *game) bool {
+func (m *monster) AttackAction(g *Game) bool {
 	m.Dir = dirnorm(m.P, g.Player.P)
 	switch m.Kind {
 	case MonsExplosiveNadre:
@@ -735,7 +735,7 @@ func (m *monster) AttackAction(g *game) bool {
 	return true
 }
 
-func (m *monster) Explode(g *game) {
+func (m *monster) Explode(g *Game) {
 	m.Dead = true
 	neighbors := g.cardinalNeighbors(m.P)
 	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
@@ -774,7 +774,7 @@ func (m *monster) Explode(g *game) {
 	}
 }
 
-func (m *monster) NaturalAwake(g *game) {
+func (m *monster) NaturalAwake(g *Game) {
 	m.Target = m.NextTarget(g)
 	switch g.Bands[m.Band].Beh {
 	case BehGuard:
@@ -785,7 +785,7 @@ func (m *monster) NaturalAwake(g *game) {
 	m.GatherBand(g)
 }
 
-func (m *monster) RandomFreeNeighbor(g *game) gruid.Point {
+func (m *monster) RandomFreeNeighbor(g *Game) gruid.Point {
 	p := m.P
 	neighbors := [4]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1})}
 	fnb := []gruid.Point{}
@@ -827,7 +827,7 @@ const (
 
 var SearchAroundCache []gruid.Point
 
-func (m *monster) SearchAround(g *game, p gruid.Point, radius int) gruid.Point {
+func (m *monster) SearchAround(g *Game, p gruid.Point, radius int) gruid.Point {
 	dij := &monPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{p}, radius)
 	SearchAroundCache = SearchAroundCache[:0]
@@ -841,7 +841,7 @@ func (m *monster) SearchAround(g *game, p gruid.Point, radius int) gruid.Point {
 	return invalidPos
 }
 
-func (m *monster) NextTarget(g *game) (p gruid.Point) {
+func (m *monster) NextTarget(g *Game) (p gruid.Point) {
 	band := g.Bands[m.Band]
 	p = m.P
 	switch band.Beh {
@@ -916,7 +916,7 @@ func (m *monster) NextTarget(g *game) (p gruid.Point) {
 	return p
 }
 
-func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
+func (m *monster) HandleMonsSpecifics(g *Game) (done bool) {
 	switch m.Kind {
 	case MonsSatowalgaPlant:
 		switch m.State {
@@ -971,7 +971,7 @@ func (m *monster) HandleMonsSpecifics(g *game) (done bool) {
 const DogSmellDist = 5
 const DisguiseSmellDist = 3
 
-func (m *monster) HandleWatching(g *game) {
+func (m *monster) HandleWatching(g *Game) {
 	turns := 4
 	if m.Kind == MonsHazeCat {
 		turns = 3
@@ -1004,7 +1004,7 @@ func (m *monster) HandleWatching(g *game) {
 	}
 }
 
-func (m *monster) ComputePath(g *game) {
+func (m *monster) ComputePath(g *Game) {
 
 	if !(len(m.Path) > 0 && m.Path[len(m.Path)-1] == m.Target && m.Path[0] == m.P) {
 		m.Path = m.APath(g, m.P, m.Target)
@@ -1021,7 +1021,7 @@ func (m *monster) ComputePath(g *game) {
 	}
 }
 
-func (m *monster) Peaceful(g *game) bool {
+func (m *monster) Peaceful(g *Game) bool {
 	if m.Kind.Peaceful() {
 		return true
 	}
@@ -1037,7 +1037,7 @@ func (m *monster) Peaceful(g *game) bool {
 	return false
 }
 
-func (m *monster) HandleEndPath(g *game) {
+func (m *monster) HandleEndPath(g *Game) {
 	if len(m.Path) == 0 && m.Search != invalidPos && distance(m.Search, m.Target) < 10 && m.P != m.Target {
 		// the cell where the player was last noticed may not be recheable for the monster
 		m.Search = invalidPos
@@ -1072,7 +1072,7 @@ func (m *monster) MakeWander() {
 	}
 }
 
-func (m *monster) HandleMove(g *game) bool {
+func (m *monster) HandleMove(g *Game) bool {
 	target := m.Path[1]
 	mons := g.MonsterAt(target)
 	monstarget := invalidPos
@@ -1152,14 +1152,14 @@ func (m *monster) HandleMove(g *game) bool {
 	return true
 }
 
-func (m *monster) HandleTurn(g *game) {
+func (m *monster) HandleTurn(g *Game) {
 	m.handleTurn(g)
 	if m.Exists() {
 		m.EndTurn(g)
 	}
 }
 
-func (m *monster) handleTurn(g *game) {
+func (m *monster) handleTurn(g *Game) {
 	if m.Status(MonsParalysed) {
 		return
 	}
@@ -1213,7 +1213,7 @@ func (m *monster) handleTurn(g *game) {
 	m.HandleMove(g)
 }
 
-func (m *monster) InvertFoliage(g *game) {
+func (m *monster) InvertFoliage(g *Game) {
 	if m.Kind != MonsWorm {
 		return
 	}
@@ -1235,15 +1235,15 @@ func (m *monster) InvertFoliage(g *game) {
 	}
 }
 
-func (m *monster) Exhaust(g *game) {
+func (m *monster) Exhaust(g *Game) {
 	m.ExhaustTime(g, DurationExhaustionMonster+RandInt(DurationExhaustionMonster/2))
 }
 
-func (m *monster) ExhaustTime(g *game, t int) {
+func (m *monster) ExhaustTime(g *Game, t int) {
 	m.PutStatus(g, MonsExhausted, t)
 }
 
-func (m *monster) HitPlayer(g *game) {
+func (m *monster) HitPlayer(g *Game) {
 	if g.Player.HP <= 0 || distance(g.Player.P, m.P) > 1 {
 		return
 	}
@@ -1301,7 +1301,7 @@ func (m *monster) HitPlayer(g *game) {
 	}
 }
 
-func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
+func (m *monster) PutStatus(g *Game, st monsterStatus, duration int) bool {
 	if m.Status(st) {
 		return false
 	}
@@ -1313,7 +1313,7 @@ func (m *monster) PutStatus(g *game, st monsterStatus, duration int) bool {
 	return true
 }
 
-func (m *monster) EnterConfusion(g *game) bool {
+func (m *monster) EnterConfusion(g *Game) bool {
 	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.P) {
@@ -1324,7 +1324,7 @@ func (m *monster) EnterConfusion(g *game) bool {
 	return false
 }
 
-func (m *monster) EnterLignification(g *game) {
+func (m *monster) EnterLignification(g *Game) {
 	if m.PutStatus(g, MonsLignified, DurationLignificationMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.P) {
@@ -1333,7 +1333,7 @@ func (m *monster) EnterLignification(g *game) {
 	}
 }
 
-func (m *monster) HitSideEffects(g *game) {
+func (m *monster) HitSideEffects(g *Game) {
 	switch m.Kind {
 	case MonsEarthDragon:
 		if m.Status(MonsConfused) {
@@ -1386,7 +1386,7 @@ func (m *monster) HitSideEffects(g *game) {
 	}
 }
 
-func (m *monster) PushPlayer(g *game, dist int) {
+func (m *monster) PushPlayer(g *Game, dist int) {
 	if g.Player.HasStatus(StatusLignification) {
 		return
 	}
@@ -1434,7 +1434,7 @@ func (m *monster) PushPlayer(g *game, dist int) {
 	}
 }
 
-func (m *monster) RangedAttack(g *game) bool {
+func (m *monster) RangedAttack(g *Game) bool {
 	if !m.Kind.Ranged() {
 		return false
 	}
@@ -1473,7 +1473,7 @@ func (m *monster) RangedAttack(g *game) bool {
 	return false
 }
 
-func (m *monster) RangeBlocked(g *game) bool {
+func (m *monster) RangeBlocked(g *Game) bool {
 	ray := g.Ray(m.P)
 	if len(ray) == 1 {
 		return false
@@ -1495,7 +1495,7 @@ func (m *monster) RangeBlocked(g *game) bool {
 	return false
 }
 
-func (g *game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
+func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 	candidates := g.cardinalNeighbors(p)
 	bestpos := p.Add(dir)
 	if distance(bestpos, p) > 1 {
@@ -1531,7 +1531,7 @@ func (g *game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 	return candidates
 }
 
-func (m *monster) CreateBarrier(g *game) bool {
+func (m *monster) CreateBarrier(g *Game) bool {
 	dir := dirnorm(m.P, g.Player.P)
 	candidates := g.BarrierCandidates(g.Player.P, dir)
 	done := false
@@ -1555,7 +1555,7 @@ func (m *monster) CreateBarrier(g *game) bool {
 	return true
 }
 
-func (m *monster) Illuminate(g *game) bool {
+func (m *monster) Illuminate(g *Game) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
 		g.PrintStyled("The harmonic celmist casts magical harmonies on you.", logNotable)
 		g.StoryPrintf("Illuminated by %s", m.Kind)
@@ -1566,7 +1566,7 @@ func (m *monster) Illuminate(g *game) bool {
 	return false
 }
 
-func (m *monster) VampireSpit(g *game) bool {
+func (m *monster) VampireSpit(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusConfusion) {
 		return false
@@ -1578,7 +1578,7 @@ func (m *monster) VampireSpit(g *game) bool {
 	return true
 }
 
-func (m *monster) ThrowSpores(g *game) bool {
+func (m *monster) ThrowSpores(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusLignification) {
 		return false
@@ -1590,7 +1590,7 @@ func (m *monster) ThrowSpores(g *game) bool {
 	return true
 }
 
-func (m *monster) ThrowJavelin(g *game) bool {
+func (m *monster) ThrowJavelin(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1611,7 +1611,7 @@ func (m *monster) ThrowJavelin(g *game) bool {
 	return true
 }
 
-func (m *monster) Corrode(g *game) {
+func (m *monster) Corrode(g *Game) {
 	count := 0
 	for i := range g.Player.Magaras {
 		n := RandInt(2)
@@ -1628,7 +1628,7 @@ func (m *monster) Corrode(g *game) {
 	}
 }
 
-func (m *monster) ThrowAcid(g *game) bool {
+func (m *monster) ThrowAcid(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1644,7 +1644,7 @@ func (m *monster) ThrowAcid(g *game) bool {
 	return true
 }
 
-func (m *monster) NixeAttraction(g *game) bool {
+func (m *monster) NixeAttraction(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
 		return false
@@ -1662,7 +1662,7 @@ func (m *monster) NixeAttraction(g *game) bool {
 	return true
 }
 
-func (m *monster) SmitingAttack(g *game) bool {
+func (m *monster) SmitingAttack(g *Game) bool {
 	if !m.Kind.Smiting() {
 		return false
 	}
@@ -1694,7 +1694,7 @@ func (m *monster) SmitingAttack(g *game) bool {
 	return false
 }
 
-func (m *monster) AbsorbMana(g *game) bool {
+func (m *monster) AbsorbMana(g *Game) bool {
 	if g.Player.MP == 0 {
 		return false
 	}
@@ -1705,7 +1705,7 @@ func (m *monster) AbsorbMana(g *game) bool {
 	return true
 }
 
-func (m *monster) Blink(g *game) {
+func (m *monster) Blink(g *Game) {
 	npos := g.BlinkPos(true)
 	if !valid(npos) || npos == g.Player.P || npos == m.P {
 		return
@@ -1716,7 +1716,7 @@ func (m *monster) Blink(g *game) {
 	m.MoveTo(g, npos)
 }
 
-func (m *monster) MakeHunt(g *game) (noticed bool) {
+func (m *monster) MakeHunt(g *Game) (noticed bool) {
 	if m.State != Hunting {
 		m.State = Hunting
 		g.Stats.NSpotted++
@@ -1736,7 +1736,7 @@ func (m *monster) MakeHunt(g *game) (noticed bool) {
 	return noticed
 }
 
-func (m *monster) MakeAware(g *game) {
+func (m *monster) MakeAware(g *Game) {
 	if m.Peaceful(g) || m.Status(MonsSatiated) {
 		if m.State == Resting && distance(m.P, g.Player.P) == 1 {
 			g.Printf("%s awakens.", m.Kind.Definite(true))
@@ -1760,7 +1760,7 @@ func (m *monster) MakeAware(g *game) {
 	}
 }
 
-func (m *monster) GatherBand(g *game) {
+func (m *monster) GatherBand(g *Game) {
 	if !MonsBands[g.Bands[m.Band].Kind].Band {
 		return
 	}
@@ -1783,7 +1783,7 @@ func (m *monster) GatherBand(g *game) {
 	}
 }
 
-func (g *game) MonsterInLOS() *monster {
+func (g *Game) MonsterInLOS() *monster {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
 			return mons

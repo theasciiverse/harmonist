@@ -16,7 +16,7 @@ var Version string = "v0.7.0-dev"
 // some game functions need the model anyway (like animations), but this allows
 // to differentiate a bit things that are mainly game-logic from the stuff that
 // is more about ui.
-type game struct {
+type Game struct {
 	Dungeon               *dungeon
 	Player                *player
 	Monsters              []*monster
@@ -114,7 +114,7 @@ const (
 	WizardSeeAll
 )
 
-func (g *game) FreePassableCell() gruid.Point {
+func (g *Game) FreePassableCell() gruid.Point {
 	d := g.Dungeon
 	count := 0
 	for {
@@ -149,7 +149,7 @@ const (
 	DungeonNCells = DungeonWidth * DungeonHeight
 )
 
-func (g *game) GenDungeon() {
+func (g *Game) GenDungeon() {
 	ml := AutomataCave
 	switch g.Depth {
 	case 2, 6, 7:
@@ -181,7 +181,7 @@ func (g *game) GenDungeon() {
 	g.GenRoomTunnels(ml)
 }
 
-func (g *game) InitPlayer() {
+func (g *Game) InitPlayer() {
 	g.Player = &player{
 		HP:      DefaultHealth,
 		MP:      DefaultMPmax,
@@ -227,7 +227,7 @@ func PutRandomLevels(m map[int]bool, n int) {
 	}
 }
 
-func (g *game) InitFirstLevel() {
+func (g *Game) InitFirstLevel() {
 	g.Version = Version
 	g.Depth++ // start at 1
 	g.InitPlayer()
@@ -382,7 +382,7 @@ func (g *game) InitFirstLevel() {
 	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 }
 
-func (g *game) InitLevelStructures() {
+func (g *Game) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
 	g.Noise = map[gruid.Point]bool{}
 	g.TerrainKnowledge = map[gruid.Point]cell{}
@@ -406,7 +406,7 @@ func (g *game) InitLevelStructures() {
 
 var Testing = false
 
-func (g *game) InitLevel() {
+func (g *Game) InitLevel() {
 	if g.rand == nil {
 		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
@@ -479,7 +479,7 @@ func (g *game) InitLevel() {
 	}
 }
 
-func (g *game) CleanEvents() {
+func (g *Game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
 		switch ev.(type) {
 		case *monsterTurnEvent, *posEvent, *monsterStatusEvent, *playerEvent:
@@ -506,7 +506,7 @@ func (g *game) CleanEvents() {
 	g.Turn++
 }
 
-func (g *game) StairsSlice() []gruid.Point {
+func (g *Game) StairsSlice() []gruid.Point {
 	stairs := []gruid.Point{}
 	it := g.Dungeon.Grid.Iterator()
 	for it.Next() {
@@ -527,7 +527,7 @@ const (
 	DescendFall
 )
 
-func (g *game) Descend(style descendstyle) bool {
+func (g *Game) Descend(style descendstyle) bool {
 	g.LevelStats()
 	if g.Stats.DUSpotted[g.Depth] < 3 {
 		AchStealthNovice.Get(g)
@@ -599,13 +599,13 @@ func (g *game) Descend(style descendstyle) bool {
 	return false
 }
 
-func (g *game) EnterWizardMode() {
+func (g *Game) EnterWizardMode() {
 	g.Wizard = true
 	g.PrintStyled("Wizard mode activated: winner status disabled.", logSpecial)
 	g.StoryPrint("Entered wizard mode.")
 }
 
-func (g *game) ApplyRest() {
+func (g *Game) ApplyRest() {
 	g.Player.HP = g.Player.HPMax()
 	g.Player.HPbonus = 0
 	g.Player.MP = g.Player.MPMax()
@@ -618,7 +618,7 @@ func (g *game) ApplyRest() {
 	}
 }
 
-func (g *game) AutoPlayer() bool {
+func (g *Game) AutoPlayer() bool {
 	switch {
 	case g.Resting:
 		const enoughRestTurns = 25
@@ -678,7 +678,7 @@ func (g *game) AutoPlayer() bool {
 	return false
 }
 
-func (g *game) Died() bool {
+func (g *Game) Died() bool {
 	if g.Player.HP <= 0 {
 		if g.Wizard {
 			g.Player.HP = g.Player.HPMax()
@@ -694,7 +694,7 @@ func (g *game) Died() bool {
 
 type msgAuto int
 
-func (g *game) EndTurn() {
+func (g *Game) EndTurn() {
 	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
 	for {
 		if g.Died() {
@@ -721,7 +721,7 @@ func (g *game) EndTurn() {
 	}
 }
 
-func (g *game) checks() {
+func (g *Game) checks() {
 	if !Testing {
 		return
 	}
@@ -737,7 +737,7 @@ func (g *game) checks() {
 	}
 }
 
-func (g *game) randInt(n int) int {
+func (g *Game) randInt(n int) int {
 	if n <= 0 {
 		return 0
 	}

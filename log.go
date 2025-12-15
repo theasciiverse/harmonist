@@ -61,27 +61,27 @@ func (e logEntry) dumpString() string {
 	return s
 }
 
-func (g *game) Print(s string) {
+func (g *Game) Print(s string) {
 	e := logEntry{Text: s, Index: g.LogIndex}
 	g.PrintEntry(e)
 }
 
-func (g *game) PrintStyled(s string, style logStyle) {
+func (g *Game) PrintStyled(s string, style logStyle) {
 	e := logEntry{Text: s, Index: g.LogIndex, Style: style}
 	g.PrintEntry(e)
 }
 
-func (g *game) Printf(format string, a ...interface{}) {
+func (g *Game) Printf(format string, a ...interface{}) {
 	e := logEntry{Text: fmt.Sprintf(format, a...), Index: g.LogIndex}
 	g.PrintEntry(e)
 }
 
-func (g *game) PrintfStyled(format string, style logStyle, a ...interface{}) {
+func (g *Game) PrintfStyled(format string, style logStyle, a ...interface{}) {
 	e := logEntry{Text: fmt.Sprintf(format, a...), Index: g.LogIndex, Style: style}
 	g.PrintEntry(e)
 }
 
-func (g *game) PrintEntry(e logEntry) {
+func (g *Game) PrintEntry(e logEntry) {
 	if e.Index == g.LogNextTick {
 		e.Tick = true
 	}
@@ -105,15 +105,15 @@ func (g *game) PrintEntry(e logEntry) {
 	}
 }
 
-func (g *game) StoryPrint(s string) {
+func (g *Game) StoryPrint(s string) {
 	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Depth, g.Turn, s))
 }
 
-func (g *game) StoryPrintf(format string, a ...interface{}) {
+func (g *Game) StoryPrintf(format string, a ...interface{}) {
 	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Depth, g.Turn, fmt.Sprintf(format, a...)))
 }
 
-func (g *game) CrackSound() (text string) {
+func (g *Game) CrackSound() (text string) {
 	switch RandInt(4) {
 	case 0:
 		text = "Crack!"
@@ -127,7 +127,7 @@ func (g *game) CrackSound() (text string) {
 	return text
 }
 
-func (g *game) ExplosionSound() (text string) {
+func (g *Game) ExplosionSound() (text string) {
 	switch RandInt(3) {
 	case 0:
 		text = "Bang!"

@@ -58,7 +58,7 @@ func (pl *player) HasStatus(st status) bool {
 	return pl.Statuses[st] > 0
 }
 
-func (g *game) AutoToDir() bool {
+func (g *Game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
 		p := g.Player.P.Add(g.AutoDir)
 		nbs := g.dirNeighbors(p, g.AutoDir)
@@ -103,7 +103,7 @@ const (
 	dirBlockedLaterals
 )
 
-func (g *game) dirNeighbors(p, dir gruid.Point) (dn dirNeighbors) {
+func (g *Game) dirNeighbors(p, dir gruid.Point) (dn dirNeighbors) {
 	if !g.PlayerCanPass(left(p, dir)) {
 		dn += dirBlockedLeft
 	}
@@ -113,11 +113,11 @@ func (g *game) dirNeighbors(p, dir gruid.Point) (dn dirNeighbors) {
 	return dn
 }
 
-func (g *game) dirBlocked(p, dir gruid.Point) bool {
+func (g *Game) dirBlocked(p, dir gruid.Point) bool {
 	return !g.PlayerCanPass(p.Add(dir))
 }
 
-func (g *game) GoToDir(dir gruid.Point) (again bool, err error) {
+func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
 	if g.MonsterInLOS() != nil {
 		g.AutoDir = ZP
 		return again, errors.New("You cannot travel while there are monsters in view.")
@@ -149,7 +149,7 @@ func (g *game) GoToDir(dir gruid.Point) (again bool, err error) {
 	return again, err
 }
 
-func (g *game) MoveToTarget() bool {
+func (g *Game) MoveToTarget() bool {
 	if !valid(g.AutoTarget) {
 		return false
 	}
@@ -179,11 +179,11 @@ func (g *game) MoveToTarget() bool {
 	return !again
 }
 
-func (g *game) WaitTurn() {
+func (g *Game) WaitTurn() {
 	g.Stats.Waits++
 }
 
-func (g *game) MonsterCount() (count int) {
+func (g *Game) MonsterCount() (count int) {
 	for _, mons := range g.Monsters {
 		if mons.Exists() {
 			count++
@@ -192,7 +192,7 @@ func (g *game) MonsterCount() (count int) {
 	return count
 }
 
-func (g *game) Rest() error {
+func (g *Game) Rest() error {
 	if terrain(g.Dungeon.Cell(g.Player.P)) != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
@@ -213,7 +213,7 @@ func (g *game) Rest() error {
 	return nil
 }
 
-func (g *game) StatusRest() bool {
+func (g *Game) StatusRest() bool {
 	for st, q := range g.Player.Statuses {
 		if st.Info() {
 			continue
@@ -225,11 +225,11 @@ func (g *game) StatusRest() bool {
 	return false
 }
 
-func (g *game) NeedsRegenRest() bool {
+func (g *Game) NeedsRegenRest() bool {
 	return g.Player.HP < g.Player.HPMax() || g.Player.MP < g.Player.MPMax()
 }
 
-func (g *game) Teleportation() {
+func (g *Game) Teleportation() {
 	var p gruid.Point
 	i := 0
 	count := 0
@@ -260,7 +260,7 @@ func (g *game) Teleportation() {
 
 const MaxBananas = 4
 
-func (g *game) CollectGround() {
+func (g *Game) CollectGround() {
 	p := g.Player.P
 	c := g.Dungeon.Cell(p)
 	if c.IsNotable() {
@@ -314,7 +314,7 @@ func (g *game) CollectGround() {
 	}
 }
 
-func (g *game) FallAbyss(style descendstyle) {
+func (g *Game) FallAbyss(style descendstyle) {
 	if g.Player.HasStatus(StatusLevitation) {
 		return
 	}
@@ -336,16 +336,16 @@ func (g *game) FallAbyss(style descendstyle) {
 	g.Descend(style)
 }
 
-func (g *game) AbyssJumpConfirmation() {
+func (g *Game) AbyssJumpConfirmation() {
 	g.PrintStyled("Do you really want to jump into the abyss? (DANGEROUS) [y/N]", logConfirm)
 	g.md.mode = modeJumpConfirmation
 }
 
-func (g *game) DeepChasmDepth() bool {
+func (g *Game) DeepChasmDepth() bool {
 	return g.Depth == WinDepth || g.Depth == MaxDepth
 }
 
-func (g *game) AbyssJump() error {
+func (g *Game) AbyssJump() error {
 	if g.DeepChasmDepth() {
 		return errors.New("You cannot jump into deep chasm.")
 	}
@@ -353,7 +353,7 @@ func (g *game) AbyssJump() error {
 	return nil
 }
 
-func (g *game) PlayerBump(p gruid.Point) (again bool, err error) {
+func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 	if !valid(p) {
 		return again, errors.New("You cannot move there.")
 	}
@@ -431,7 +431,7 @@ func (g *game) PlayerBump(p gruid.Point) (again bool, err error) {
 	return again, nil
 }
 
-func (g *game) SwiftFog() {
+func (g *Game) SwiftFog() {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
@@ -446,7 +446,7 @@ func (g *game) SwiftFog() {
 	g.Print("You feel an energy burst and smoke comes out from you.")
 }
 
-func (g *game) Confusion() {
+func (g *Game) Confusion() {
 	if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 		g.Print("You feel confused.")
 	}
@@ -455,7 +455,7 @@ func (g *game) Confusion() {
 // PlacePlayerAt moves the player to a given position, swapping positions with
 // a monster if necessary, and handles LOS and monsters awareness update,
 // ground collecting, and footsteps noise.
-func (g *game) PlacePlayerAt(p gruid.Point) {
+func (g *Game) PlacePlayerAt(p gruid.Point) {
 	if p == g.Player.P {
 		return
 	}
@@ -478,14 +478,14 @@ func (g *game) PlacePlayerAt(p gruid.Point) {
 
 const LignificationHPbonus = 4
 
-func (g *game) EnterLignification() {
+func (g *Game) EnterLignification() {
 	if g.PutStatus(StatusLignification, DurationLignificationPlayer) {
 		g.Print("You feel rooted to the ground.")
 		g.Player.HPbonus += LignificationHPbonus
 	}
 }
 
-func (g *game) ExtinguishFire() error {
+func (g *Game) ExtinguishFire() error {
 	g.Dungeon.SetCell(g.Player.P, ExtinguishedLightCell)
 	g.Objects.Lights[g.Player.P] = false
 	g.Stats.Extinguishments++
@@ -496,7 +496,7 @@ func (g *game) ExtinguishFire() error {
 	return nil
 }
 
-func (g *game) PutStatus(st status, duration int) bool {
+func (g *Game) PutStatus(st status, duration int) bool {
 	if g.Player.Statuses[st] != 0 {
 		return false
 	}
@@ -509,7 +509,7 @@ func (g *game) PutStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *game) PutFakeStatus(st status, duration int) bool {
+func (g *Game) PutFakeStatus(st status, duration int) bool {
 	if g.Player.Statuses[st] != 0 {
 		return false
 	}
@@ -521,7 +521,7 @@ func (g *game) PutFakeStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *game) UpdateKnowledge(p gruid.Point, c cell) {
+func (g *Game) UpdateKnowledge(p gruid.Point, c cell) {
 	if g.Player.Sees(p) {
 		return
 	}
@@ -531,7 +531,7 @@ func (g *game) UpdateKnowledge(p gruid.Point, c cell) {
 	}
 }
 
-func (g *game) PlayerCanPass(p gruid.Point) bool {
+func (g *Game) PlayerCanPass(p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
@@ -541,7 +541,7 @@ func (g *game) PlayerCanPass(p gruid.Point) bool {
 		g.Player.HasStatus(StatusDig) && c.IsDiggable()
 }
 
-func (g *game) PlayerCanJumpPass(p gruid.Point) bool {
+func (g *Game) PlayerCanJumpPass(p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}

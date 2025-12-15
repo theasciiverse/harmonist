@@ -78,7 +78,7 @@ func main() {
 // non-empty).
 func RunGame(gamelogs bool) {
 	gd := gruid.NewGrid(UIWidth, UIHeight)
-	md := &model{gd: gd, g: &game{}}
+	md := &model{gd: gd, g: &Game{}}
 	var repw io.WriteCloser
 	dir, err := DataDir()
 	defer func() {

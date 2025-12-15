@@ -135,7 +135,7 @@ const replock = "harmonistreplock"
 
 func RunGame() error {
 	gd := gruid.NewGrid(UIWidth, UIHeight)
-	m := &model{gd: gd, g: &game{}}
+	m := &model{gd: gd, g: &Game{}}
 	repw := &bytes.Buffer{}
 	defer func() {
 		if m.finished {
@@ -252,7 +252,7 @@ func RemoveItem(item string) {
 const harmonistsave = "harmonistsave"
 const harmonistconfig = "harmonistconfig"
 
-func (g *game) Save() error {
+func (g *Game) Save() error {
 	save, err := g.GameSave()
 	if err != nil {
 		return err
@@ -286,7 +286,7 @@ func RemoveReplay() {
 	RemoveItem(repit)
 }
 
-func (g *game) Load() (bool, error) {
+func (g *Game) Load() (bool, error) {
 	s, err := GetItem(harmonistsave)
 	if err != nil || s == nil {
 		return false, nil
@@ -318,7 +318,7 @@ func LoadConfig() (bool, error) {
 	return true, nil
 }
 
-func (g *game) WriteDump() error {
+func (g *Game) WriteDump() error {
 	pre := js.Global().Get("document").Call("getElementById", "dump")
 	pre.Set("innerHTML", g.Dump())
 	return nil

@@ -68,7 +68,7 @@ func (gp *gridPath) Estimation(from, to gruid.Point) int {
 }
 
 type mappingPath struct {
-	g   *game
+	g   *Game
 	nbs paths.Neighbors
 }
 
@@ -138,7 +138,7 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 	return distance(from, to)
 }
 
-func (g *game) ppPassable(p gruid.Point) bool {
+func (g *Game) ppPassable(p gruid.Point) bool {
 	d := g.Dungeon
 	t, okT := g.TerrainKnowledge[p]
 	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
@@ -151,7 +151,7 @@ func (g *game) ppPassable(p gruid.Point) bool {
 }
 
 type jumpPath struct {
-	g   *game
+	g   *Game
 	nbs paths.Neighbors
 }
 
@@ -173,7 +173,7 @@ func (jp *jumpPath) Estimation(from, to gruid.Point) int {
 }
 
 type noisePath struct {
-	g   *game
+	g   *Game
 	nbs paths.Neighbors
 }
 
@@ -190,7 +190,7 @@ func (fp *noisePath) Cost(from, to gruid.Point) int {
 }
 
 type autoexplorePath struct {
-	g   *game
+	g   *Game
 	nbs paths.Neighbors
 }
 
@@ -217,12 +217,12 @@ func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
 }
 
 type monPath struct {
-	g       *game
+	g       *Game
 	monster *monster
 	nbs     paths.Neighbors
 }
 
-func (g *game) ShufflePos(ps []gruid.Point) []gruid.Point {
+func (g *Game) ShufflePos(ps []gruid.Point) []gruid.Point {
 	for i := 0; i < len(ps); i++ {
 		j := i + g.randInt(len(ps)-i)
 		ps[i], ps[j] = ps[j], ps[i]
@@ -297,7 +297,7 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 	return distance(from, to)
 }
 
-func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
+func (m *monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
 	mp := &monPath{g: g, monster: m}
 	var path []gruid.Point
 	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterLOSRange &&
@@ -317,7 +317,7 @@ func (m *monster) APath(g *game, from, to gruid.Point) []gruid.Point {
 	return path
 }
 
-func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
+func (g *Game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	path := []gruid.Point{}
 	path = g.PR.JPSPath(path, from, to, g.ppPassable, false)
 	if len(path) == 0 {
@@ -326,7 +326,7 @@ func (g *game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	return path
 }
 
-func (g *game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
+func (g *Game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
 	ps := posSlice{}
 	for _, p := range cells {
 		pp := &dungeonPath{dungeon: g.Dungeon, wcost: unreachable}

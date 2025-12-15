@@ -17,7 +17,8 @@ func init() {
 	gob.Register(endTurnEvent(0))
 }
 
-func (g *game) GameSave() ([]byte, error) {
+// GameSave returns encoded game data for saving.
+func (g *Game) GameSave() ([]byte, error) {
 	data := bytes.Buffer{}
 	enc := gob.NewEncoder(&data)
 	err := enc.Encode(g)
@@ -31,16 +32,18 @@ func (g *game) GameSave() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-type config struct {
+// Config describes available configuration options.
+type Config struct {
 	NormalModeKeys map[gruid.Key]action
 	TargetModeKeys map[gruid.Key]action
-	DarkLOS        bool
+	DarkColors     bool
 	Tiles          bool
 	Version        string
 	ShowNumbers    bool
 }
 
-func (c *config) ConfigSave() ([]byte, error) {
+// ConfigSave returns encoded config data for saving.
+func (c *Config) ConfigSave() ([]byte, error) {
 	data := bytes.Buffer{}
 	enc := gob.NewEncoder(&data)
 	err := enc.Encode(c)
@@ -50,14 +53,16 @@ func (c *config) ConfigSave() ([]byte, error) {
 	return data.Bytes(), nil
 }
 
-func (g *game) DecodeGameSave(data []byte) (*game, error) {
+// DecodeGameSave retrieves a *Game object from game data encoded with
+// GameSave.
+func (g *Game) DecodeGameSave(data []byte) (*Game, error) {
 	buf := bytes.NewReader(data)
 	r, err := zlib.NewReader(buf)
 	if err != nil {
 		return nil, err
 	}
 	dec := gob.NewDecoder(r)
-	lg := &game{}
+	lg := &Game{}
 	err = dec.Decode(lg)
 	if err != nil {
 		return nil, err
@@ -66,10 +71,12 @@ func (g *game) DecodeGameSave(data []byte) (*game, error) {
 	return lg, nil
 }
 
-func DecodeConfigSave(data []byte) (*config, error) {
+// DecodeConfigSave retrieves a *config object from config data encoded with
+// ConfigSave.
+func DecodeConfigSave(data []byte) (*Config, error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
-	c := &config{}
+	c := &Config{}
 	err := dec.Decode(c)
 	if err != nil {
 		return nil, err

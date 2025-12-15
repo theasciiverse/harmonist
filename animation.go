@@ -256,7 +256,7 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 	}
 }
 
-func (g *game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
+func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
 	var dij paths.Dijkstra
 	switch ws {
 	case WaveMagicNoise:
@@ -607,7 +607,7 @@ func (md *model) FreeingShaedra() {
 	md.story++
 }
 
-func (g *game) RescuedShaedra() {
+func (g *Game) RescuedShaedra() {
 	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
 	g.PrintStyled("You equip the new magara in the artifact's old place.", logSpecial)

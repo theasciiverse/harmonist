@@ -37,7 +37,7 @@ const (
 var CustomKeys bool
 
 // GameConfig contains the current game config.
-var GameConfig config
+var GameConfig Config
 
 // mode represents the main model mode
 type mode int
@@ -79,7 +79,7 @@ const (
 )
 
 type model struct {
-	g           *game // game state
+	g           *Game // game state
 	gd          gruid.Grid
 	mode        mode
 	menuMode    menuMode
@@ -203,7 +203,7 @@ func (md *model) initWidgets() {
 }
 
 func InitConfig() error {
-	GameConfig.DarkLOS = true
+	GameConfig.DarkColors = true
 	GameConfig.Version = Version
 	GameConfig.Tiles = true
 	load, err := LoadConfig()

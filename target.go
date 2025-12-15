@@ -229,7 +229,7 @@ func (md *model) drawPosInfo() {
 	}
 }
 
-func (m *monster) color(g *game) gruid.Color {
+func (m *monster) color(g *Game) gruid.Color {
 	var fg gruid.Color
 	if m.Status(MonsLignified) {
 		fg = ColorFgLignifiedMonster
@@ -341,7 +341,7 @@ func (md *model) computeHighlight() {
 	md.g.computePathHighlight(md.targ.ex.p)
 }
 
-func (g *game) computePathHighlight(p gruid.Point) {
+func (g *Game) computePathHighlight(p gruid.Point) {
 	path := g.PlayerPath(g.Player.P, p)
 	g.Highlight = map[gruid.Point]bool{}
 	for _, p := range path {

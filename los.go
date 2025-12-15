@@ -29,7 +29,7 @@ type rayMap map[gruid.Point]raynode
 
 type lighter struct {
 	rs raystyle
-	g  *game
+	g  *Game
 }
 
 func (lt *lighter) Cost(src, from, to gruid.Point) int {
@@ -106,7 +106,7 @@ func (lt *lighter) MaxCost(src gruid.Point) int {
 	}
 }
 
-func (g *game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
+func (g *Game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
 	// The state uses cardinal movement only, so two diagonal walls should,
 	// for example, block line of sight. This is in contrast with the main
 	// mechanics of the line of sight algorithm, which for gameplay reasons
@@ -163,7 +163,7 @@ const LightRange = 6
 const DefaultLOSRange = 12
 const DefaultMonsterLOSRange = 12
 
-func (g *game) StopAuto() {
+func (g *Game) StopAuto() {
 	if g.Autoexploring && !g.AutoHalt {
 		g.Print("You stop exploring.")
 	} else if g.AutoDir != ZP {
@@ -178,16 +178,16 @@ func (g *game) StopAuto() {
 
 const TreeRange = 50
 
-func (g *game) Illuminated(p gruid.Point) bool {
+func (g *Game) Illuminated(p gruid.Point) bool {
 	c, ok := g.LightFOV.At(p)
 	return ok && c <= LightRange
 }
 
-func (g *game) blocksSSCLOS(p gruid.Point) bool {
+func (g *Game) blocksSSCLOS(p gruid.Point) bool {
 	return terrain(g.Dungeon.Cell(p)) != WallCell
 }
 
-func (g *game) ComputeLOS() {
+func (g *Game) ComputeLOS() {
 	g.ComputeLights()
 	for k := range g.Player.LOS {
 		delete(g.Player.LOS, k)
@@ -261,7 +261,7 @@ func visionRange(p gruid.Point, radius int) gruid.Range {
 	return drg.Intersect(gruid.Range{Min: p.Sub(delta), Max: p.Add(delta).Shift(1, 1)})
 }
 
-func (g *game) mfovSetCenter(p gruid.Point) {
+func (g *Game) mfovSetCenter(p gruid.Point) {
 	if g.mfov == nil {
 		g.mfov = rl.NewFOV(visionRange(p, DefaultMonsterLOSRange))
 	} else {
@@ -269,7 +269,7 @@ func (g *game) mfovSetCenter(p gruid.Point) {
 	}
 }
 
-func (m *monster) ComputeLOS(g *game) {
+func (m *monster) ComputeLOS(g *Game) {
 	if m.Kind.Peaceful() {
 		return
 	}
@@ -301,7 +301,7 @@ func (m *monster) ComputeLOS(g *game) {
 	}
 }
 
-func (g *game) SeeNotable(c cell, p gruid.Point) {
+func (g *Game) SeeNotable(c cell, p gruid.Point) {
 	switch terrain(c) {
 	case MagaraCell:
 		mag := g.Objects.Magaras[p]
@@ -352,7 +352,7 @@ func (g *game) SeeNotable(c cell, p gruid.Point) {
 	}
 }
 
-func (g *game) SeePosition(p gruid.Point) {
+func (g *Game) SeePosition(p gruid.Point) {
 	c := g.Dungeon.Cell(p)
 	t, okT := g.TerrainKnowledge[p]
 	if !explored(c) {
@@ -401,7 +401,7 @@ func (g *game) SeePosition(p gruid.Point) {
 	}
 }
 
-func (g *game) Ray(p gruid.Point) []gruid.Point {
+func (g *Game) Ray(p gruid.Point) []gruid.Point {
 	c := g.Dungeon.Cell(g.Player.P)
 	rs := NormalPlayerRay
 	if terrain(c) == TreeCell {
@@ -416,7 +416,7 @@ func (g *game) Ray(p gruid.Point) []gruid.Point {
 	return ps
 }
 
-func (g *game) ComputeNoise() {
+func (g *Game) ComputeNoise() {
 	dij := &noisePath{g: g}
 	rg := DefaultLOSRange
 	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, rg)
@@ -474,11 +474,11 @@ func (pl *player) Sees(p gruid.Point) bool {
 	return pl.LOS[p]
 }
 
-func (m *monster) SeesPlayer(g *game) bool {
+func (m *monster) SeesPlayer(g *Game) bool {
 	return m.Sees(g, g.Player.P) && g.Player.Sees(m.P)
 }
 
-func (m *monster) SeesLight(g *game, p gruid.Point) bool {
+func (m *monster) SeesLight(g *Game, p gruid.Point) bool {
 	if !(m.LOS[p] && inViewCone(m.Dir, m.P, p)) {
 		return false
 	}
@@ -488,7 +488,7 @@ func (m *monster) SeesLight(g *game, p gruid.Point) bool {
 	return true
 }
 
-func (m *monster) Sees(g *game, p gruid.Point) bool {
+func (m *monster) Sees(g *Game, p gruid.Point) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
 		darkRange = DefaultMonsterLOSRange
@@ -519,7 +519,7 @@ func (m *monster) Sees(g *game, p gruid.Point) bool {
 	return true
 }
 
-func (g *game) ComputeMonsterLOS() {
+func (g *Game) ComputeMonsterLOS() {
 	for k := range g.MonsterLOS {
 		delete(g.MonsterLOS, k)
 	}
@@ -550,7 +550,7 @@ func (g *game) ComputeMonsterLOS() {
 	}
 }
 
-func (g *game) ComputeLights() {
+func (g *Game) ComputeLights() {
 	if g.LightFOV == nil {
 		g.LightFOV = rl.NewFOV(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
 	}
@@ -577,7 +577,7 @@ func (g *game) ComputeLights() {
 	g.LightFOV.LightMap(lt, sources)
 }
 
-func (g *game) ComputeMonsterCone(m *monster) {
+func (g *Game) ComputeMonsterCone(m *monster) {
 	g.MonsterTargLOS = make(map[gruid.Point]bool)
 	for p := range g.Player.LOS {
 		if !g.Player.Sees(p) {
@@ -589,7 +589,7 @@ func (g *game) ComputeMonsterCone(m *monster) {
 	}
 }
 
-func (m *monster) UpdateKnowledge(g *game, p gruid.Point) {
+func (m *monster) UpdateKnowledge(g *Game, p gruid.Point) {
 	if mons := g.lastMonsterKnownAt(p); mons.Exists() {
 		if mons.Index != m.Index {
 			mons.LastKnownPos = invalidPos
@@ -603,7 +603,7 @@ func (m *monster) UpdateKnowledge(g *game, p gruid.Point) {
 	m.LastKnownPos = p
 }
 
-func (g *game) lastMonsterKnownAt(p gruid.Point) *monster {
+func (g *Game) lastMonsterKnownAt(p gruid.Point) *monster {
 	idx, ok := g.LastMonsterKnownAt[p]
 	if ok {
 		return g.Monsters[idx]
