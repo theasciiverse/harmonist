@@ -170,7 +170,7 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 		return
 	}
 	md.startAnimSeq()
-	for i := 0; i < len(ray); i++ {
+	for i := range len(ray) {
 		p := ray[i]
 		or, fgColor, bgColor := md.positionDrawing(p)
 		md.anims.Draw(p, r, fg, bgColor)
@@ -215,7 +215,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 	}
 	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.P)
 	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
-	for i := 0; i < 2; i++ {
+	for i := range 2 {
 		for _, p := range noises {
 			r := '♫'
 			_, _, bgColor := md.positionDrawing(p)
@@ -240,7 +240,7 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 		colors[0] = ColorFgExplosionWallStart
 		colors[1] = ColorFgExplosionWallEnd
 	}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		nb := g.playerPassableNeighbors(p)
 		if es != AroundWallExplosion {
 			nb = append(nb, p)
@@ -376,7 +376,7 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	case BeamObstruction:
 		fg = ColorFgMagicPlace
 	}
-	for j := 0; j < 3; j++ {
+	for range 3 {
 		for i := len(ray) - 1; i >= 0; i-- {
 			p := ray[i]
 			_, _, bgColor := md.positionDrawing(p)
@@ -397,7 +397,7 @@ func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
 	colors := [2]gruid.Color{ColorFgConfusedMonster, ColorFgMagicPlace}
-	for j := 0; j < 3; j++ {
+	for range 3 {
 		for i := len(ray) - 1; i >= 0; i-- {
 			fg := colors[RandInt(2)]
 			p := ray[i]
@@ -432,7 +432,7 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	}
 	g := md.g
 	md.startAnimSeq()
-	for i := 0; i < len(ray); i++ {
+	for i := range len(ray) {
 		p := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(p)
 		md.anims.Draw(p, md.ProjectileSymbol(dirnorm(g.Player.P, p)), ColorFgMonster, bgColor)
@@ -538,7 +538,7 @@ func (md *model) AbyssFallAnimation() {
 	gd.FillFunc(func() rl.Cell {
 		return rl.Cell(RandInt(max))
 	})
-	for i := 0; i < max; i++ {
+	for i := range max {
 		it := gd.Iterator()
 		for it.Next() {
 			if it.Cell() == rl.Cell(i) {
