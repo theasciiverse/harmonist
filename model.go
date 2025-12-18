@@ -478,6 +478,9 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.targ.ex.scroll = false
 		}
 	case gruid.MouseMove:
+		if md.auto || md.targ.kbTargeting {
+			break
+		}
 		if valid(p) {
 			md.Examine(p)
 		} else {
@@ -492,6 +495,10 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 		var again bool
 		var eff gruid.Effect
 		var err error
+		if md.targ.kbTargeting && p != md.targ.ex.p {
+			md.Examine(p)
+			return nil
+		}
 		if distance(p, md.g.Player.P) == 1 {
 			again, err = md.g.PlayerBump(p)
 		} else {
@@ -525,11 +532,10 @@ const (
 
 func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 	msg.P.Y = 0
-	if !msg.P.In(md.status.Bounds()) {
+	if !msg.P.In(md.status.Bounds()) || md.targ.kbTargeting {
 		md.statusFocus = false
 		return nil
 	}
-	md.CancelExamine()
 	md.status.Update(msg)
 	update := !md.statusFocus
 	switch md.status.Action() {
@@ -559,6 +565,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 		return md.EndTurn()
 	}
 	if update {
+		md.CancelExamine()
 		const statusIndex = statusInteract + 2
 		i := statusItem(md.status.Active())
 		md.statusFocus = false
@@ -607,6 +614,11 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			i := md.status.Active() - int(statusIndex)
 			sts := md.sortedStatuses()
 			if i > len(sts)-1 {
+				if md.g.Player.HP > 0 && md.mode != modeEnd {
+					md.statusDesc.Box = &ui.Box{Title: ui.Text("Player's Tile")}
+					md.statusDesc.SetText("The tile where the player is.")
+					md.statusFocus = true
+				}
 				break
 			}
 			var title ui.StyledText

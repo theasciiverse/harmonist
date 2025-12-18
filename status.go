@@ -253,6 +253,7 @@ func (md *model) updateStatusInfo() {
 		'o': st.WithFg(ColorFgStatusOther),
 		'b': st.WithFg(ColorFgStatusBad),
 		'B': st.WithFg(ColorCyan),
+		'R': st.WithFg(ColorRed),
 		'Y': st.WithFg(ColorYellow),
 		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
 	})
@@ -363,8 +364,24 @@ func (md *model) updateStatusInfo() {
 		entries = append(entries, ui.MenuEntry{Text: stt.WithText(sttext), Disabled: true})
 	}
 
-	if md.targ.kbTargeting {
-		entries = append(entries, ui.MenuEntry{Text: stt.WithText("@B[Examine]@N"), Disabled: true})
+	switch {
+	case g.Player.HP <= 0:
+		entries = append(entries, ui.MenuEntry{
+			Text:     stt.WithText("@RDead@N "),
+			Disabled: true})
+	case md.mode == modeEnd:
+	default:
+		p := g.Player.P
+		c := g.Dungeon.Cell(p)
+		if terrain(c) != GroundCell {
+			r, fg := c.Style(g, p)
+			entries = append(entries, ui.MenuEntry{
+				Text:     stt.WithTextf("%c ", r).WithStyle(gruid.Style{Fg: fg, Attrs: AttrInMap}),
+				Disabled: true})
+		}
+		if md.targ.kbTargeting {
+			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@B[Examine]@N"), Disabled: true})
+		}
 	}
 
 	//altBgEntries(entries)
