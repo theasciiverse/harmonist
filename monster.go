@@ -1747,9 +1747,10 @@ func (m *monster) MakeAware(g *Game) {
 	if !m.SeesPlayer(g) {
 		return
 	}
-	if m.State == Resting {
+	switch m.State {
+	case Resting:
 		g.Printf("%s awakens.", m.Kind.Definite(true))
-	} else if m.State == Wandering || m.State == Watching {
+	case Wandering, Watching:
 		g.Printf("%s notices you.", m.Kind.Definite(true))
 	}
 	noticed := m.MakeHunt(g)
