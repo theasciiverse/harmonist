@@ -260,7 +260,7 @@ func (md *model) updateStatusInfo() {
 	// depth
 	var depth string
 	if g.Depth == -1 {
-		depth = "D: Out! "
+		depth = " D:Out! "
 	} else {
 		depth = fmt.Sprintf(" D:%d ", g.Depth)
 	}
