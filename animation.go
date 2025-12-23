@@ -566,7 +566,7 @@ func (md *model) FreeingShaedra() {
 	case 0:
 		md.mode = modeStory
 		g.Print("You see Shaedra. She is wounded!")
-		g.PrintStyled("Shaedra: “Oh, it's you, Syu! Let's flee with Marevor's magara!”", logSpecial)
+		g.PrintStyled("Shaedra: “Oh, it’s you, Syu! Let’s flee with Marevor’s magara!”", logSpecial)
 		md.confirm = true
 	case 1:
 		if !DisableAnimations {
@@ -586,7 +586,7 @@ func (md *model) FreeingShaedra() {
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
 		g.PrintStyled("Marevor: “And what about the mission? Take that magara!”", logSpecial)
-		g.PrintStyled("Shaedra: “Pff, don't be reckless!”", logSpecial)
+		g.PrintStyled("Shaedra: “Pff, don’t be reckless!”", logSpecial)
 		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	case 2:
 		if !DisableAnimations {
@@ -610,7 +610,7 @@ func (md *model) FreeingShaedra() {
 func (g *Game) RescuedShaedra() {
 	g.Player.Magaras = append(g.Player.Magaras, magara{})
 	g.Player.Inventory.Misc = NoItem
-	g.PrintStyled("You equip the new magara in the artifact's old place.", logSpecial)
+	g.PrintStyled("You equip the new magara in the artifact’s old place.", logSpecial)
 	if RandInt(2) == 0 {
 		g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
 	} else {
@@ -643,7 +643,7 @@ func (md *model) TakingArtifact() {
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
-		g.PrintStyled("Marevor: “Great! Let's escape and find some bones to celebrate!”", logSpecial)
+		g.PrintStyled("Marevor: “Great! Let’s escape and find some bones to celebrate!”", logSpecial)
 		g.PrintStyled("Syu: “Sorry, but I prefer bananas!”", logSpecial)
 		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	case 2:

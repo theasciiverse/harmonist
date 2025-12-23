@@ -224,18 +224,18 @@ func (g *Game) WallJump(p gruid.Point) error {
 	}
 	m := g.MonsterAt(q)
 	if m.Exists() {
-		return errors.New("There's not enough room to jump.")
+		return errors.New("There’s not enough room to jump.")
 	}
 	if count == 3 && !g.PlayerCanPass(q) {
 		q = path[len(path)-2]
 		m := g.MonsterAt(q)
 		if m.Exists() {
-			return errors.New("There's not enough room to jump.")
+			return errors.New("There’s not enough room to jump.")
 		}
 		path = path[:len(path)-1]
 	}
 	if !g.PlayerCanPass(q) || (count != 3 && count != 2) {
-		return errors.New("There's not enough room to jump.")
+		return errors.New("There’s not enough room to jump.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
 		g.PutStatus(StatusExhausted, DurationExhaustion)

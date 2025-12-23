@@ -368,7 +368,7 @@ func (c cell) Desc(g *Game, p gruid.Point) (desc string) {
 	case DoorCell:
 		desc = "A closed door blocks your line of sight. Doors open automatically when you or a creature stand on them."
 	case FoliageCell:
-		desc = "Blue dense foliage grows in Hareka's Underground. It is difficult to see through."
+		desc = "Blue dense foliage grows in Hareka’s Underground. It is difficult to see through."
 	case BarrelCell:
 		desc = "A barrel. You can hide yourself inside it when no creatures see you. It is a safe place for resting and recovering."
 	case StoneCell:
@@ -401,9 +401,9 @@ func (c cell) Desc(g *Game, p gruid.Point) (desc string) {
 		desc = "A transparent window in the wall."
 	case ChasmCell:
 		if g.Depth == MaxDepth || g.Depth == WinDepth {
-			desc = "A deep chasm. If you jump into it, you'll be dead."
+			desc = "A deep chasm. If you jump into it, you’ll be dead."
 		} else {
-			desc = "A chasm. If you jump into it, you'll reach the next level, but you'll be seriously injured."
+			desc = "A chasm. If you jump into it, you’ll reach the next level, but you’ll be seriously injured."
 		}
 	case WaterCell:
 		desc = "This is shallow water. Only monsters that can swim will follow you there."

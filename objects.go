@@ -77,15 +77,15 @@ func (st stair) ShortDesc(g *Game) (desc string) {
 	return desc
 }
 
-const normalStairDesc = "Stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
-const deepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan's domain in Hareka's Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+const normalStairDesc = "Stairs lead to the next level of Dayoriah Clan’s domain in Hareka’s Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+const deepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan’s domain in Hareka’s Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 
 func (st stair) Desc(g *Game) (desc string) {
 	switch st {
 	case WinStair:
 		desc = "Going through this portal will make you escape from this place, going back to the Surface."
 		if g.Depth < MaxDepth {
-			desc += " If you're courageous enough, you may skip this portal and continue going deeper in the dungeon, to find Marevor's magara, finishing Shaedra's failed mission."
+			desc += " If you’re courageous enough, you may skip this portal and continue going deeper in the dungeon, to find Marevor’s magara, finishing Shaedra’s failed mission."
 		}
 	case NormalStair:
 		desc = normalStairDesc
@@ -94,7 +94,7 @@ func (st stair) Desc(g *Game) (desc string) {
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
 	case BlockedStair:
-		desc = "Stairs lead to the next level of the Dayoriah Clan's domain in Hareka's Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+		desc = "Stairs lead to the next level of the Dayoriah Clan’s domain in Hareka’s Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 	}
 	return desc
 }
@@ -453,9 +453,9 @@ func (sc scroll) ShortDesc() (desc string) {
 func (sc scroll) Text(g *Game) (desc string) {
 	switch sc {
 	case ScrollStory:
-		desc = "Your friend Shaedra got captured by nasty people from the Dayoriah Clan while she was trying to retrieve a powerful magara artifact that was stolen from the great magara-specialist Marevor Helith.\n\nAs a gawalt monkey, you don't understand much why people complicate so much their lives caring about artifacts and the like, but one thing is clear: you have to rescue your friend, somewhere to be found in this Underground area controlled by the Dayoriah Clan. If what you heard the guards say is true, Shaedra's imprisoned on the eighth floor.\n\nYou are small and have good night vision, so you hope the infiltration will go smoothly..."
+		desc = "Your friend Shaedra got captured by nasty people from the Dayoriah Clan while she was trying to retrieve a powerful magara artifact that was stolen from the great magara-specialist Marevor Helith.\n\nAs a gawalt monkey, you don’t understand much why people complicate so much their lives caring about artifacts and the like, but one thing is clear: you have to rescue your friend, somewhere to be found in this Underground area controlled by the Dayoriah Clan. If what you heard the guards say is true, Shaedra’s imprisoned on the eighth floor.\n\nYou are small and have good night vision, so you hope the infiltration will go smoothly..."
 	case ScrollExtended:
-		desc = "Now that Shaedra's back to safety, you can either follow her advice, and get away from here too using the monolith portal, or you can finish the original mission: going deeper to find Marevor's powerful magara, before the Dayoriah Clan does bad experiments with it. You honestly didn't understand why it was dangerous, but Shaedra and Marevor had seemed truly concerned.\n\nMarevor said that he'll be able to create a new portal for you when you activate the artifact upon finding it."
+		desc = "Now that Shaedra’s back to safety, you can either follow her advice, and get away from here too using the monolith portal, or you can finish the original mission: going deeper to find Marevor’s powerful magara, before the Dayoriah Clan does bad experiments with it. You honestly didn’t understand why it was dangerous, but Shaedra and Marevor had seemed truly concerned.\n\nMarevor said that he’ll be able to create a new portal for you when you activate the artifact upon finding it."
 	case ScrollDayoriahMessage:
 		desc = `“The thief that infiltrated our turf and tried to retrieve our new acquisition has been captured. However, it is possible that she has an accomplice. Please be careful and stop every suspect.”
 
@@ -663,7 +663,7 @@ func (it item) Desc(g *Game) (desc string) {
 	case AmuletObstruction:
 		desc = "uses a magical barrier to blow away monsters that critically hit you."
 	case MarevorMagara:
-		desc = "magara was given to you by Marevor Helith so that he can create an escape portal when you reach Shaedra. Its sister magara, the Gem Portal Artifact, also crafted by Marevor, is the artifact that was stolen and that Shaedra was trying to retrieve before being captured.\n\nThis magara needs a lot of time to recharge, so you'll only be able to use it once."
+		desc = "magara was given to you by Marevor Helith so that he can create an escape portal when you reach Shaedra. Its sister magara, the Gem Portal Artifact, also crafted by Marevor, is the artifact that was stolen and that Shaedra was trying to retrieve before being captured.\n\nThis magara needs a lot of time to recharge, so you’ll only be able to use it once."
 	}
 	return "The " + it.ShortDesc(g) + " " + desc
 }

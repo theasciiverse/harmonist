@@ -615,7 +615,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			sts := md.sortedStatuses()
 			if i > len(sts)-1 {
 				if md.g.Player.HP > 0 && md.mode != modeEnd {
-					md.statusDesc.Box = &ui.Box{Title: ui.Text("Player's Tile")}
+					md.statusDesc.Box = &ui.Box{Title: ui.Text("Player’s Tile")}
 					md.statusDesc.SetText("The tile where the player is.")
 					md.statusFocus = true
 				}
@@ -865,11 +865,7 @@ func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff g
 	}
 	again, eff, err = md.normalModeAction(action)
 	if _, ok := err.(actionError); ok {
-		if md.targ.kbTargeting {
-			err = fmt.Errorf("Key '%s' does nothing. Type t for help.", key)
-		} else {
-			err = fmt.Errorf("Key '%s' does nothing. Type ? for help.", key)
-		}
+		err = fmt.Errorf("Key “%s” does nothing. Type ? for help.", key)
 	}
 	return again, eff, err
 }

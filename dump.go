@@ -56,11 +56,11 @@ func (g *Game) Dump() string {
 		fmt.Fprintf(buf, "**WIZARD MODE**\n")
 	}
 	if g.Player.HP > 0 && g.Depth == -1 {
-		fmt.Fprintf(buf, "You escaped from Dayoriah Clan's domain alive!\n")
+		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
 	} else if g.Player.HP <= 0 {
-		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
 	} else {
-		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
 	}
 	if g.LiberatedShaedra {
 		fmt.Fprint(buf, "\n")
@@ -98,7 +98,7 @@ func (g *Game) Dump() string {
 	if g.Stats.Killed > 0 {
 		fmt.Fprintf(buf, "%d monsters died.\n", g.Stats.Killed)
 	}
-	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
+	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
 	maxDepth := max(g.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
@@ -354,11 +354,11 @@ func (g *Game) SimplifedDump(err error) string {
 		fmt.Fprintf(buf, "**WIZARD MODE**\n")
 	}
 	if g.Player.HP > 0 && g.Depth == -1 {
-		fmt.Fprintf(buf, "You escaped from Dayoriah Clan's domain alive!\n")
+		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
 	} else if g.Player.HP <= 0 {
-		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
 	} else {
-		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan's domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
 	}
 	if g.LiberatedShaedra {
 		fmt.Fprint(buf, "You rescued Shaedra.\n")
@@ -370,7 +370,7 @@ func (g *Game) SimplifedDump(err error) string {
 	} else {
 		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
-	fmt.Fprintf(buf, "You spent %d turns in Hareka's Underground.\n", g.Turn)
+	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
 	maxDepth := max(g.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
