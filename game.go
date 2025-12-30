@@ -595,7 +595,9 @@ func (g *Game) Descend(style descendstyle) bool {
 	g.Depth++
 	g.DepthPlayerTurn = 0
 	g.InitLevel()
-	g.Save()
+	if err := g.Save(); err != nil {
+		log.Printf("error saving game: %v", err)
+	}
 	return false
 }
 

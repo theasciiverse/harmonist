@@ -33,7 +33,7 @@ type logEntry struct {
 func (e logEntry) String() string {
 	tick := ""
 	if e.Tick {
-		tick = "@t•@N "
+		tick = "@y•@N "
 	}
 	s := e.Text
 	if e.Dups > 0 {
@@ -143,9 +143,9 @@ func (st logStyle) Rune() rune {
 	var r rune
 	switch st {
 	case logCritic:
-		r = 'r'
+		r = 'm'
 	case logNotable:
-		r = 'g'
+		r = 'y'
 	case logDamage:
 		r = 'o'
 	case logSpecial:
@@ -153,7 +153,7 @@ func (st logStyle) Rune() rune {
 	case logStatusEnd:
 		r = 'v'
 	case logError:
-		r = 'e'
+		r = 'r'
 	case logConfirm:
 		r = 'c'
 	default:
@@ -164,12 +164,12 @@ func (st logStyle) Rune() rune {
 
 var logStyles = map[rune]gruid.Style{
 	'r': gruid.Style{}.WithFg(ColorRed),
+	'y': gruid.Style{}.WithFg(ColorYellow),
 	't': gruid.Style{}.WithFg(ColorYellow),
 	'g': gruid.Style{}.WithFg(ColorGreen),
 	'o': gruid.Style{}.WithFg(ColorOrange),
 	'm': gruid.Style{}.WithFg(ColorMagenta),
 	'v': gruid.Style{}.WithFg(ColorViolet),
-	'e': gruid.Style{}.WithFg(ColorRed),
 	'c': gruid.Style{}.WithFg(ColorCyan),
 }
 

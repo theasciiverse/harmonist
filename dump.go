@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"path/filepath"
+	"log"
 	"sort"
 	"strings"
 )
@@ -347,7 +347,7 @@ func (g *Game) DumpedKilledMonsters() string {
 	return buf.String()
 }
 
-func (g *Game) SimplifedDump(err error) string {
+func (g *Game) SimplifedDump(msg string, err error) string {
 	buf := &strings.Builder{}
 	fmt.Fprintf(buf, " ♣ Harmonist version %s game summary ♣\n\n", Version)
 	if g.Wizard {
@@ -380,15 +380,9 @@ func (g *Game) SimplifedDump(err error) string {
 	fmt.Fprintf(buf, "\n")
 	if err != nil {
 		fmt.Fprintf(buf, "Error writing dump: %v.\n", err)
+		log.Printf("error writing dump: %v", err)
 	} else {
-		dataDir, err := DataDir()
-		if err == nil {
-			if dataDir == "" {
-				fmt.Fprintf(buf, "Full game statistics written below.\n")
-			} else {
-				fmt.Fprintf(buf, "Full game statistics dump written to:\n    %s", filepath.Join(dataDir, "dump.txt"))
-			}
-		}
+		fmt.Fprintln(buf, msg)
 	}
 	return buf.String()
 }

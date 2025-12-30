@@ -25,7 +25,7 @@ func (md *model) ApplyToggleTiles() {
 	GameConfig.Tiles = !GameConfig.Tiles
 	err := SaveConfig()
 	if err != nil {
-		md.g.Printf("Error saving config changes: %v", err)
+		log.Printf("error saving config changes: %v", err)
 	}
 	clearCache()
 }

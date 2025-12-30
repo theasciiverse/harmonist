@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
+	"log"
 	"sort"
 	"strings"
 	//"time"
@@ -403,8 +403,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		g.checks()
 		errsave := g.Save()
 		if errsave != nil {
-			g.PrintfStyled("Error: %v", logError, errsave)
-			g.PrintStyled("Could not save state.", logError)
+			log.Printf("error saving game: %v", errsave)
 			md.mode = modeNormal
 		} else {
 			md.mode = modeQuit
@@ -412,16 +411,12 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 	case ActionDump:
 		again = true
-		errdump := g.WriteDump()
+		msg, errdump := g.WriteDump()
 		if errdump != nil {
-			g.PrintfStyled("Error: %v", logError, errdump)
+			log.Printf("error writing dump: %v", errdump)
+			g.PrintStyled("Error writing statistics.", logError)
 		} else {
-			dataDir, _ := DataDir()
-			if dataDir != "" {
-				g.Printf("Game statistics written to %s.", filepath.Join(dataDir, "dump.txt"))
-			} else {
-				g.Print("Game statistics written.")
-			}
+			g.Print(msg)
 		}
 		md.mode = modeNormal
 	case ActionWizardMenu:
@@ -464,7 +459,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		GameConfig.DarkColors = !GameConfig.DarkColors
 		err := SaveConfig()
 		if err != nil {
-			g.Print(err.Error())
+			log.Print(err)
 		}
 		clearCache()
 		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
@@ -475,7 +470,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		eff = gruid.Cmd(func() gruid.Msg { return gruid.MsgScreen{} })
 		err := SaveConfig()
 		if err != nil {
-			g.Print(err.Error())
+			log.Print(err)
 		}
 		md.mode = modeNormal
 	case ActionToggleShowNumbers:
@@ -483,7 +478,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		GameConfig.ShowNumbers = !GameConfig.ShowNumbers
 		err := SaveConfig()
 		if err != nil {
-			g.Print(err.Error())
+			log.Print(err)
 		}
 		md.updateStatusInfo()
 		md.mode = modeNormal
@@ -521,6 +516,7 @@ func (md *model) wizardInfo() {
 func (md *model) readScroll() {
 	sc, ok := md.g.Objects.Scrolls[md.g.Player.P]
 	if !ok {
+		// Should not happen.
 		md.g.PrintStyled("Error while reading message.", logError)
 		return
 	}

@@ -358,7 +358,7 @@ func (g *Game) SeePosition(p gruid.Point) {
 	if !explored(c) {
 		see := "see"
 		if c.IsNotable() {
-			g.Printf("You %s %s.", see, c.ShortDesc(g, p))
+			g.PrintfStyled("You %s %s.", logNotable, see, c.ShortDesc(g, p))
 			g.StopAuto()
 		}
 		g.Dungeon.SetExplored(p)
@@ -439,28 +439,28 @@ func (g *Game) ComputeNoise() {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
 				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
 					g.Noise[n.P] = true
-					g.PrintStyled("You hear an imperceptible air movement.", logNotable)
+					g.Print("You hear an imperceptible air movement.")
 					count++
 				}
 			case MonsWingedMilfid, MonsTinyHarpy:
 				g.Noise[n.P] = true
-				g.PrintStyled("You hear the flapping of wings.", logNotable)
+				g.Print("You hear the flapping of wings.")
 				count++
 			case MonsEarthDragon, MonsTreeMushroom, MonsYack:
 				g.Noise[n.P] = true
-				g.PrintStyled("You hear heavy footsteps.", logNotable)
+				g.Print("You hear heavy footsteps.")
 				count++
 			case MonsWorm, MonsAcidMound:
 				g.Noise[n.P] = true
-				g.PrintStyled("You hear a creep noise.", logNotable)
+				g.Print("You hear a creep noise.")
 				count++
 			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
 				g.Noise[n.P] = true
-				g.PrintStyled("You hear light footsteps.", logNotable)
+				g.Print("You hear light footsteps.")
 				count++
 			default:
 				g.Noise[n.P] = true
-				g.PrintStyled("You hear footsteps.", logNotable)
+				g.Print("You hear footsteps.")
 				count++
 			}
 		}

@@ -61,14 +61,9 @@ func SaveFile(filename string, data []byte) error {
 func (g *Game) Save() error {
 	data, err := g.GameSave()
 	if err != nil {
-		g.Print(err.Error())
 		return err
 	}
-	err = SaveFile("save", data)
-	if err != nil {
-		g.Print(err.Error())
-	}
-	return err
+	return SaveFile("save", data)
 }
 
 func RemoveSaveFile() error {
@@ -155,14 +150,15 @@ func RemoveDataFile(file string) error {
 	return nil
 }
 
-func (g *Game) WriteDump() error {
+func (g *Game) WriteDump() (string, error) {
 	dataDir, err := DataDir()
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = os.WriteFile(filepath.Join(dataDir, "dump.txt"), []byte(g.Dump()), 0644)
+	path := filepath.Join(dataDir, "dump.txt")
+	err = os.WriteFile(path, []byte(g.Dump()), 0644)
 	if err != nil {
-		return fmt.Errorf("writing dump statistics: %v", err)
+		return "", err
 	}
-	return nil
+	return fmt.Sprintf("Full statistics written to %s.", path), nil
 }

@@ -283,7 +283,9 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	}
 	if _, ok := msg.(gruid.MsgQuit); ok {
 		if md.mode != modeQuit { // in case of already quitting
-			md.g.Save()
+			if err := md.g.Save(); err != nil {
+				log.Printf("saving before quitting: %v", err)
+			}
 		}
 		md.mode = modeQuit
 		return gruid.End()
@@ -892,8 +894,8 @@ func (md *model) win() {
 	md.mode = modeEnd
 }
 
-func (md *model) dump(err error) {
-	s := md.g.SimplifedDump(err)
+func (md *model) dump(msg string, err error) {
+	s := md.g.SimplifedDump(msg, err)
 	lines := strings.Split(s, "\n")
 	stts := []ui.StyledText{}
 	for _, l := range lines {
