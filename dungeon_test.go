@@ -12,31 +12,31 @@ import (
 
 var Rounds = 40
 
-func (d *dungeon) FreePassableCell() gruid.Point {
+func (m *Map) FreePassableCell() gruid.Point {
 	count := 0
 	for {
 		count++
 		if count > maxIterations {
 			panic("FreeCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := RandInt(MapWidth)
+		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
-		c := d.Cell(p)
+		c := m.Cell(p)
 		if c.IsPassable() {
 			return p
 		}
 	}
 }
 
-func (d *dungeon) connex(pr *paths.PathRange) bool {
-	pos := d.FreePassableCell()
+func (m *Map) connex(pr *paths.PathRange) bool {
+	pos := m.FreePassableCell()
 	passable := func(p gruid.Point) bool {
-		return terrain(d.Cell(p)) != WallCell
+		return terrain(m.Cell(p)) != WallCell
 	}
 	cp := newPather(passable)
 	pr.CCMap(cp, pos)
-	it := d.Grid.Iterator()
+	it := m.Terrain.Iterator()
 	for it.Next() {
 		if cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
 			return false
@@ -45,12 +45,12 @@ func (d *dungeon) connex(pr *paths.PathRange) bool {
 	return true
 }
 
-func (d *dungeon) String() string {
+func (m *Map) String() string {
 	b := &bytes.Buffer{}
-	it := d.Grid.Iterator()
+	it := m.Terrain.Iterator()
 	for i := 0; it.Next(); i++ {
 		c := cell(it.Cell())
-		if i > 0 && i%DungeonWidth == 0 {
+		if i > 0 && i%MapWidth == 0 {
 			fmt.Fprint(b, "\n")
 		}
 		if terrain(c) == WallCell {

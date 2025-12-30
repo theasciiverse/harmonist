@@ -114,9 +114,9 @@ func (g *Game) Dump() string {
 	}
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "Dungeon:\n")
-	fmt.Fprintf(buf, "┌%s┐\n", strings.Repeat("─", DungeonWidth))
+	fmt.Fprintf(buf, "┌%s┐\n", strings.Repeat("─", MapWidth))
 	buf.WriteString(g.DumpDungeon())
-	fmt.Fprintf(buf, "└%s┘\n", strings.Repeat("─", DungeonWidth))
+	fmt.Fprintf(buf, "└%s┘\n", strings.Repeat("─", MapWidth))
 	fmt.Fprintf(buf, "\n")
 	if g.Stats.Killed > 0 {
 		fmt.Fprint(buf, g.DumpedKilledMonsters())
@@ -288,12 +288,12 @@ func (g *Game) DumpStory() string {
 
 func (g *Game) DumpDungeon() string {
 	buf := bytes.Buffer{}
-	it := g.Dungeon.Grid.Iterator()
+	it := g.Dungeon.Terrain.Iterator()
 	i := 0
 	for it.Next() {
 		p := it.P()
 		c := cell(it.Cell())
-		if i%DungeonWidth == 0 {
+		if i%MapWidth == 0 {
 			if i == 0 {
 				buf.WriteRune('│')
 			} else {

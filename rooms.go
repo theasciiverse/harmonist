@@ -54,8 +54,8 @@ func roomDistance(r1, r2 *room) int {
 	return paths.DistanceManhattan(r1.p.Add(gruid.Point{r1.w / 2, r1.h / 2}), r2.p.Add(gruid.Point{r2.w / 2, r2.h / 2}))
 }
 
-func (r *room) HasSpace(dg *dgen) bool {
-	if DungeonWidth-r.p.X < r.w || DungeonHeight-r.p.Y < r.h {
+func (r *room) HasSpace(dg *MapGen) bool {
+	if MapWidth-r.p.X < r.w || MapHeight-r.p.Y < r.h {
 		return false
 	}
 	for i := r.p.X - 1; i <= r.p.X+r.w; i++ {
@@ -69,7 +69,7 @@ func (r *room) HasSpace(dg *dgen) bool {
 	return true
 }
 
-func (r *room) Dig(dg *dgen) {
+func (r *room) Dig(dg *MapGen) {
 	runedraw := func(p gruid.Point, c rune) {
 		q := gruid.Point{X: r.p.X + p.X, Y: r.p.Y + p.Y}
 		if valid(q) && c != '?' {
@@ -78,7 +78,7 @@ func (r *room) Dig(dg *dgen) {
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
 			if valid(q) {
-				dg.d.SetCell(q, GroundCell)
+				dg.m.SetCell(q, GroundCell)
 			}
 		case 'B':
 			// obstacle
@@ -104,27 +104,27 @@ func (r *room) Dig(dg *dgen) {
 				t = GroundCell
 			}
 			if valid(q) {
-				dg.d.SetCell(q, t)
+				dg.m.SetCell(q, t)
 			}
 		case '#', '+':
 			if valid(q) {
-				dg.d.SetCell(q, WallCell)
+				dg.m.SetCell(q, WallCell)
 			}
 		case 'T':
 			if valid(q) {
-				dg.d.SetCell(q, TreeCell)
+				dg.m.SetCell(q, TreeCell)
 			}
 		case 'π':
 			if valid(q) {
-				dg.d.SetCell(q, TableCell)
+				dg.m.SetCell(q, TableCell)
 			}
 		case 'l':
 			if valid(q) {
-				dg.d.SetCell(q, LightCell)
+				dg.m.SetCell(q, LightCell)
 			}
 		case 'W':
 			if valid(q) {
-				dg.d.SetCell(q, WindowCell)
+				dg.m.SetCell(q, WindowCell)
 			}
 		case '"',
 			'?',
@@ -153,7 +153,7 @@ func (r *room) Dig(dg *dgen) {
 		case '|':
 			r.places = append(r.places, place{p: q, kind: PlaceDoor})
 		case '+', '-':
-			if q.X == 0 || q.X == DungeonWidth-1 || q.Y == 0 || q.Y == DungeonHeight-1 {
+			if q.X == 0 || q.X == MapWidth-1 || q.Y == 0 || q.Y == MapHeight-1 {
 				break
 			}
 			e := rentry{}
@@ -164,40 +164,40 @@ func (r *room) Dig(dg *dgen) {
 			r.entries = append(r.entries, e)
 		case '"':
 			if valid(q) {
-				dg.d.SetCell(q, FoliageCell)
+				dg.m.SetCell(q, FoliageCell)
 			}
 		case ',':
 			if valid(q) {
-				dg.d.SetCell(q, CavernCell)
+				dg.m.SetCell(q, CavernCell)
 			}
 		case '~':
 			if valid(q) {
-				dg.d.SetCell(q, WaterCell)
+				dg.m.SetCell(q, WaterCell)
 			}
 		case 'c':
 			if valid(q) {
-				dg.d.SetCell(q, ChasmCell)
+				dg.m.SetCell(q, ChasmCell)
 			}
 		case 'q':
 			if valid(q) {
-				dg.d.SetCell(q, QueenRockCell)
+				dg.m.SetCell(q, QueenRockCell)
 			}
 		case 'S':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Shaedra = q
-			dg.d.SetCell(q, StoryCell)
+			dg.m.SetCell(q, StoryCell)
 		case 'M':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Marevor = q
-			dg.d.SetCell(q, StoryCell)
+			dg.m.SetCell(q, StoryCell)
 		case 'Δ':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Monolith = q
-			dg.d.SetCell(q, StoryCell)
+			dg.m.SetCell(q, StoryCell)
 		case 'A':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Artifact = q
-			dg.d.SetCell(q, StoryCell)
+			dg.m.SetCell(q, StoryCell)
 		}
 	}
 	r.vault.Iter(runedraw)

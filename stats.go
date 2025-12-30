@@ -74,7 +74,7 @@ func (g *Game) TurnStats() {
 func (g *Game) LevelStats() {
 	free := 0
 	exp := 0
-	it := g.Dungeon.Grid.Iterator()
+	it := g.Dungeon.Terrain.Iterator()
 	for it.Next() {
 		c := cell(it.Cell())
 		if c.IsWall() || terrain(c) == ChasmCell {

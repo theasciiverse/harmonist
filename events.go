@@ -208,7 +208,7 @@ func (cev *posEvent) Handle(g *Game) {
 		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.P)
 		g.NoiseIllusion[cev.P] = true
-		it := g.Dungeon.Grid.Iterator()
+		it := g.Dungeon.Terrain.Iterator()
 		for it.Next() {
 			p := it.P()
 			c := cell(it.Cell())

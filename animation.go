@@ -65,7 +65,7 @@ func (md *model) startAnimSeq() {
 	if md.anims.Done() {
 		md.resetAnimations()
 	}
-	it := md.g.Dungeon.Grid.Iterator()
+	it := md.g.Dungeon.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
@@ -533,7 +533,7 @@ func (md *model) AbyssFallAnimation() {
 	if DisableAnimations {
 		return
 	}
-	gd := rl.NewGrid(DungeonWidth, DungeonHeight)
+	gd := rl.NewGrid(MapWidth, MapHeight)
 	max := 5
 	gd.FillFunc(func() rl.Cell {
 		return rl.Cell(RandInt(max))

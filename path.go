@@ -27,7 +27,7 @@ func (sp *simplePath) Neighbors(p gruid.Point) []gruid.Point {
 }
 
 type dungeonPath struct {
-	dungeon *dungeon
+	dungeon *Map
 	nbs     paths.Neighbors
 	wcost   int
 }
@@ -51,7 +51,7 @@ func (dp *dungeonPath) Estimation(from, to gruid.Point) int {
 }
 
 type gridPath struct {
-	dungeon *dungeon
+	dungeon *Map
 	nbs     paths.Neighbors
 }
 
@@ -89,7 +89,7 @@ func (dp *mappingPath) Estimation(from, to gruid.Point) int {
 }
 
 type tunnelPath struct {
-	dg  *dgen
+	dg  *MapGen
 	nbs paths.Neighbors
 }
 
@@ -102,7 +102,7 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 		return 50
 	}
 	cost := 1
-	c := tp.dg.d.Cell(from)
+	c := tp.dg.m.Cell(from)
 	if tp.dg.room[from] {
 		cost += 7
 	} else if !tp.dg.tunnel[from] && terrain(c) != GroundCell {
@@ -111,7 +111,7 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 	if c.IsPassable() {
 		return cost
 	}
-	wc := countWalls(tp.dg.d.Grid, from, 1, true)
+	wc := countWalls(tp.dg.m.Terrain, from, 1, true)
 	return cost + 8 - wc
 }
 
@@ -218,7 +218,7 @@ func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
 
 type monPath struct {
 	g       *Game
-	monster *monster
+	monster *Monster
 	nbs     paths.Neighbors
 }
 
@@ -297,7 +297,7 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 	return distance(from, to)
 }
 
-func (m *monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
+func (m *Monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
 	mp := &monPath{g: g, monster: m}
 	var path []gruid.Point
 	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterLOSRange &&

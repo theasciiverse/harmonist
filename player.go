@@ -8,7 +8,8 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-type player struct {
+// Player represents the player.
+type Player struct {
 	HP      int
 	HPbonus int
 	MP      int
@@ -22,18 +23,20 @@ type player struct {
 	Target    gruid.Point
 	LOS       map[gruid.Point]bool
 	FOV       *rl.FOV
-	Inventory inventory
+	Inventory Inventory
 }
 
-type inventory struct {
+// Inventory represents the inventory.
+type Inventory struct {
 	Body item
 	Neck item
 	Misc item
 }
 
+// DefaultHealth represents the starting max HP.
 const DefaultHealth = 5
 
-func (pl *player) HPMax() int {
+func (pl *Player) HPMax() int {
 	hpmax := DefaultHealth
 	if pl.Inventory.Body == CloakVitality {
 		hpmax += 2
@@ -44,9 +47,10 @@ func (pl *player) HPMax() int {
 	return hpmax
 }
 
+// DefaultMPmax represents the starting max MP.
 const DefaultMPmax = 6
 
-func (pl *player) MPMax() int {
+func (pl *Player) MPMax() int {
 	mpmax := DefaultMPmax
 	if pl.Inventory.Body == CloakMagic {
 		mpmax += 2
@@ -54,7 +58,7 @@ func (pl *player) MPMax() int {
 	return mpmax
 }
 
-func (pl *player) HasStatus(st status) bool {
+func (pl *Player) HasStatus(st status) bool {
 	return pl.Statuses[st] > 0
 }
 

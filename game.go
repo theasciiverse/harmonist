@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev"
+var Version string = "v0.7.0-dev2"
 
 // game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -17,9 +17,9 @@ var Version string = "v0.7.0-dev"
 // to differentiate a bit things that are mainly game-logic from the stuff that
 // is more about ui.
 type Game struct {
-	Dungeon               *dungeon
-	Player                *player
-	Monsters              []*monster
+	Dungeon               *Map
+	Player                *Player
+	Monsters              []*Monster
 	MonstersPosCache      []int // monster (dungeon index + 1) / no monster (0)
 	Bands                 []bandInfo
 	Events                *rl.EventQueue
@@ -122,8 +122,8 @@ func (g *Game) FreePassableCell() gruid.Point {
 		if count > maxIterations {
 			panic("FreePassableCell")
 		}
-		x := RandInt(DungeonWidth)
-		y := RandInt(DungeonHeight)
+		x := RandInt(MapWidth)
+		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
 		c := d.Cell(p)
 		if !c.IsPassable() {
@@ -144,9 +144,9 @@ const MaxDepth = 11
 const WinDepth = 8
 
 const (
-	DungeonHeight = 21
-	DungeonWidth  = 80
-	DungeonNCells = DungeonWidth * DungeonHeight
+	MapHeight     = 21
+	MapWidth      = 80
+	DungeonNCells = MapWidth * MapHeight
 )
 
 func (g *Game) GenDungeon() {
@@ -182,7 +182,7 @@ func (g *Game) GenDungeon() {
 }
 
 func (g *Game) InitPlayer() {
-	g.Player = &player{
+	g.Player = &Player{
 		HP:      DefaultHealth,
 		MP:      DefaultMPmax,
 		Bananas: 1,
@@ -378,8 +378,8 @@ func (g *Game) InitFirstLevel() {
 		g.GenPlan[MaxDepth-1], g.GenPlan[MaxDepth] = g.GenPlan[MaxDepth], g.GenPlan[MaxDepth-1]
 	}
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
-	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
-	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, DungeonWidth, DungeonHeight))
+	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
+	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 }
 
 func (g *Game) InitLevelStructures() {
@@ -433,7 +433,7 @@ func (g *Game) InitLevel() {
 			}
 		}
 	}
-	monsters := make([]*monster, len(g.Monsters))
+	monsters := make([]*Monster, len(g.Monsters))
 	copy(monsters, g.Monsters)
 	rand.Shuffle(len(monsters), func(i, j int) {
 		monsters[i], monsters[j] = monsters[j], monsters[i]
@@ -457,7 +457,7 @@ func (g *Game) InitLevel() {
 				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
 		}
 	case EarthquakeLevel:
-		g.PushEvent(&posEvent{P: gruid.Point{DungeonWidth/2 - 15 + RandInt(30), DungeonHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
+		g.PushEvent(&posEvent{P: gruid.Point{MapWidth/2 - 15 + RandInt(30), MapHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
 			g.Turn+10+RandInt(50))
 
 	}
@@ -508,7 +508,7 @@ func (g *Game) CleanEvents() {
 
 func (g *Game) StairsSlice() []gruid.Point {
 	stairs := []gruid.Point{}
-	it := g.Dungeon.Grid.Iterator()
+	it := g.Dungeon.Terrain.Iterator()
 	for it.Next() {
 		c := cell(it.Cell())
 		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) {

@@ -259,7 +259,7 @@ func (g *Game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.P)
 	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, QueenStoneDistance)
-	targets := []*monster{}
+	targets := []*Monster{}
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -284,7 +284,7 @@ func (g *Game) ActivateQueenStone() {
 }
 
 func (g *Game) ActivateNightStone() error {
-	targets := []*monster{}
+	targets := []*Monster{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.P) {
 			continue
@@ -308,7 +308,7 @@ func (g *Game) ActivateNightStone() error {
 }
 
 func (g *Game) ActivateTreeStone() error {
-	targets := []*monster{}
+	targets := []*Monster{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.P) || mons.Kind.ResistsLignification() {
 			continue

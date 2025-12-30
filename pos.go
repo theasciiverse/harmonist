@@ -81,15 +81,15 @@ func dirnorm(p, q gruid.Point) gruid.Point {
 }
 
 func idxtopos(i int) gruid.Point {
-	return gruid.Point{i % DungeonWidth, i / DungeonWidth}
+	return gruid.Point{i % MapWidth, i / MapWidth}
 }
 
 func idx(p gruid.Point) int {
-	return p.Y*DungeonWidth + p.X
+	return p.Y*MapWidth + p.X
 }
 
 func valid(p gruid.Point) bool {
-	return p.Y >= 0 && p.Y < DungeonHeight && p.X >= 0 && p.X < DungeonWidth
+	return p.Y >= 0 && p.Y < MapHeight && p.X >= 0 && p.X < MapWidth
 }
 
 func inViewCone(dir, from, to gruid.Point) bool {

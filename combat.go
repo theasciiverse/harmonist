@@ -19,7 +19,7 @@ func (g *Game) DamagePlayer(damage int) {
 	}
 }
 
-func (m *monster) InflictDamage(g *Game, damage, max int) {
+func (m *Monster) InflictDamage(g *Game, damage, max int) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.DamagePlayer(damage)
@@ -88,7 +88,7 @@ func (g *Game) MakeNoise(noise int, at gruid.Point) {
 	}
 }
 
-func (m *monster) LeaveRoomForPlayer(g *Game) gruid.Point {
+func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 	dij := &monPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
@@ -113,7 +113,7 @@ func (m *monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 	return free
 }
 
-func (g *Game) FindJumpTarget(m *monster) gruid.Point {
+func (g *Game) FindJumpTarget(m *Monster) gruid.Point {
 	dij := &jumpPath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
@@ -138,7 +138,7 @@ func (g *Game) FindJumpTarget(m *monster) gruid.Point {
 	return free
 }
 
-func (g *Game) Jump(mons *monster) (bool, error) {
+func (g *Game) Jump(mons *Monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		op := mons.P
 		if terrain(g.Dungeon.Cell(op)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
@@ -262,7 +262,7 @@ const (
 	DmgNormal = 1
 )
 
-func (g *Game) HandleKill(mons *monster) {
+func (g *Game) HandleKill(mons *Monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
 	if g.Player.Sees(mons.P) {

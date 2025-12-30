@@ -29,7 +29,7 @@ func (g *Game) Autoexplore() (again bool, err error) {
 
 func (g *Game) AllExplored() bool {
 	np := &noisePath{g: g}
-	it := g.Dungeon.Grid.Iterator()
+	it := g.Dungeon.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
 		c := cell(it.Cell())
@@ -48,7 +48,7 @@ func (g *Game) AllExplored() bool {
 func (g *Game) AutoexploreSources() []gruid.Point {
 	g.autosources = g.autosources[:0]
 	np := &noisePath{g: g}
-	it := g.Dungeon.Grid.Iterator()
+	it := g.Dungeon.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
 		c := cell(it.Cell())

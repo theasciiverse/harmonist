@@ -472,8 +472,8 @@ func (g *Game) EvokeDig() error {
 	return nil
 }
 
-func (g *Game) MonstersInLOS() []*monster {
-	ms := []*monster{}
+func (g *Game) MonstersInLOS() []*Monster {
+	ms := []*Monster{}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
 			ms = append(ms, mons)
@@ -487,8 +487,8 @@ func (g *Game) MonstersInLOS() []*monster {
 	return ms
 }
 
-func (g *Game) MonstersInCardinalLOS() []*monster {
-	ms := []*monster{}
+func (g *Game) MonstersInCardinalLOS() []*Monster {
+	ms := []*Monster{}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) && (mons.P.X == g.Player.P.X || mons.P.Y == g.Player.P.Y) {
 			ms = append(ms, mons)
@@ -568,7 +568,7 @@ func (g *Game) EvokeSwapping() error {
 		return errors.New("You cannot use this magara in a cramped place.")
 	}
 	ms := g.MonstersInLOS()
-	var mons *monster
+	var mons *Monster
 	best := 0
 	for _, m := range ms {
 		if m.Status(MonsLignified) {
@@ -590,7 +590,7 @@ func (g *Game) EvokeSwapping() error {
 	return nil
 }
 
-func (g *Game) SwapWithMonster(mons *monster) {
+func (g *Game) SwapWithMonster(mons *Monster) {
 	g.Printf("You swap positions with the %s.", mons.Kind)
 	g.md.SwappingAnimation(mons.P, g.Player.P)
 	g.PlacePlayerAt(mons.P)

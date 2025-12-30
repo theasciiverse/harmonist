@@ -66,8 +66,8 @@ func (md *model) examine(p gruid.Point) {
 	md.targ.ex.scroll = false
 }
 
-func (md *model) targetMonsters() []*monster {
-	tms := []*monster{}
+func (md *model) targetMonsters() []*Monster {
+	tms := []*Monster{}
 	for _, m := range md.g.Monsters {
 		if !m.Exists() || !md.g.Player.Sees(m.P) {
 			continue
@@ -79,7 +79,7 @@ func (md *model) targetMonsters() []*monster {
 		if !m.Exists() || md.g.Player.Sees(m.P) {
 			continue
 		}
-		mons := &monster{}
+		mons := &Monster{}
 		*mons = *m
 		mons.P = p
 		tms = append(tms, mons)
@@ -118,7 +118,7 @@ type posInfo struct {
 	Unreachable bool
 	Sees        bool
 	Player      bool
-	Monster     *monster
+	Monster     *Monster
 	Cell        cell
 	Cloud       string
 	Lighted     bool
@@ -127,8 +127,8 @@ type posInfo struct {
 func (md *model) drawPosInfo() {
 	g := md.g
 	p := gruid.Point{}
-	if md.targ.ex.p.X < DungeonWidth/2 {
-		p.X += DungeonWidth/2 + 1
+	if md.targ.ex.p.X < MapWidth/2 {
+		p.X += MapWidth/2 + 1
 	}
 	info := md.targ.ex.info
 
@@ -138,14 +138,14 @@ func (md *model) drawPosInfo() {
 		's': gruid.Style{}.WithFg(ColorGreen),
 	})
 	formatBox := func(title, s string, fg gruid.Color) {
-		md.description.Content = stt.WithText(s).Format(DungeonWidth/2 - 3)
-		if md.description.Content.Size().Y+2 > 2+DungeonHeight {
+		md.description.Content = stt.WithText(s).Format(MapWidth/2 - 3)
+		if md.description.Content.Size().Y+2 > 2+MapHeight {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg)),
 				Footer: ui.Text("scroll/page down for more...")}
 		} else {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
 		}
-		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, DungeonWidth/2-1, 2+DungeonHeight).Add(p))).Size().Y
+		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, MapWidth/2-1, 2+MapHeight).Add(p))).Size().Y
 	}
 
 	features := []string{}
@@ -229,7 +229,7 @@ func (md *model) drawPosInfo() {
 	}
 }
 
-func (m *monster) color(g *Game) gruid.Color {
+func (m *Monster) color(g *Game) gruid.Color {
 	var fg gruid.Color
 	if m.Status(MonsLignified) {
 		fg = ColorFgLignifiedMonster
@@ -249,7 +249,7 @@ func (m *monster) color(g *Game) gruid.Color {
 	return fg
 }
 
-func (m *monster) statusesText() string {
+func (m *Monster) statusesText() string {
 	infos := []string{}
 	for st, i := range m.Statuses {
 		if i > 0 {
@@ -259,7 +259,7 @@ func (m *monster) statusesText() string {
 	return strings.Join(infos, ", ")
 }
 
-func (m *monster) traits() string {
+func (m *Monster) traits() string {
 	var info string
 	info += fmt.Sprintf("Their size is %s.", m.Kind.Size())
 	if m.Kind.Peaceful() {
