@@ -26,7 +26,6 @@ const (
 	ActionRunE
 	ActionWaitTurn
 	ActionDescend
-	ActionTargetNearestStairs
 	ActionExplore
 	ActionExamine
 	ActionEvoke
@@ -74,7 +73,6 @@ var ConfigurableKeyActions = [...]action{
 	ActionInteract,
 	ActionInventory,
 	ActionExamine,
-	ActionTargetNearestStairs,
 	ActionExplore,
 	ActionLogs,
 	ActionDump,
@@ -93,7 +91,6 @@ func (k action) normalModeAction() bool {
 		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
 		ActionWaitTurn,
 		ActionDescend,
-		ActionTargetNearestStairs,
 		ActionExplore,
 		ActionExamine,
 		ActionEvoke,
@@ -138,8 +135,6 @@ func (k action) String() (text string) {
 		text = "Wait a turn"
 	case ActionDescend:
 		text = "Descend stairs"
-	case ActionTargetNearestStairs:
-		text = "Target nearest stairs"
 	case ActionExplore:
 		text = "Autoexplore"
 	case ActionExamine:
@@ -209,7 +204,7 @@ func (k action) targetingModeDescription() (text string) {
 	case ActionNextMonster:
 		text = "Target next monster"
 	case ActionNextObject:
-		text = "Target next object"
+		text = "Target next stone/magara/item"
 	case ActionNextStairs:
 		text = "Target next stairs"
 	case ActionTarget:
@@ -328,23 +323,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.CancelExamine()
 	case ActionWaitTurn:
 		g.WaitTurn()
-	case ActionTargetNearestStairs:
-		again = true
-		stairs := g.StairsSlice()
-		sortedStairs := g.SortedNearestTo(stairs, g.Player.P)
-		if len(sortedStairs) > 0 {
-			stair := sortedStairs[0]
-			if g.Player.P == stair {
-				err = errors.New("You are already on the stairs.")
-				break
-			}
-			if valid(stair) {
-				md.targ.kbTargeting = true
-				md.Examine(stair)
-			}
-		} else {
-			err = errors.New("You cannot target any stairs.")
-		}
 	case ActionInteract:
 		c := g.Dungeon.Cell(g.Player.P)
 		switch terrain(c) {

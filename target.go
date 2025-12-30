@@ -370,15 +370,15 @@ func (md *model) target() error {
 }
 
 func (md *model) nextMonster(key gruid.Key, data *examination) {
+	ms := md.targetMonsters()
+	if len(ms) == 0 {
+		return
+	}
 	if !md.targ.kbTargeting {
 		md.targ.kbTargeting = true
 		data.nmonster = -1
 	}
 	nmonster := data.nmonster
-	ms := md.targetMonsters()
-	if len(ms) == 0 {
-		return
-	}
 	if key == "+" {
 		nmonster++
 	} else {
@@ -396,16 +396,19 @@ func (md *model) nextMonster(key gruid.Key, data *examination) {
 }
 
 func (md *model) nextStair(data *examination) {
-	if !md.targ.kbTargeting {
-		md.targ.kbTargeting = true
-		data.stairIndex = 0
-	}
-	md.targ.kbTargeting = true
 	g := md.g
 	if data.sortedStairs == nil {
 		stairs := g.StairsSlice()
 		data.sortedStairs = g.SortedNearestTo(stairs, g.Player.P)
 	}
+	if len(data.sortedStairs) == 0 {
+		return
+	}
+	if !md.targ.kbTargeting {
+		md.targ.kbTargeting = true
+		data.stairIndex = 0
+	}
+	md.targ.kbTargeting = true
 	if data.stairIndex >= len(data.sortedStairs) {
 		data.stairIndex = 0
 	}
@@ -416,29 +419,16 @@ func (md *model) nextStair(data *examination) {
 }
 
 func (md *model) nextObject(np gruid.Point, data *examination) {
-	md.targ.kbTargeting = true
 	g := md.g
 	nobject := data.nobject
 	if len(data.objects) == 0 {
 		for p := range g.Objects.Stones {
 			data.objects = append(data.objects, p)
 		}
-		for p := range g.Objects.Barrels {
-			data.objects = append(data.objects, p)
-		}
 		for p := range g.Objects.Magaras {
 			data.objects = append(data.objects, p)
 		}
-		for p := range g.Objects.Bananas {
-			data.objects = append(data.objects, p)
-		}
 		for p := range g.Objects.Items {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Scrolls {
-			data.objects = append(data.objects, p)
-		}
-		for p := range g.Objects.Potions {
 			data.objects = append(data.objects, p)
 		}
 		data.objects = g.SortedNearestTo(data.objects, g.Player.P)
@@ -453,6 +443,12 @@ func (md *model) nextObject(np gruid.Point, data *examination) {
 			np = p
 			break
 		}
+	}
+	if len(data.objects) == 0 {
+		return
+	}
+	if !md.targ.kbTargeting {
+		md.targ.kbTargeting = true
 	}
 	data.nobject = nobject
 	md.Examine(np)

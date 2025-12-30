@@ -128,7 +128,6 @@ func (md *model) initKeys() {
 		"L":                 ActionRunE,
 		".":                 ActionWaitTurn,
 		gruid.KeyEnter:      ActionWaitTurn,
-		"G":                 ActionTargetNearestStairs,
 		"o":                 ActionExplore,
 		"x":                 ActionExamine,
 		"v":                 ActionEvoke,
