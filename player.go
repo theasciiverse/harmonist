@@ -64,37 +64,37 @@ func (pl *Player) HasStatus(st status) bool {
 
 func (g *Game) AutoToDir() bool {
 	if g.MonsterInLOS() == nil {
-		p := g.Player.P.Add(g.AutoDir)
-		nbs := g.dirNeighbors(p, g.AutoDir)
-		blocked := g.dirBlocked(p, g.AutoDir)
+		p := g.Player.P.Add(g.autoDir)
+		nbs := g.dirNeighbors(p, g.autoDir)
+		blocked := g.dirBlocked(p, g.autoDir)
 		if g.PlayerCanPass(p) && (g.autoDirNeighbors == nbs || nbs != dirFreeLaterals && blocked ||
-			nbs == dirBlockedLaterals && (g.autoDirChanged || g.dirNeighbors(g.Player.P, g.AutoDir) == dirBlockedLaterals)) {
+			nbs == dirBlockedLaterals && (g.autoDirChanged || g.dirNeighbors(g.Player.P, g.autoDir) == dirBlockedLaterals)) {
 			again, err := g.PlayerBump(p)
 			if err != nil {
 				g.Print(err.Error())
-				g.AutoDir = ZP
+				g.autoDir = ZP
 				return false
 			}
 			if again {
-				g.AutoDir = ZP
+				g.autoDir = ZP
 				return false
 			}
 			// player moved in the direction
 			g.autoDirChanged = false
 			if blocked && nbs > 0 {
-				if g.PlayerCanPass(left(p, g.AutoDir)) {
-					g.AutoDir = left(p, g.AutoDir).Sub(p)
+				if g.PlayerCanPass(left(p, g.autoDir)) {
+					g.autoDir = left(p, g.autoDir).Sub(p)
 					g.autoDirChanged = true
-				} else if g.PlayerCanPass(right(p, g.AutoDir)) {
-					g.AutoDir = right(p, g.AutoDir).Sub(p)
+				} else if g.PlayerCanPass(right(p, g.autoDir)) {
+					g.autoDir = right(p, g.autoDir).Sub(p)
 					g.autoDirChanged = true
 				}
-				g.autoDirNeighbors = g.dirNeighbors(p, g.AutoDir)
+				g.autoDirNeighbors = g.dirNeighbors(p, g.autoDir)
 			}
 			return true
 		}
 	}
-	g.AutoDir = ZP
+	g.autoDir = ZP
 	return false
 }
 
@@ -123,7 +123,7 @@ func (g *Game) dirBlocked(p, dir gruid.Point) bool {
 
 func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
 	if g.MonsterInLOS() != nil {
-		g.AutoDir = ZP
+		g.autoDir = ZP
 		return again, errors.New("You cannot travel while there are monsters in view.")
 	}
 	p := g.Player.P.Add(dir)
@@ -134,19 +134,19 @@ func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
 	if err != nil || again {
 		return again, err
 	}
-	g.AutoDir = dir
+	g.autoDir = dir
 	nbs := g.dirNeighbors(p, dir)
 	g.autoDirChanged = false
 	blocked := g.dirBlocked(p, dir)
 	if blocked && nbs > 0 {
 		if g.PlayerCanPass(left(p, dir)) {
-			g.AutoDir = left(p, dir).Sub(p)
+			g.autoDir = left(p, dir).Sub(p)
 			g.autoDirChanged = true
 		} else if g.PlayerCanPass(right(p, dir)) {
-			g.AutoDir = right(p, dir).Sub(p)
+			g.autoDir = right(p, dir).Sub(p)
 			g.autoDirChanged = true
 		}
-		g.autoDirNeighbors = g.dirNeighbors(p, g.AutoDir)
+		g.autoDirNeighbors = g.dirNeighbors(p, g.autoDir)
 	} else {
 		g.autoDirNeighbors = nbs
 	}
@@ -154,15 +154,15 @@ func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
 }
 
 func (g *Game) MoveToTarget() bool {
-	if !valid(g.AutoTarget) {
+	if !valid(g.autoTarget) {
 		return false
 	}
-	path := g.PlayerPath(g.Player.P, g.AutoTarget)
+	path := g.PlayerPath(g.Player.P, g.autoTarget)
 	if g.MonsterInLOS() != nil {
-		g.AutoTarget = invalidPos
+		g.autoTarget = invalidPos
 	}
 	if len(path) < 1 {
-		g.AutoTarget = invalidPos
+		g.autoTarget = invalidPos
 		return false
 	}
 	var err error
@@ -174,11 +174,11 @@ func (g *Game) MoveToTarget() bool {
 	}
 	if err != nil {
 		g.Print(err.Error())
-		g.AutoTarget = invalidPos
+		g.autoTarget = invalidPos
 		return false
 	}
-	if valid(g.AutoTarget) && g.Player.P == g.AutoTarget {
-		g.AutoTarget = invalidPos
+	if valid(g.autoTarget) && g.Player.P == g.autoTarget {
+		g.autoTarget = invalidPos
 	}
 	return !again
 }
@@ -197,7 +197,7 @@ func (g *Game) MonsterCount() (count int) {
 }
 
 func (g *Game) Rest() error {
-	if terrain(g.Dungeon.Cell(g.Player.P)) != BarrelCell {
+	if terrain(g.Map.Cell(g.Player.P)) != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
 	if cld, ok := g.Clouds[g.Player.P]; ok && cld == CloudFire {
@@ -266,9 +266,9 @@ const MaxBananas = 4
 
 func (g *Game) CollectGround() {
 	p := g.Player.P
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	if c.IsNotable() {
-		g.AutoexploreMapRebuild = true
+		g.autoexploreMapRebuild = true
 	switchcell:
 		switch terrain(c) {
 		case BarrelCell:
@@ -280,7 +280,7 @@ func (g *Game) CollectGround() {
 				g.Print("You take a banana.")
 				g.Player.Bananas++
 				g.StoryPrintf("Found banana (bananas: %d)", g.Player.Bananas)
-				g.Dungeon.SetCell(p, GroundCell)
+				g.Map.SetCell(p, GroundCell)
 				delete(g.Objects.Bananas, p)
 				if g.Player.Bananas == MaxBananas {
 					AchBananaCollector.Get(g)
@@ -293,14 +293,14 @@ func (g *Game) CollectGround() {
 				}
 				g.Player.Magaras[i] = g.Objects.Magaras[p]
 				delete(g.Objects.Magaras, p)
-				g.Dungeon.SetCell(p, GroundCell)
+				g.Map.SetCell(p, GroundCell)
 				g.Printf("You take the %s.", g.Player.Magaras[i])
 				g.StoryPrintf("Took %s", g.Player.Magaras[i])
 				break switchcell
 			}
 			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[p].String(), false))
 		case FakeStairCell:
-			g.Dungeon.SetCell(p, GroundCell)
+			g.Map.SetCell(p, GroundCell)
 			g.PrintStyled("You stand over fake stairs.", logSpecial)
 			g.PrintStyled("Harmonic illusions!", logSpecial)
 			g.StoryPrint("Found harmonic fake stairs!")
@@ -361,7 +361,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 	if !valid(p) {
 		return again, errors.New("You cannot move there.")
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	switch {
 	case terrain(c) == BarrierCell && !g.Player.HasStatus(StatusLevitation):
 		return again, errors.New("You cannot move into a magical barrier.")
@@ -394,7 +394,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 			g.Print("You crawl under the wall.")
 		}
 		if c.IsDiggable() && terrain(c) != HoledWallCell {
-			g.Dungeon.SetCell(p, RubbleCell)
+			g.Map.SetCell(p, RubbleCell)
 			g.MakeNoise(WallNoise, p)
 			g.Print(g.CrackSound())
 			g.Fog(p, 1)
@@ -412,7 +412,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		}
 		if g.Player.Inventory.Body == CloakSmoke {
 			_, ok := g.Clouds[g.Player.P]
-			if !ok && g.Dungeon.Cell(g.Player.P).AllowsFog() {
+			if !ok && g.Map.Cell(g.Player.P).AllowsFog() {
 				g.Clouds[g.Player.P] = CloudFog
 				g.PushEventD(&posEvent{P: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
@@ -440,7 +440,7 @@ func (g *Game) SwiftFog() {
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]
-		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
+		if !ok && g.Map.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
@@ -471,7 +471,7 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 		m.MoveTo(g, ppos)
 		m.Swapped = true
 	}
-	if terrain(g.Dungeon.Cell(g.Player.P)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
+	if terrain(g.Map.Cell(g.Player.P)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
 		g.MakeNoise(QueenRockFootstepNoise, g.Player.P)
 		g.Print("Tap-tap.")
 	}
@@ -490,7 +490,7 @@ func (g *Game) EnterLignification() {
 }
 
 func (g *Game) ExtinguishFire() error {
-	g.Dungeon.SetCell(g.Player.P, ExtinguishedLightCell)
+	g.Map.SetCell(g.Player.P, ExtinguishedLightCell)
 	g.Objects.Lights[g.Player.P] = false
 	g.Stats.Extinguishments++
 	if g.Stats.Extinguishments >= 15 {
@@ -525,7 +525,7 @@ func (g *Game) PutFakeStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *Game) UpdateKnowledge(p gruid.Point, c cell) {
+func (g *Game) UpdateKnowledge(p gruid.Point, c Cell) {
 	if g.Player.Sees(p) {
 		return
 	}
@@ -539,7 +539,7 @@ func (g *Game) PlayerCanPass(p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	return c.IsPlayerPassable() ||
 		g.Player.HasStatus(StatusLevitation) && (terrain(c) == BarrierCell || c.IsLevitatePassable()) ||
 		g.Player.HasStatus(StatusDig) && c.IsDiggable()
@@ -549,7 +549,7 @@ func (g *Game) PlayerCanJumpPass(p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	return c.IsJumpPassable() ||
 		g.Player.HasStatus(StatusLevitation) && terrain(c) == BarrierCell
 }

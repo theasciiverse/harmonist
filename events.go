@@ -41,7 +41,7 @@ func (ev *playerEvent) Handle(g *Game) {
 		g.ComputeLOS()
 		g.md.Story()
 	case AbyssFall:
-		if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
+		if terrain(g.Map.Cell(g.Player.P)) == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
 	}
@@ -74,7 +74,7 @@ func (sev *statusEvent) Handle(g *Game) {
 		g.md.StatusEndAnimation()
 		switch st {
 		case StatusLevitation:
-			if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
+			if terrain(g.Map.Cell(g.Player.P)) == ChasmCell {
 				g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 			}
 		case StatusLignification:
@@ -149,7 +149,7 @@ func (cev *posEvent) Handle(g *Game) {
 		g.ComputeLOS()
 	case ObstructionEnd:
 		t := g.MagicalBarriers[cev.P]
-		if terrain(g.Dungeon.Cell(cev.P)) == BarrierCell {
+		if terrain(g.Map.Cell(cev.P)) == BarrierCell {
 			_, ok := g.TerrainKnowledge[cev.P]
 			if !ok {
 				g.UpdateKnowledge(cev.P, BarrierCell)
@@ -159,10 +159,10 @@ func (cev *posEvent) Handle(g *Game) {
 			delete(g.MagicalBarriers, cev.P)
 			delete(g.TerrainKnowledge, cev.P)
 		}
-		if terrain(g.Dungeon.Cell(cev.P)) != BarrierCell {
+		if terrain(g.Map.Cell(cev.P)) != BarrierCell {
 			break
 		}
-		g.Dungeon.SetCell(cev.P, t)
+		g.Map.SetCell(cev.P, t)
 	case ObstructionProgression:
 		p := g.FreePassableCell()
 		g.MagicalBarrierAt(p)
@@ -208,17 +208,17 @@ func (cev *posEvent) Handle(g *Game) {
 		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.P)
 		g.NoiseIllusion[cev.P] = true
-		it := g.Dungeon.Terrain.Iterator()
+		it := g.Map.Terrain.Iterator()
 		for it.Next() {
 			p := it.P()
-			c := cell(it.Cell())
-			if !c.IsDiggable() || !g.Dungeon.HasFreeNeighbor(&g.nbs, p) {
+			c := Cell(it.Cell())
+			if !c.IsDiggable() || !g.Map.HasFreeNeighbor(&g.nbs, p) {
 				continue
 			}
 			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
-			g.Dungeon.SetCell(p, RubbleCell)
+			g.Map.SetCell(p, RubbleCell)
 			g.UpdateKnowledge(p, terrain(c))
 			g.Fog(p, 1)
 		}
@@ -238,17 +238,17 @@ func (cev *posEvent) Handle(g *Game) {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print(g.CrackSound())
 			g.NoiseIllusion[cev.P] = true
-			dij := &gridPath{dungeon: g.Dungeon}
+			dij := &gridPath{dungeon: g.Map}
 			g.MakeNoise(OricExplosionNoise, cev.P)
 			nodes := g.PR.DijkstraMap(dij, []gruid.Point{cev.P}, 7)
 			fogs := []gruid.Point{}
-			terrains := []cell{}
+			terrains := []Cell{}
 			for _, n := range nodes {
-				c := g.Dungeon.Cell(n.P)
+				c := g.Map.Cell(n.P)
 				if !c.IsDiggable() {
 					continue
 				}
-				g.Dungeon.SetCell(n.P, RubbleCell)
+				g.Map.SetCell(n.P, RubbleCell)
 				g.Stats.Digs++
 				if g.Player.Sees(n.P) {
 					g.md.WallExplosionAnimation(n.P)
@@ -312,7 +312,7 @@ func (g *Game) Burn(p gruid.Point) {
 	if _, ok := g.Clouds[p]; ok {
 		return
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	if !c.Flammable() {
 		return
 	}
@@ -328,7 +328,7 @@ func (g *Game) Burn(p gruid.Point) {
 	case TreeCell:
 		g.Print("The tree vanishes in magical flames.")
 	}
-	g.Dungeon.SetCell(p, GroundCell)
+	g.Map.SetCell(p, GroundCell)
 	g.Clouds[p] = CloudFire
 	if !g.Player.Sees(p) {
 		g.UpdateKnowledge(p, terrain(c))

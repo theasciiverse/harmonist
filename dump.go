@@ -288,11 +288,11 @@ func (g *Game) DumpStory() string {
 
 func (g *Game) DumpDungeon() string {
 	buf := bytes.Buffer{}
-	it := g.Dungeon.Terrain.Iterator()
+	it := g.Map.Terrain.Iterator()
 	i := 0
 	for it.Next() {
 		p := it.P()
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if i%MapWidth == 0 {
 			if i == 0 {
 				buf.WriteRune('│')

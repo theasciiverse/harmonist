@@ -18,15 +18,15 @@ type Map struct {
 	Terrain rl.Grid
 }
 
-func (m *Map) Cell(p gruid.Point) cell {
-	return cell(m.Terrain.At(p))
+func (m *Map) Cell(p gruid.Point) Cell {
+	return Cell(m.Terrain.At(p))
 }
 
 func (m *Map) Border(p gruid.Point) bool {
 	return p.X == MapWidth-1 || p.Y == MapHeight-1 || p.X == 0 || p.Y == 0
 }
 
-func (m *Map) SetCell(p gruid.Point, c cell) {
+func (m *Map) SetCell(p gruid.Point, c Cell) {
 	oc := m.Cell(p)
 	m.Terrain.Set(p, rl.Cell(c|oc&Explored))
 }
@@ -79,7 +79,7 @@ func (mg *MapGen) HasTooManyWallNeighbors(p gruid.Point) bool {
 }
 
 func (g *Game) HasNonWallExploredNeighbor(p gruid.Point) bool {
-	d := g.Dungeon
+	d := g.Map
 	neighbors := g.cardinalNeighbors(p)
 	for _, q := range neighbors {
 		c := d.Cell(q)
@@ -267,7 +267,7 @@ func (mg *MapGen) PutHoledWalls(g *Game, n int) {
 	}
 	for range n {
 		p := candidates[mg.rand.IntN(len(candidates))]
-		g.Dungeon.SetCell(p, HoledWallCell)
+		g.Map.SetCell(p, HoledWallCell)
 	}
 }
 
@@ -285,12 +285,12 @@ func (mg *MapGen) PutWindows(g *Game, n int) {
 	}
 	for range n {
 		p := candidates[mg.rand.IntN(len(candidates))]
-		g.Dungeon.SetCell(p, WindowCell)
+		g.Map.SetCell(p, WindowCell)
 	}
 }
 
 func (g *Game) HoledWallCandidate(p gruid.Point) bool {
-	d := g.Dungeon
+	d := g.Map
 	if !valid(p) || !d.Cell(p).IsWall() {
 		return false
 	}
@@ -518,12 +518,12 @@ func (g *Game) GenRoomTunnels(ml maplayout) {
 		mg.GenRooms(roomNormalTemplates, normal+2, PlacementRandom)
 	}
 	mg.ConnectRooms()
-	g.Dungeon = m
+	g.Map = m
 	mg.PutDoors(g)
 	mg.PlayerStartCell(g, places)
 	mg.ClearUnconnected(g)
 	if mg.rand.IntN(10) > 0 {
-		var c cell
+		var c Cell
 		if mg.rand.IntN(5) > 1 {
 			c = ChasmCell
 		} else {
@@ -547,7 +547,7 @@ func (g *Game) GenRoomTunnels(ml maplayout) {
 	}
 	mg.AddSpecial(g, ml)
 	mg.PR.CCMapAll(newPather(func(p gruid.Point) bool {
-		return valid(p) && g.Dungeon.Cell(p).IsPassable()
+		return valid(p) && g.Map.Cell(p).IsPassable()
 	}))
 	mg.GenMonsters(g)
 	mg.PutCavernCells(g)
@@ -562,7 +562,7 @@ func (mg *MapGen) PutCavernCells(g *Game) {
 	it := mg.m.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		if terrain(cell(it.Cell())) == GroundCell && !mg.room[p] && !mg.tunnel[p] {
+		if terrain(Cell(it.Cell())) == GroundCell && !mg.room[p] && !mg.tunnel[p] {
 			d.SetCell(p, CavernCell)
 		}
 	}
@@ -710,7 +710,7 @@ func (mg *MapGen) PutLore(g *Game) {
 		g.GeneratedLore[i] = true
 		g.Objects.Lore[p] = i
 		g.Objects.Scrolls[p] = ScrollLore
-		g.Dungeon.SetCell(p, ScrollCell)
+		g.Map.SetCell(p, ScrollCell)
 		break
 	}
 }
@@ -735,17 +735,17 @@ func (mg *MapGen) GenLight(g *Game) {
 	}
 	for i := 0; i < no; i++ {
 		p := mg.OutsideGroundCell(g)
-		g.Dungeon.SetCell(p, LightCell)
+		g.Map.SetCell(p, LightCell)
 	}
 	for i := 0; i < ni; i++ {
 		p := mg.rooms[RandInt(len(mg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
 		if p != invalidPos {
-			g.Dungeon.SetCell(p, LightCell)
+			g.Map.SetCell(p, LightCell)
 		} else if mg.rand.IntN(10) > 0 {
 			i--
 		}
 	}
-	it := g.Dungeon.Terrain.Iterator()
+	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		if it.Cell() == rl.Cell(LightCell) {
 			g.Objects.Lights[it.P()] = true
@@ -781,7 +781,7 @@ loop:
 	}
 loopnb:
 	for _, npos := range neighbors {
-		c := g.Dungeon.Cell(npos)
+		c := g.Map.Cell(npos)
 		if c.IsGround() {
 			for _, pl := range r.places {
 				if npos == pl.p {
@@ -801,7 +801,7 @@ loopnb:
 			panic("no item")
 		}
 	}
-	g.Dungeon.SetCell(itpos, ScrollCell)
+	g.Map.SetCell(itpos, ScrollCell)
 	switch g.Depth {
 	case 1:
 		g.Objects.Scrolls[itpos] = ScrollStory
@@ -995,7 +995,7 @@ func (mg *MapGen) GenItem(g *Game) {
 		}
 		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
 	}
-	g.Dungeon.SetCell(p, ItemCell)
+	g.Map.SetCell(p, ItemCell)
 	var it item
 	switch plan {
 	case GenCloak:
@@ -1018,7 +1018,7 @@ func (mg *MapGen) GenBarrierStone(g *Game) {
 		}
 		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
 	}
-	g.Dungeon.SetCell(p, StoneCell)
+	g.Map.SetCell(p, StoneCell)
 	g.Objects.Stones[p] = SealStone
 }
 
@@ -1032,7 +1032,7 @@ func (mg *MapGen) GenMagara(g *Game) {
 		}
 		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
 	}
-	g.Dungeon.SetCell(p, MagaraCell)
+	g.Map.SetCell(p, MagaraCell)
 	mag := g.RandomMagara()
 	g.Objects.Magaras[p] = mag
 	g.GeneratedMagaras = append(g.GeneratedMagaras, mag.Kind)
@@ -1055,7 +1055,7 @@ func (mg *MapGen) GenStairs(g *Game, st stair) {
 	r.places[pj].used = true
 	r.places[pj].used = true
 	p := r.places[pj].p
-	g.Dungeon.SetCell(p, StairCell)
+	g.Map.SetCell(p, StairCell)
 	g.Objects.Stairs[p] = st
 }
 
@@ -1085,7 +1085,7 @@ loop:
 	r.places[pj].used = true
 	r.places[pj].used = true
 	p := r.places[pj].p
-	g.Dungeon.SetCell(p, FakeStairCell)
+	g.Map.SetCell(p, FakeStairCell)
 	g.Objects.FakeStairs[p] = true
 }
 
@@ -1099,7 +1099,7 @@ func (mg *MapGen) GenBarrel(g *Game) {
 		}
 		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceSpecialStatic)
 	}
-	g.Dungeon.SetCell(p, BarrelCell)
+	g.Map.SetCell(p, BarrelCell)
 	g.Objects.Barrels[p] = true
 }
 
@@ -1113,13 +1113,13 @@ func (mg *MapGen) GenTable(g *Game) {
 		}
 		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
 	}
-	g.Dungeon.SetCell(p, TableCell)
+	g.Map.SetCell(p, TableCell)
 }
 
 func (mg *MapGen) GenTree(g *Game) {
 	p := mg.OutsideCavernMiddleCell(g)
 	if p != invalidPos {
-		g.Dungeon.SetCell(p, TreeCell)
+		g.Map.SetCell(p, TreeCell)
 	}
 }
 
@@ -1211,7 +1211,7 @@ func (mg *MapGen) GenStones(g *Game) {
 			st = mg.RandomOutStone(g)
 		}
 		g.Objects.Stones[p] = st
-		g.Dungeon.SetCell(p, StoneCell)
+		g.Map.SetCell(p, StoneCell)
 	}
 }
 
@@ -1234,7 +1234,7 @@ func (dg *MapGen) RunCellularAutomataCave() bool {
 	return true
 }
 
-func (mg *MapGen) GenLake(c cell) {
+func (mg *MapGen) GenLake(c Cell) {
 	walls := []gruid.Point{}
 	xshift := 10 + mg.rand.IntN(5)
 	yshift := 5 + mg.rand.IntN(3)
@@ -1244,7 +1244,7 @@ func (mg *MapGen) GenLake(c cell) {
 		if p.X < xshift || p.Y < yshift || p.X > MapWidth-xshift || p.Y > MapHeight-yshift {
 			continue
 		}
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if terrain(c) == WallCell && !mg.room[p] {
 			walls = append(walls, p)
 		}
@@ -1317,7 +1317,7 @@ func (dg *MapGen) Foliage(less bool) {
 	it := dg.m.Terrain.Iterator()
 	itgd := gd.Iterator()
 	for it.Next() && itgd.Next() {
-		if terrain(cell(it.Cell())) == GroundCell && cell(itgd.Cell()) == FoliageCell {
+		if terrain(Cell(it.Cell())) == GroundCell && Cell(itgd.Cell()) == FoliageCell {
 			it.SetCell(rl.Cell(FoliageCell))
 		}
 	}
@@ -1609,7 +1609,7 @@ func (mg *MapGen) BandInfoFoliage(g *Game, band monsterBand) bandInfo {
 }
 
 func (g *Game) FreeCellForMonster() gruid.Point {
-	d := g.Dungeon
+	d := g.Map
 	count := 0
 	for {
 		count++
@@ -1654,7 +1654,7 @@ func (g *Game) FreeCellForBandMonster(p gruid.Point) gruid.Point {
 			continue
 		}
 		mons := g.MonsterAt(p)
-		if mons.Exists() || !g.Dungeon.Cell(p).IsPassable() {
+		if mons.Exists() || !g.Map.Cell(p).IsPassable() {
 			continue
 		}
 		return p

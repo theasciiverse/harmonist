@@ -233,11 +233,11 @@ func (k action) targetingModeAction() bool {
 
 func (md *model) interact() (string, bool) {
 	g := md.g
-	c := g.Dungeon.Cell(g.Player.P)
+	c := g.Map.Cell(g.Player.P)
 	switch terrain(c) {
 	case StairCell:
-		if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair ||
-			terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
+		if terrain(g.Map.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair ||
+			terrain(g.Map.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
 			return "descend", true
 		}
 		return "", false
@@ -324,10 +324,10 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	case ActionWaitTurn:
 		g.WaitTurn()
 	case ActionInteract:
-		c := g.Dungeon.Cell(g.Player.P)
+		c := g.Map.Cell(g.Player.P)
 		switch terrain(c) {
 		case StairCell:
-			if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair {
+			if terrain(g.Map.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] != BlockedStair {
 				strt := g.Objects.Stairs[g.Player.P]
 				err = md.checkShaedra(strt)
 				if err != nil {
@@ -337,7 +337,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				if g.Descend(DescendNormal) {
 					md.win()
 				}
-			} else if terrain(g.Dungeon.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
+			} else if terrain(g.Map.Cell(g.Player.P)) == StairCell && g.Objects.Stairs[g.Player.P] == BlockedStair {
 				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
 			} else {
 				err = errors.New("No stairs here.")
@@ -828,7 +828,7 @@ func (md *model) KeysHelp() {
 
 func (md *model) checkShaedra(st stair) (err error) {
 	g := md.g
-	if g.Depth == WinDepth && st == NormalStair && terrain(g.Dungeon.Cell(g.Places.Shaedra)) == StoryCell {
+	if g.Depth == WinDepth && st == NormalStair && terrain(g.Map.Cell(g.Places.Shaedra)) == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
 	}
 	return err

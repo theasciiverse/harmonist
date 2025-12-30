@@ -119,7 +119,7 @@ type posInfo struct {
 	Sees        bool
 	Player      bool
 	Monster     *Monster
-	Cell        cell
+	Cell        Cell
 	Cloud       string
 	Lighted     bool
 }
@@ -295,7 +295,7 @@ func (md *model) updatePosInfo() {
 	p := md.targ.ex.p
 	pi.P = p
 	switch {
-	case !explored(g.Dungeon.Cell(p)):
+	case !explored(g.Map.Cell(p)):
 		pi.Unknown = true
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
@@ -315,7 +315,7 @@ func (md *model) updatePosInfo() {
 	if g.Player.Sees(p) {
 		pi.Sees = true
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	if t, ok := g.TerrainKnowledge[p]; ok {
 		c = t | c&Explored
 	}
@@ -352,18 +352,18 @@ func (g *Game) computePathHighlight(p gruid.Point) {
 func (md *model) target() error {
 	g := md.g
 	p := md.targ.ex.p
-	if !explored(g.Dungeon.Cell(p)) {
+	if !explored(g.Map.Cell(p)) {
 		return errors.New("You do not know this place.")
 	}
-	if terrain(g.Dungeon.Cell(p)) == WallCell && !g.Player.HasStatus(StatusDig) {
+	if terrain(g.Map.Cell(p)) == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
 	path := g.PlayerPath(g.Player.P, p)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
-	if c := g.Dungeon.Cell(p); explored(c) && terrain(c) != WallCell {
-		g.AutoTarget = p
+	if c := g.Map.Cell(p); explored(c) && terrain(c) != WallCell {
+		g.autoTarget = p
 		return nil
 	}
 	return errors.New("Invalid destination.")
@@ -439,7 +439,7 @@ func (md *model) nextObject(np gruid.Point, data *examination) {
 		if nobject > len(data.objects)-1 {
 			nobject = 0
 		}
-		if explored(g.Dungeon.Cell(p)) {
+		if explored(g.Map.Cell(p)) {
 			np = p
 			break
 		}

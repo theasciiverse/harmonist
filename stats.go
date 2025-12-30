@@ -74,9 +74,9 @@ func (g *Game) TurnStats() {
 func (g *Game) LevelStats() {
 	free := 0
 	exp := 0
-	it := g.Dungeon.Terrain.Iterator()
+	it := g.Map.Terrain.Iterator()
 	for it.Next() {
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if c.IsWall() || terrain(c) == ChasmCell {
 			continue
 		}
@@ -171,7 +171,7 @@ func (ach achievement) Get(g *Game) {
 	}
 }
 
-func (c cell) ReachNotable() bool {
+func (c Cell) ReachNotable() bool {
 	switch terrain(c) {
 	case TreeCell, TableCell, HoledWallCell, DoorCell, BarrelCell:
 		return true
@@ -185,7 +185,7 @@ func (g *Game) Reach(p gruid.Point) {
 		return
 	}
 	g.Stats.AtNotablePos[p] = true
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	switch terrain(c) {
 	case TreeCell:
 		g.Stats.ClimbedTree++

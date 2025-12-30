@@ -532,7 +532,7 @@ func (m *Monster) CanPass(g *Game, p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	return c.IsPassable() ||
 		c.IsDoorPassable() && m.Kind.CanOpenDoors() ||
 		c.IsLevitatePassable() && m.Kind.CanFly() ||
@@ -624,13 +624,13 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 		}
 		g.StopAuto()
 	}
-	recomputeLOS := g.Player.Sees(m.P) && terrain(g.Dungeon.Cell(m.P)) == DoorCell ||
-		g.Player.Sees(p) && terrain(g.Dungeon.Cell(p)) == DoorCell
+	recomputeLOS := g.Player.Sees(m.P) && terrain(g.Map.Cell(m.P)) == DoorCell ||
+		g.Player.Sees(p) && terrain(g.Map.Cell(p)) == DoorCell
 	m.PlaceAt(g, p)
 	if recomputeLOS {
 		g.ComputeLOS()
 	}
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	if terrain(c) == ChasmCell && !m.Kind.CanFly() || terrain(c) == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
 		m.Dead = true
 		if g.Player.Sees(m.P) {
@@ -743,7 +743,7 @@ func (m *Monster) Explode(g *Game) {
 	g.md.ExplosionAnimation(FireExplosion, m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
 	for _, p := range append(neighbors, m.P) {
-		c := g.Dungeon.Cell(p)
+		c := g.Map.Cell(p)
 		if c.Flammable() {
 			g.Burn(p)
 		}
@@ -757,9 +757,9 @@ func (m *Monster) Explode(g *Game) {
 			m.InflictDamage(g, 1, 1)
 		} else if c.IsDestructible() && RandInt(3) > 0 {
 			if c.IsDiggable() {
-				g.Dungeon.SetCell(p, RubbleCell)
+				g.Map.SetCell(p, RubbleCell)
 			} else {
-				g.Dungeon.SetCell(p, GroundCell)
+				g.Map.SetCell(p, GroundCell)
 			}
 			if terrain(c) == BarrelCell {
 				delete(g.Objects.Barrels, p)
@@ -794,7 +794,7 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 		if !valid(nbpos) {
 			continue
 		}
-		c := g.Dungeon.Cell(nbpos)
+		c := g.Map.Cell(nbpos)
 		if c.IsPassable() {
 			fnb = append(fnb, nbpos)
 		}
@@ -947,7 +947,7 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 		}
 		for p, on := range g.Objects.Lights {
 			if !on && p == m.P {
-				g.Dungeon.SetCell(m.P, LightCell)
+				g.Map.SetCell(m.P, LightCell)
 				g.Objects.Lights[m.P] = true
 				if g.Player.Sees(m.P) {
 					g.Printf("%s makes a new fire.", m.Kind.Definite(true))
@@ -1080,7 +1080,7 @@ func (m *Monster) HandleMove(g *Game) bool {
 	if mons.Exists() && len(mons.Path) >= 2 {
 		monstarget = mons.Path[1]
 	}
-	c := g.Dungeon.Cell(target)
+	c := g.Map.Cell(target)
 	switch {
 	case m.Peaceful(g) && target == g.Player.P:
 		switch m.Kind {
@@ -1091,7 +1091,7 @@ func (m *Monster) HandleMove(g *Game) bool {
 		}
 	case !mons.Exists():
 		if m.Kind == MonsEarthDragon && c.IsDestructible() {
-			g.Dungeon.SetCell(target, RubbleCell)
+			g.Map.SetCell(target, RubbleCell)
 			if terrain(c) == BarrelCell {
 				delete(g.Objects.Barrels, target)
 			}
@@ -1186,12 +1186,12 @@ func (m *Monster) handleTurn(g *Game) {
 	if m.HandleMonsSpecifics(g) {
 		return
 	}
-	if distance(mpos, ppos) == 1 && terrain(g.Dungeon.Cell(ppos)) != BarrelCell && !m.Peaceful(g) {
+	if distance(mpos, ppos) == 1 && terrain(g.Map.Cell(ppos)) != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
 			return
 		}
-		if terrain(g.Dungeon.Cell(ppos)) == TreeCell && !m.Kind.CanAttackOnTree() {
+		if terrain(g.Map.Cell(ppos)) == TreeCell && !m.Kind.CanAttackOnTree() {
 			g.Printf("%s watches you from below.", m.Kind.Definite(true))
 			return
 		}
@@ -1219,12 +1219,12 @@ func (m *Monster) InvertFoliage(g *Game) {
 		return
 	}
 	invert := false
-	c := g.Dungeon.Cell(m.P)
+	c := g.Map.Cell(m.P)
 	if terrain(c) == CavernCell {
-		g.Dungeon.SetCell(m.P, FoliageCell)
+		g.Map.SetCell(m.P, FoliageCell)
 		invert = true
 	} else if terrain(c) == FoliageCell {
-		g.Dungeon.SetCell(m.P, CavernCell)
+		g.Map.SetCell(m.P, CavernCell)
 		invert = true
 	}
 	if invert {
@@ -1358,7 +1358,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
 		}
-		c := g.Dungeon.Cell(g.Player.P)
+		c := g.Map.Cell(g.Player.P)
 		if !(c.IsPassable() || c.IsSwimPassable() || c.IsDoorPassable() || c.IsLevitatePassable()) {
 			break
 		}
@@ -1366,7 +1366,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 		g.PrintStyled("The flying milfid makes you swap positions.", logNotable)
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
-		if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
+		if terrain(g.Map.Cell(g.Player.P)) == ChasmCell {
 			g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 		}
 	case MonsTinyHarpy:
@@ -1400,7 +1400,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 		i++
 		q = q.Add(dir)
 		path = append(path, q)
-		if !valid(q) || g.Dungeon.Cell(q).BlocksRange() {
+		if !valid(q) || g.Map.Cell(q).BlocksRange() {
 			path = path[:len(path)-1]
 			break
 		}
@@ -1418,7 +1418,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 		return
 	}
 	g.Stats.TimesPushed++
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	var cs string
 	if m.Kind == MonsEarthDragon {
 		cs = " inadvertently"
@@ -1484,7 +1484,7 @@ func (m *Monster) RangeBlocked(g *Game) bool {
 		return true
 	}
 	for _, p := range ray[1:] {
-		c := g.Dungeon.Cell(p)
+		c := g.Map.Cell(p)
 		if c.BlocksRange() {
 			return true
 		}
@@ -1537,7 +1537,7 @@ func (m *Monster) CreateBarrier(g *Game) bool {
 	candidates := g.BarrierCandidates(g.Player.P, dir)
 	done := false
 	for _, p := range candidates {
-		c := g.Dungeon.Cell(p)
+		c := g.Map.Cell(p)
 		mons := g.MonsterAt(p)
 		if mons.Exists() || c.IsWall() {
 			continue
@@ -1651,7 +1651,7 @@ func (m *Monster) NixeAttraction(g *Game) bool {
 		return false
 	}
 	ray := g.Ray(m.P)
-	if len(ray) <= 1 || !g.Dungeon.Cell(ray[1]).IsPlayerPassable() {
+	if len(ray) <= 1 || !g.Map.Cell(ray[1]).IsPlayerPassable() {
 		return false
 	}
 	g.MakeNoise(MagicCastNoise, m.P)

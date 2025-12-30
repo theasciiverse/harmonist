@@ -432,7 +432,7 @@ func (g *Game) BlinkPos(mpassable bool) gruid.Point {
 		if !b {
 			continue
 		}
-		c := g.Dungeon.Cell(p)
+		c := g.Map.Cell(p)
 		if !c.IsPlayerPassable() || mpassable && !c.IsPassable() || terrain(c) == StoryCell {
 			continue
 		}
@@ -563,7 +563,7 @@ func (g *Game) EvokeSwapping() error {
 	if g.Player.HasStatus(StatusLignification) {
 		return errors.New("You cannot use this magara while lignified.")
 	}
-	switch t := terrain(g.Dungeon.Cell(g.Player.P)); t {
+	switch t := terrain(g.Map.Cell(g.Player.P)); t {
 	case BarrelCell, TableCell, HoledWallCell:
 		return errors.New("You cannot use this magara in a cramped place.")
 	}
@@ -594,20 +594,21 @@ func (g *Game) SwapWithMonster(mons *Monster) {
 	g.Printf("You swap positions with the %s.", mons.Kind)
 	g.md.SwappingAnimation(mons.P, g.Player.P)
 	g.PlacePlayerAt(mons.P)
-	if terrain(g.Dungeon.Cell(g.Player.P)) == ChasmCell {
+	if terrain(g.Map.Cell(g.Player.P)) == ChasmCell {
 		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 	}
 }
 
-type cloud int
+// Cloud represents a cloud kind.
+type Cloud int
 
 const (
-	CloudFog cloud = iota
+	CloudFog Cloud = iota
 	CloudFire
 	CloudNight
 )
 
-func (cl cloud) String() (s string) {
+func (cl Cloud) String() (s string) {
 	switch cl {
 	case CloudFog:
 		s = "fog"
@@ -631,7 +632,7 @@ func (g *Game) Fog(at gruid.Point, radius int) {
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]
-		if !ok && g.Dungeon.Cell(n.P).AllowsFog() {
+		if !ok && g.Map.Cell(n.P).AllowsFog() {
 			g.Clouds[n.P] = CloudFog
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
@@ -855,17 +856,17 @@ func (g *Game) EvokeObstruction() error {
 }
 
 func (g *Game) MagicalBarrierAt(p gruid.Point) {
-	if terrain(g.Dungeon.Cell(p)) == WallCell || terrain(g.Dungeon.Cell(p)) == BarrierCell {
+	if terrain(g.Map.Cell(p)) == WallCell || terrain(g.Map.Cell(p)) == BarrierCell {
 		return
 	}
-	g.UpdateKnowledge(p, terrain(g.Dungeon.Cell(p)))
+	g.UpdateKnowledge(p, terrain(g.Map.Cell(p)))
 	g.CreateMagicalBarrierAt(p)
 	g.ComputeLOS()
 }
 
 func (g *Game) CreateMagicalBarrierAt(p gruid.Point) {
-	t := terrain(g.Dungeon.Cell(p))
-	g.Dungeon.SetCell(p, BarrierCell)
+	t := terrain(g.Map.Cell(p))
+	g.Map.SetCell(p, BarrierCell)
 	delete(g.Clouds, p)
 	g.MagicalBarriers[p] = t
 	g.PushEvent(&posEvent{P: p, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))

@@ -9,72 +9,76 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev2"
+var Version string = "v0.7.0-dev3"
 
-// game contains the game logic's state, without ui stuff. Everything could be
+// Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
 // some game functions need the model anyway (like animations), but this allows
 // to differentiate a bit things that are mainly game-logic from the stuff that
 // is more about ui.
+//
+// NOTE: the handling of map entities is a bit ad hoc and not extensible, but
+// it'd be a lot of work to update it to use Shamogu's approach.
 type Game struct {
-	Dungeon               *Map
-	Player                *Player
-	Monsters              []*Monster
-	MonstersPosCache      []int // monster (dungeon index + 1) / no monster (0)
-	Bands                 []bandInfo
-	Events                *rl.EventQueue
-	EventIndex            int
-	Depth                 int
-	ExploredLevels        int
-	DepthPlayerTurn       int
-	Turn                  int
-	Highlight             map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
-	Objects               objects
-	Clouds                map[gruid.Point]cloud
-	MagicalBarriers       map[gruid.Point]cell
-	GeneratedLore         map[int]bool
-	GeneratedMagaras      []magaraKind
-	GeneratedCloaks       []item
-	GeneratedAmulets      []item
-	GenPlan               [MaxDepth + 1]genFlavour
-	TerrainKnowledge      map[gruid.Point]cell
-	Noise                 map[gruid.Point]bool
-	NoiseIllusion         map[gruid.Point]bool
-	LastMonsterKnownAt    map[gruid.Point]int
-	MonsterLOS            map[gruid.Point]bool
-	MonsterTargLOS        map[gruid.Point]bool
-	LightFOV              *rl.FOV
-	RaysCache             rayMap
-	Resting               bool
-	RestingTurns          int
-	Autoexploring         bool
-	AutoexploreMapRebuild bool
-	AutoTarget            gruid.Point
-	AutoDir               gruid.Point
+	Map                *Map
+	Player             *Player
+	Monsters           []*Monster
+	MonstersPosCache   []int // monster (dungeon index + 1) / no monster (0)
+	Bands              []bandInfo
+	Events             *rl.EventQueue
+	EventIndex         int
+	Depth              int
+	ExploredLevels     int
+	DepthPlayerTurn    int
+	Turn               int
+	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
+	Objects            Objects
+	Clouds             map[gruid.Point]Cloud
+	MagicalBarriers    map[gruid.Point]Cell
+	GeneratedLore      map[int]bool
+	GeneratedMagaras   []magaraKind
+	GeneratedCloaks    []item
+	GeneratedAmulets   []item
+	GenPlan            [MaxDepth + 1]genFlavour
+	TerrainKnowledge   map[gruid.Point]Cell
+	Noise              map[gruid.Point]bool
+	NoiseIllusion      map[gruid.Point]bool
+	LastMonsterKnownAt map[gruid.Point]int
+	MonsterLOS         map[gruid.Point]bool
+	MonsterTargLOS     map[gruid.Point]bool
+	LightFOV           *rl.FOV
+	RaysCache          rayMap
+	Resting            bool
+	RestingTurns       int
+	LiberatedShaedra   bool
+	LiberatedArtifact  bool
+
+	Log         []logEntry
+	LogIndex    int
+	LogNextTick int
+	InfoEntry   string
+	Stats       stats
+	Wizard      bool
+	WizardMode  wizardMode
+	Version     string
+	Places      places
+	Params      startParams
+
+	md          *model           // reference to the UI model
+	mfov        *rl.FOV          // monster field of view
+	PR          *paths.PathRange // path range for pathfinding
+	PRauto      *paths.PathRange // path range for auto-explore
+	autosources []gruid.Point    // cache for auto-explore sources
+	nbs         paths.Neighbors
+	rand        *rand.Rand
+
+	autoexploring         bool
+	autoexploreMapRebuild bool
+	autoTarget            gruid.Point
+	autoDir               gruid.Point
 	autoDirNeighbors      dirNeighbors
 	autoDirChanged        bool
-	AutoHalt              bool
-	Log                   []logEntry
-	LogIndex              int
-	LogNextTick           int
-	InfoEntry             string
-	Stats                 stats
-	Wizard                bool
-	WizardMode            wizardMode
-	Version               string
-	Places                places
-	Params                startParams
-	//Opts                startOpts
-	md                *model // needed for animations and a few more cases
-	LiberatedShaedra  bool
-	LiberatedArtifact bool
-	PlayerAgain       bool
-	mfov              *rl.FOV
-	PR                *paths.PathRange
-	PRauto            *paths.PathRange
-	autosources       []gruid.Point // cache
-	nbs               paths.Neighbors
-	rand              *rand.Rand
+	autoHalt              bool
 }
 
 type specialEvent int
@@ -115,7 +119,7 @@ const (
 )
 
 func (g *Game) FreePassableCell() gruid.Point {
-	d := g.Dungeon
+	d := g.Map
 	count := 0
 	for {
 		count++
@@ -231,7 +235,7 @@ func (g *Game) InitFirstLevel() {
 	g.Version = Version
 	g.Depth++ // start at 1
 	g.InitPlayer()
-	g.AutoTarget = invalidPos
+	g.autoTarget = invalidPos
 	g.RaysCache = rayMap{}
 	g.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
@@ -385,8 +389,8 @@ func (g *Game) InitFirstLevel() {
 func (g *Game) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
 	g.Noise = map[gruid.Point]bool{}
-	g.TerrainKnowledge = map[gruid.Point]cell{}
-	g.MagicalBarriers = map[gruid.Point]cell{}
+	g.TerrainKnowledge = map[gruid.Point]Cell{}
+	g.MagicalBarriers = map[gruid.Point]Cell{}
 	g.LastMonsterKnownAt = map[gruid.Point]int{}
 	g.Objects.Magaras = map[gruid.Point]magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
@@ -399,7 +403,7 @@ func (g *Game) InitLevelStructures() {
 	g.Objects.FakeStairs = map[gruid.Point]bool{}
 	g.Objects.Potions = map[gruid.Point]potion{}
 	g.NoiseIllusion = map[gruid.Point]bool{}
-	g.Clouds = map[gruid.Point]cloud{}
+	g.Clouds = map[gruid.Point]Cloud{}
 	g.MonsterLOS = map[gruid.Point]bool{}
 	g.Stats.AtNotablePos = map[gruid.Point]bool{}
 }
@@ -508,9 +512,9 @@ func (g *Game) CleanEvents() {
 
 func (g *Game) StairsSlice() []gruid.Point {
 	stairs := []gruid.Point{}
-	it := g.Dungeon.Terrain.Iterator()
+	it := g.Map.Terrain.Iterator()
 	for it.Next() {
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) {
 			continue
 		}
@@ -577,7 +581,7 @@ func (g *Game) Descend(style descendstyle) bool {
 			AchStealthMaster.Get(g)
 		}
 	}
-	c := g.Dungeon.Cell(g.Player.P)
+	c := g.Map.Cell(g.Player.P)
 	if terrain(c) == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
 		g.StoryPrint("Escaped!")
 		g.ExploredLevels = g.Depth
@@ -632,14 +636,14 @@ func (g *Game) AutoPlayer() bool {
 			g.ApplyRest()
 		}
 		g.Resting = false
-	case g.Autoexploring:
+	case g.autoexploring:
 		switch {
-		case g.AutoHalt:
+		case g.autoHalt:
 			// stop exploring
 		default:
 			var n *gruid.Point
 			var finished bool
-			if g.AutoexploreMapRebuild {
+			if g.autoexploreMapRebuild {
 				if g.AllExplored() {
 					g.Print("You finished exploring.")
 					break
@@ -665,17 +669,17 @@ func (g *Game) AutoPlayer() bool {
 				return !again
 			}
 		}
-		g.Autoexploring = false
-	case valid(g.AutoTarget):
+		g.autoexploring = false
+	case valid(g.autoTarget):
 		if g.MoveToTarget() {
 			return true
 		}
-		g.AutoTarget = invalidPos
-	case g.AutoDir != ZP:
+		g.autoTarget = invalidPos
+	case g.autoDir != ZP:
 		if g.AutoToDir() {
 			return true
 		}
-		g.AutoDir = ZP
+		g.autoDir = ZP
 	}
 	return false
 }

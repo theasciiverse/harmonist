@@ -73,7 +73,7 @@ type mappingPath struct {
 }
 
 func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
-	d := dp.g.Dungeon
+	d := dp.g.Map
 	if terrain(d.Cell(p)) == WallCell {
 		return nil
 	}
@@ -139,7 +139,7 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 func (g *Game) ppPassable(p gruid.Point) bool {
-	d := g.Dungeon
+	d := g.Map
 	t, okT := g.TerrainKnowledge[p]
 	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 		return false
@@ -178,7 +178,7 @@ type noisePath struct {
 }
 
 func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
-	d := fp.g.Dungeon
+	d := fp.g.Map
 	keep := func(q gruid.Point) bool {
 		return valid(q) && terrain(d.Cell(q)) != WallCell
 	}
@@ -195,7 +195,7 @@ type autoexplorePath struct {
 }
 
 func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
-	d := ap.g.Dungeon
+	d := ap.g.Map
 	keep := func(q gruid.Point) bool {
 		t, okT := ap.g.TerrainKnowledge[q]
 		if cld, ok := ap.g.Clouds[q]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
@@ -239,7 +239,7 @@ func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
 		return false
 	}
 	g := mp.g
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	return m.CanPass(g, p) || c.IsDestructible()
 }
 
@@ -248,7 +248,7 @@ func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
 	if !m.CanPass(mp.g, p) {
 		return false
 	}
-	c := mp.g.Dungeon.Cell(p)
+	c := mp.g.Map.Cell(p)
 	return c.IsNormalPatrolWay()
 }
 
@@ -270,7 +270,7 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 	g := mp.g
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
-		c := g.Dungeon.Cell(to)
+		c := g.Map.Cell(to)
 		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() && !mp.monster.Status(MonsConfused) {
 			return 5
 		}
@@ -329,7 +329,7 @@ func (g *Game) PlayerPath(from, to gruid.Point) []gruid.Point {
 func (g *Game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
 	ps := posSlice{}
 	for _, p := range cells {
-		pp := &dungeonPath{dungeon: g.Dungeon, wcost: unreachable}
+		pp := &dungeonPath{dungeon: g.Map, wcost: unreachable}
 		path := g.PR.AstarPath(pp, p, to) // TODO: use JPS?
 		if len(path) > 0 {
 			ps = append(ps, posCost{p, len(path)})

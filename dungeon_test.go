@@ -38,7 +38,7 @@ func (m *Map) connex(pr *paths.PathRange) bool {
 	pr.CCMap(cp, pos)
 	it := m.Terrain.Iterator()
 	for it.Next() {
-		if cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
+		if Cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
 			return false
 		}
 	}
@@ -49,7 +49,7 @@ func (m *Map) String() string {
 	b := &bytes.Buffer{}
 	it := m.Terrain.Iterator()
 	for i := 0; it.Next(); i++ {
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if i > 0 && i%MapWidth == 0 {
 			fmt.Fprint(b, "\n")
 		}
@@ -69,8 +69,8 @@ func TestAutomataCave(t *testing.T) {
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(AutomataCave)
-		if !g.Dungeon.connex(g.PR) {
-			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		if !g.Map.connex(g.PR) {
+			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
 	}
 }
@@ -82,8 +82,8 @@ func TestRandomWalkCave(t *testing.T) {
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(RandomWalkCave)
-		if !g.Dungeon.connex(g.PR) {
-			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		if !g.Map.connex(g.PR) {
+			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
 	}
 }
@@ -95,8 +95,8 @@ func TestRandomWalkTreeCave(t *testing.T) {
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(RandomWalkTreeCave)
-		if !g.Dungeon.connex(g.PR) {
-			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		if !g.Map.connex(g.PR) {
+			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
 	}
 }
@@ -108,8 +108,8 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(RandomSmallWalkCaveUrbanised)
-		if !g.Dungeon.connex(g.PR) {
-			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		if !g.Map.connex(g.PR) {
+			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
 	}
 }
@@ -127,8 +127,8 @@ func TestNaturalCave(t *testing.T) {
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenRoomTunnels(NaturalCave)
-		if !g.Dungeon.connex(g.PR) {
-			t.Errorf("Not connex:\n%s\n", g.Dungeon.String())
+		if !g.Map.connex(g.PR) {
+			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
 	}
 }

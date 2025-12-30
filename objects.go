@@ -7,7 +7,8 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-type objects struct {
+// Objects gathers all map information about Objects.
+type Objects struct {
 	Stairs     map[gruid.Point]stair
 	Stones     map[gruid.Point]stone
 	Magaras    map[gruid.Point]magara // TODO simplify? (there's never more than one)
@@ -380,9 +381,9 @@ func (g *Game) MagicMapping(maxdist int) error {
 		draw := false
 		for _, i := range cdists[d] {
 			p := idxtopos(i)
-			c := g.Dungeon.Cell(p)
+			c := g.Map.Cell(p)
 			if !explored(c) {
-				g.Dungeon.SetExplored(p)
+				g.Map.SetExplored(p)
 				g.SeeNotable(c, p)
 				draw = true
 			}
@@ -699,7 +700,7 @@ func (g *Game) EquipItem() error {
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	} else {
 		delete(g.Objects.Items, g.Player.P)
-		g.Dungeon.SetCell(g.Player.P, GroundCell)
+		g.Map.SetCell(g.Player.P, GroundCell)
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	}
@@ -799,7 +800,7 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 	ptn, ok := g.Objects.Potions[p]
 	if !ok {
 		// should not happen
-		g.Dungeon.SetCell(p, GroundCell)
+		g.Map.SetCell(p, GroundCell)
 		g.PrintStyled("Unexpected potion.", logError)
 		return
 	}
@@ -818,6 +819,6 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 		g.StoryPrintf("Drank %s (MP: %d).", ptn, g.Player.MP)
 	}
 	g.Printf("You drink %s.", ptn.ShortDesc(g))
-	g.Dungeon.SetCell(p, GroundCell)
+	g.Map.SetCell(p, GroundCell)
 	delete(g.Objects.Potions, p)
 }

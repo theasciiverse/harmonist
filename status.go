@@ -372,7 +372,7 @@ func (md *model) updateStatusInfo() {
 	case md.mode == modeEnd:
 	default:
 		p := g.Player.P
-		c := g.Dungeon.Cell(p)
+		c := g.Map.Cell(p)
 		if terrain(c) != GroundCell {
 			r, fg := c.Style(g, p)
 			entries = append(entries, ui.MenuEntry{

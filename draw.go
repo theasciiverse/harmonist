@@ -129,7 +129,7 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 }
 
 func (md *model) drawMap(gd gruid.Grid) {
-	it := md.g.Dungeon.Terrain.Iterator()
+	it := md.g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
@@ -143,7 +143,7 @@ func (md *model) drawMap(gd gruid.Grid) {
 
 func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
 	g := md.g
-	c := g.Dungeon.Cell(p)
+	c := g.Map.Cell(p)
 	fgColor = ColorFg
 	bgColor = ColorBg
 	if !explored(c) && (!g.Wizard || g.WizardMode == WizardNormal) {

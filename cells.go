@@ -7,10 +7,15 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-type cell rl.Cell
+// Cell represents the various kinds of terrains. One bit is reserved for
+// exploration information. NOTE: that method for making explored terrain is a
+// bit awkward and having a separate grid for known terrain like in Shamogu
+// would be better, as it would help tracking mismatches with any out-of-view
+// terrain changes in explored parts, too.
+type Cell rl.Cell
 
 const (
-	WallCell cell = iota
+	WallCell Cell = iota
 	GroundCell
 	DoorCell
 	FoliageCell
@@ -36,18 +41,19 @@ const (
 	FakeStairCell
 	PotionCell
 	QueenRockCell
+
 	Explored = 0b10000000
 )
 
-func terrain(c cell) cell {
+func terrain(c Cell) Cell {
 	return c &^ Explored
 }
 
-func explored(c cell) bool {
+func explored(c Cell) bool {
 	return c&Explored != 0
 }
 
-func (c cell) IsPassable() bool {
+func (c Cell) IsPassable() bool {
 	switch terrain(c) {
 	case WallCell, DoorCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, StoryCell, ChasmCell, WaterCell:
 		return false
@@ -56,7 +62,7 @@ func (c cell) IsPassable() bool {
 	}
 }
 
-func (c cell) IsJumpPassable() bool {
+func (c Cell) IsJumpPassable() bool {
 	switch terrain(c) {
 	case TableCell, ChasmCell, WaterCell, StoryCell:
 		return true
@@ -65,7 +71,7 @@ func (c cell) IsJumpPassable() bool {
 	}
 }
 
-func (c cell) IsNormalPatrolWay() bool {
+func (c Cell) IsNormalPatrolWay() bool {
 	switch terrain(c) {
 	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell, FakeStairCell:
 		return true
@@ -74,7 +80,7 @@ func (c cell) IsNormalPatrolWay() bool {
 	}
 }
 
-func (c cell) IsLevitatePassable() bool {
+func (c Cell) IsLevitatePassable() bool {
 	switch terrain(c) {
 	case ChasmCell:
 		return true
@@ -83,7 +89,7 @@ func (c cell) IsLevitatePassable() bool {
 	}
 }
 
-func (c cell) IsDoorPassable() bool {
+func (c Cell) IsDoorPassable() bool {
 	switch terrain(c) {
 	case DoorCell:
 		return true
@@ -92,7 +98,7 @@ func (c cell) IsDoorPassable() bool {
 	}
 }
 
-func (c cell) IsSwimPassable() bool {
+func (c Cell) IsSwimPassable() bool {
 	switch terrain(c) {
 	case WaterCell:
 		return true
@@ -101,7 +107,7 @@ func (c cell) IsSwimPassable() bool {
 	}
 }
 
-func (c cell) IsJumpPropulsion() bool {
+func (c Cell) IsJumpPropulsion() bool {
 	switch terrain(c) {
 	case WallCell, WindowCell:
 		return true
@@ -110,7 +116,7 @@ func (c cell) IsJumpPropulsion() bool {
 	}
 }
 
-func (c cell) IsEnclosing() bool {
+func (c Cell) IsEnclosing() bool {
 	switch terrain(c) {
 	case BarrelCell, TableCell, HoledWallCell:
 		return true
@@ -119,7 +125,7 @@ func (c cell) IsEnclosing() bool {
 	}
 }
 
-func (c cell) AllowsFog() bool {
+func (c Cell) AllowsFog() bool {
 	switch terrain(c) {
 	case WallCell, HoledWallCell, WindowCell, StoryCell:
 		return false
@@ -128,7 +134,7 @@ func (c cell) AllowsFog() bool {
 	}
 }
 
-func (c cell) CoversPlayer() bool {
+func (c Cell) CoversPlayer() bool {
 	switch terrain(c) {
 	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell:
 		return true
@@ -137,7 +143,7 @@ func (c cell) CoversPlayer() bool {
 	}
 }
 
-func (c cell) IsPlayerPassable() bool {
+func (c Cell) IsPlayerPassable() bool {
 	switch terrain(c) {
 	case WallCell, BarrierCell, WindowCell, ChasmCell:
 		return false
@@ -146,7 +152,7 @@ func (c cell) IsPlayerPassable() bool {
 	}
 }
 
-func (c cell) IsDiggable() bool {
+func (c Cell) IsDiggable() bool {
 	switch terrain(c) {
 	case WallCell, WindowCell, HoledWallCell:
 		return true
@@ -155,7 +161,7 @@ func (c cell) IsDiggable() bool {
 	}
 }
 
-func (c cell) BlocksRange() bool {
+func (c Cell) BlocksRange() bool {
 	switch terrain(c) {
 	case WallCell, TreeCell, BarrierCell, WindowCell, StoryCell:
 		return true
@@ -164,7 +170,7 @@ func (c cell) BlocksRange() bool {
 	}
 }
 
-func (c cell) Hides() bool {
+func (c Cell) Hides() bool {
 	switch terrain(c) {
 	case WallCell, BarrelCell, TableCell, TreeCell, WindowCell, StoryCell:
 		return true
@@ -173,7 +179,7 @@ func (c cell) Hides() bool {
 	}
 }
 
-func (c cell) IsIlluminable() bool {
+func (c Cell) IsIlluminable() bool {
 	switch terrain(c) {
 	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, ChasmCell, RubbleCell:
 		return false
@@ -181,7 +187,7 @@ func (c cell) IsIlluminable() bool {
 	return true
 }
 
-func (c cell) IsDestructible() bool {
+func (c Cell) IsDestructible() bool {
 	switch terrain(c) {
 	case WallCell, BarrelCell, DoorCell, TableCell, TreeCell, HoledWallCell, WindowCell:
 		return true
@@ -190,7 +196,7 @@ func (c cell) IsDestructible() bool {
 	}
 }
 
-func (c cell) IsWall() bool {
+func (c Cell) IsWall() bool {
 	switch terrain(c) {
 	case WallCell:
 		return true
@@ -199,7 +205,7 @@ func (c cell) IsWall() bool {
 	}
 }
 
-func (c cell) Flammable() bool {
+func (c Cell) Flammable() bool {
 	switch terrain(c) {
 	case FoliageCell, DoorCell, BarrelCell, TableCell, TreeCell:
 		return true
@@ -208,7 +214,7 @@ func (c cell) Flammable() bool {
 	}
 }
 
-func (c cell) IsGround() bool {
+func (c Cell) IsGround() bool {
 	switch terrain(c) {
 	case GroundCell, CavernCell, BananaCell, PotionCell, QueenRockCell:
 		return true
@@ -217,7 +223,7 @@ func (c cell) IsGround() bool {
 	}
 }
 
-func (c cell) IsNotable() bool {
+func (c Cell) IsNotable() bool {
 	switch terrain(c) {
 	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell,
 		ScrollCell, ItemCell, FakeStairCell, PotionCell:
@@ -227,7 +233,7 @@ func (c cell) IsNotable() bool {
 	}
 }
 
-func (c cell) ShortString(g *Game, p gruid.Point) (desc string) {
+func (c Cell) ShortString(g *Game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
 		desc = "wall"
@@ -293,7 +299,7 @@ func (c cell) ShortString(g *Game, p gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) ShortDesc(g *Game, p gruid.Point) (desc string) {
+func (c Cell) ShortDesc(g *Game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
 		desc = "a wall"
@@ -359,7 +365,7 @@ func (c cell) ShortDesc(g *Game, p gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) Desc(g *Game, p gruid.Point) (desc string) {
+func (c Cell) Desc(g *Game, p gruid.Point) (desc string) {
 	switch terrain(c) {
 	case WallCell:
 		desc = "A wall is an obstructing pile of rocks."
@@ -453,7 +459,7 @@ func (c cell) Desc(g *Game, p gruid.Point) (desc string) {
 	return desc
 }
 
-func (c cell) Style(g *Game, p gruid.Point) (r rune, fg gruid.Color) {
+func (c Cell) Style(g *Game, p gruid.Point) (r rune, fg gruid.Color) {
 	switch terrain(c) {
 	case WallCell:
 		r, fg = '#', ColorFgLOS

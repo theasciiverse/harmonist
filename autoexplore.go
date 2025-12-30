@@ -22,17 +22,17 @@ func (g *Game) Autoexplore() (again bool, err error) {
 	if finished || n == nil {
 		return again, errors.New("You cannot reach safely some places.")
 	}
-	g.Autoexploring = true
-	g.AutoHalt = false
+	g.autoexploring = true
+	g.autoHalt = false
 	return g.PlayerBump(*n)
 }
 
 func (g *Game) AllExplored() bool {
 	np := &noisePath{g: g}
-	it := g.Dungeon.Terrain.Iterator()
+	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if c.IsWall() {
 			if len(np.Neighbors(p)) == 0 {
 				continue
@@ -48,10 +48,10 @@ func (g *Game) AllExplored() bool {
 func (g *Game) AutoexploreSources() []gruid.Point {
 	g.autosources = g.autosources[:0]
 	np := &noisePath{g: g}
-	it := g.Dungeon.Terrain.Iterator()
+	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		c := cell(it.Cell())
+		c := Cell(it.Cell())
 		if c.IsWall() {
 			if len(np.Neighbors(p)) == 0 {
 				continue
@@ -71,7 +71,7 @@ const unreachable = 9999
 func (g *Game) BuildAutoexploreMap(sources []gruid.Point) {
 	ap := &autoexplorePath{g: g}
 	g.PRauto.BreadthFirstMap(ap, sources, unreachable)
-	g.AutoexploreMapRebuild = false
+	g.autoexploreMapRebuild = false
 }
 
 func (g *Game) NextAuto() (next *gruid.Point, finished bool) {
