@@ -318,10 +318,10 @@ func LoadConfig() (bool, error) {
 	return true, nil
 }
 
-func (g *Game) WriteDump() error {
+func (g *Game) WriteDump() (string, error) {
 	pre := js.Global().Get("document").Call("getElementById", "dump")
 	pre.Set("innerHTML", g.Dump())
-	return nil
+	return "Full game statistics written below.", nil
 }
 
 func subSig(ctx context.Context, msgs chan<- gruid.Msg) {
