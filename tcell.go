@@ -16,7 +16,7 @@ func (md *model) ApplyToggleTiles() {
 
 var driver gruid.Driver
 
-func initDriver(_ bool, _, _ float64, _ bool) {
+func initDriver(_ bool, _, _ float64) {
 	st := styler{}
 	dr := tcell.NewDriver(tcell.Config{StyleManager: st})
 	//dr.PreventQuit()
