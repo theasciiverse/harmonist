@@ -70,8 +70,7 @@ bindings for SDL2. You need to install
 not SDL3).
 
 You should now have a working `harmonist` executable in the current directory.
-Use the `-help` option for command-line usage. In particular, `-noaccel`
-disables graphic acceleration in case it cause issues.
+Use the `-help` option for command-line usage.
 
 ### Browser (Tiles or ASCII)
 
