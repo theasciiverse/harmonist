@@ -295,7 +295,7 @@ func (md *model) updatePosInfo() {
 	p := md.targ.ex.p
 	pi.P = p
 	switch {
-	case !explored(g.Map.Cell(p)):
+	case !explored(g.Map.At(p)):
 		pi.Unknown = true
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
@@ -315,7 +315,7 @@ func (md *model) updatePosInfo() {
 	if g.Player.Sees(p) {
 		pi.Sees = true
 	}
-	c := g.Map.Cell(p)
+	c := g.Map.At(p)
 	if t, ok := g.TerrainKnowledge[p]; ok {
 		c = t | c&Explored
 	}
@@ -352,17 +352,17 @@ func (g *Game) computePathHighlight(p gruid.Point) {
 func (md *model) target() error {
 	g := md.g
 	p := md.targ.ex.p
-	if !explored(g.Map.Cell(p)) {
+	if !explored(g.Map.At(p)) {
 		return errors.New("You do not know this place.")
 	}
-	if terrain(g.Map.Cell(p)) == WallCell && !g.Player.HasStatus(StatusDig) {
+	if terrain(g.Map.At(p)) == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
 	path := g.PlayerPath(g.Player.P, p)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
-	if c := g.Map.Cell(p); explored(c) && terrain(c) != WallCell {
+	if c := g.Map.At(p); explored(c) && terrain(c) != WallCell {
 		g.autoTarget = p
 		return nil
 	}
@@ -439,7 +439,7 @@ func (md *model) nextObject(np gruid.Point, data *examination) {
 		if nobject > len(data.objects)-1 {
 			nobject = 0
 		}
-		if explored(g.Map.Cell(p)) {
+		if explored(g.Map.At(p)) {
 			np = p
 			break
 		}

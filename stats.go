@@ -185,7 +185,7 @@ func (g *Game) Reach(p gruid.Point) {
 		return
 	}
 	g.Stats.AtNotablePos[p] = true
-	c := g.Map.Cell(p)
+	c := g.Map.At(p)
 	switch terrain(c) {
 	case TreeCell:
 		g.Stats.ClimbedTree++

@@ -78,7 +78,7 @@ func (r *room) Dig(dg *MapGen) {
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
 			if valid(q) {
-				dg.m.SetCell(q, GroundCell)
+				dg.m.Set(q, GroundCell)
 			}
 		case 'B':
 			// obstacle
@@ -104,27 +104,27 @@ func (r *room) Dig(dg *MapGen) {
 				t = GroundCell
 			}
 			if valid(q) {
-				dg.m.SetCell(q, t)
+				dg.m.Set(q, t)
 			}
 		case '#', '+':
 			if valid(q) {
-				dg.m.SetCell(q, WallCell)
+				dg.m.Set(q, WallCell)
 			}
 		case 'T':
 			if valid(q) {
-				dg.m.SetCell(q, TreeCell)
+				dg.m.Set(q, TreeCell)
 			}
 		case 'π':
 			if valid(q) {
-				dg.m.SetCell(q, TableCell)
+				dg.m.Set(q, TableCell)
 			}
 		case 'l':
 			if valid(q) {
-				dg.m.SetCell(q, LightCell)
+				dg.m.Set(q, LightCell)
 			}
 		case 'W':
 			if valid(q) {
-				dg.m.SetCell(q, WindowCell)
+				dg.m.Set(q, WindowCell)
 			}
 		case '"',
 			'?',
@@ -164,40 +164,40 @@ func (r *room) Dig(dg *MapGen) {
 			r.entries = append(r.entries, e)
 		case '"':
 			if valid(q) {
-				dg.m.SetCell(q, FoliageCell)
+				dg.m.Set(q, FoliageCell)
 			}
 		case ',':
 			if valid(q) {
-				dg.m.SetCell(q, CavernCell)
+				dg.m.Set(q, CavernCell)
 			}
 		case '~':
 			if valid(q) {
-				dg.m.SetCell(q, WaterCell)
+				dg.m.Set(q, WaterCell)
 			}
 		case 'c':
 			if valid(q) {
-				dg.m.SetCell(q, ChasmCell)
+				dg.m.Set(q, ChasmCell)
 			}
 		case 'q':
 			if valid(q) {
-				dg.m.SetCell(q, QueenRockCell)
+				dg.m.Set(q, QueenRockCell)
 			}
 		case 'S':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Shaedra = q
-			dg.m.SetCell(q, StoryCell)
+			dg.m.Set(q, StoryCell)
 		case 'M':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Marevor = q
-			dg.m.SetCell(q, StoryCell)
+			dg.m.Set(q, StoryCell)
 		case 'Δ':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Monolith = q
-			dg.m.SetCell(q, StoryCell)
+			dg.m.Set(q, StoryCell)
 		case 'A':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Artifact = q
-			dg.m.SetCell(q, StoryCell)
+			dg.m.Set(q, StoryCell)
 		}
 	}
 	r.vault.Iter(runedraw)

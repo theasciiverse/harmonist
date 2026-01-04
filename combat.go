@@ -141,7 +141,7 @@ func (g *Game) FindJumpTarget(m *Monster) gruid.Point {
 func (g *Game) Jump(mons *Monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		op := mons.P
-		if terrain(g.Map.Cell(op)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+		if terrain(g.Map.At(op)) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			return true, g.AbyssJump()
 		}
 		if !mons.CanPass(g, g.Player.P) {
@@ -197,7 +197,7 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 }
 
 func (g *Game) WallJump(p gruid.Point) error {
-	c := g.Map.Cell(g.Player.P)
+	c := g.Map.At(g.Player.P)
 	if c.IsEnclosing() {
 		return fmt.Errorf("You cannot jump from %s.", c.ShortDesc(g, g.Player.P))
 	}
@@ -268,7 +268,7 @@ func (g *Game) HandleKill(mons *Monster) {
 	if g.Player.Sees(mons.P) {
 		AchAssassin.Get(g)
 	}
-	if terrain(g.Map.Cell(mons.P)) == DoorCell {
+	if terrain(g.Map.At(mons.P)) == DoorCell {
 		g.ComputeLOS()
 	}
 	g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))

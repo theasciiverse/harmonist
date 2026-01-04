@@ -41,7 +41,7 @@ func (ev *playerEvent) Handle(g *Game) {
 		g.ComputeLOS()
 		g.md.Story()
 	case AbyssFall:
-		if terrain(g.Map.Cell(g.Player.P)) == ChasmCell {
+		if terrain(g.Map.At(g.Player.P)) == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
 	}
@@ -74,7 +74,7 @@ func (sev *statusEvent) Handle(g *Game) {
 		g.md.StatusEndAnimation()
 		switch st {
 		case StatusLevitation:
-			if terrain(g.Map.Cell(g.Player.P)) == ChasmCell {
+			if terrain(g.Map.At(g.Player.P)) == ChasmCell {
 				g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 			}
 		case StatusLignification:
@@ -149,7 +149,7 @@ func (cev *posEvent) Handle(g *Game) {
 		g.ComputeLOS()
 	case ObstructionEnd:
 		t := g.MagicalBarriers[cev.P]
-		if terrain(g.Map.Cell(cev.P)) == BarrierCell {
+		if terrain(g.Map.At(cev.P)) == BarrierCell {
 			_, ok := g.TerrainKnowledge[cev.P]
 			if !ok {
 				g.UpdateKnowledge(cev.P, BarrierCell)
@@ -159,10 +159,10 @@ func (cev *posEvent) Handle(g *Game) {
 			delete(g.MagicalBarriers, cev.P)
 			delete(g.TerrainKnowledge, cev.P)
 		}
-		if terrain(g.Map.Cell(cev.P)) != BarrierCell {
+		if terrain(g.Map.At(cev.P)) != BarrierCell {
 			break
 		}
-		g.Map.SetCell(cev.P, t)
+		g.Map.Set(cev.P, t)
 	case ObstructionProgression:
 		p := g.FreePassableCell()
 		g.MagicalBarrierAt(p)
@@ -218,7 +218,7 @@ func (cev *posEvent) Handle(g *Game) {
 			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
-			g.Map.SetCell(p, RubbleCell)
+			g.Map.Set(p, RubbleCell)
 			g.UpdateKnowledge(p, terrain(c))
 			g.Fog(p, 1)
 		}
@@ -244,11 +244,11 @@ func (cev *posEvent) Handle(g *Game) {
 			fogs := []gruid.Point{}
 			terrains := []Cell{}
 			for _, n := range nodes {
-				c := g.Map.Cell(n.P)
+				c := g.Map.At(n.P)
 				if !c.IsDiggable() {
 					continue
 				}
-				g.Map.SetCell(n.P, RubbleCell)
+				g.Map.Set(n.P, RubbleCell)
 				g.Stats.Digs++
 				if g.Player.Sees(n.P) {
 					g.md.WallExplosionAnimation(n.P)
@@ -312,7 +312,7 @@ func (g *Game) Burn(p gruid.Point) {
 	if _, ok := g.Clouds[p]; ok {
 		return
 	}
-	c := g.Map.Cell(p)
+	c := g.Map.At(p)
 	if !c.Flammable() {
 		return
 	}
@@ -328,7 +328,7 @@ func (g *Game) Burn(p gruid.Point) {
 	case TreeCell:
 		g.Print("The tree vanishes in magical flames.")
 	}
-	g.Map.SetCell(p, GroundCell)
+	g.Map.Set(p, GroundCell)
 	g.Clouds[p] = CloudFire
 	if !g.Player.Sees(p) {
 		g.UpdateKnowledge(p, terrain(c))

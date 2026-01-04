@@ -129,7 +129,7 @@ func (g *Game) FreePassableCell() gruid.Point {
 		x := RandInt(MapWidth)
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
-		c := d.Cell(p)
+		c := d.At(p)
 		if !c.IsPassable() {
 			continue
 		}
@@ -182,7 +182,7 @@ func (g *Game) GenDungeon() {
 			ml = NaturalCave
 		}
 	}
-	g.GenRoomTunnels(ml)
+	g.genMap(ml)
 }
 
 func (g *Game) InitPlayer() {
@@ -581,7 +581,7 @@ func (g *Game) Descend(style descendstyle) bool {
 			AchStealthMaster.Get(g)
 		}
 	}
-	c := g.Map.Cell(g.Player.P)
+	c := g.Map.At(g.Player.P)
 	if terrain(c) == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
 		g.StoryPrint("Escaped!")
 		g.ExploredLevels = g.Depth

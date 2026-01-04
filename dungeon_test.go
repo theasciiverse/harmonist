@@ -22,7 +22,7 @@ func (m *Map) FreePassableCell() gruid.Point {
 		x := RandInt(MapWidth)
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
-		c := m.Cell(p)
+		c := m.At(p)
 		if c.IsPassable() {
 			return p
 		}
@@ -32,7 +32,7 @@ func (m *Map) FreePassableCell() gruid.Point {
 func (m *Map) connex(pr *paths.PathRange) bool {
 	pos := m.FreePassableCell()
 	passable := func(p gruid.Point) bool {
-		return terrain(m.Cell(p)) != WallCell
+		return terrain(m.At(p)) != WallCell
 	}
 	cp := newPather(passable)
 	pr.CCMap(cp, pos)
@@ -68,7 +68,7 @@ func TestAutomataCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.GenRoomTunnels(AutomataCave)
+		g.genMap(AutomataCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -81,7 +81,7 @@ func TestRandomWalkCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.GenRoomTunnels(RandomWalkCave)
+		g.genMap(RandomWalkCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -94,7 +94,7 @@ func TestRandomWalkTreeCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.GenRoomTunnels(RandomWalkTreeCave)
+		g.genMap(RandomWalkTreeCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -107,7 +107,7 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.GenRoomTunnels(RandomSmallWalkCaveUrbanised)
+		g.genMap(RandomSmallWalkCaveUrbanised)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -126,7 +126,7 @@ func TestNaturalCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.GenRoomTunnels(NaturalCave)
+		g.genMap(NaturalCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}

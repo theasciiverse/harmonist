@@ -144,7 +144,7 @@ func (md *model) drawMap(gd gruid.Grid) {
 
 func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
 	g := md.g
-	c := g.Map.Cell(p)
+	c := g.Map.At(p)
 	fgColor = ColorFg
 	bgColor = ColorBg
 	if !explored(c) && (!g.Wizard || g.WizardMode == WizardNormal) {

@@ -28,7 +28,7 @@ type stair int
 const (
 	NormalStair stair = iota
 	WinStair
-	BlockedStair
+	SealedStair
 )
 
 func (st stair) String() (desc string) {
@@ -37,7 +37,7 @@ func (st stair) String() (desc string) {
 		desc = "stairs"
 	case WinStair:
 		desc = "monolith portal"
-	case BlockedStair:
+	case SealedStair:
 		desc = "sealed stairs"
 	}
 	return desc
@@ -56,7 +56,7 @@ func (st stair) ShortString(g *Game) (desc string) {
 		}
 	case WinStair:
 		desc = "monolith portal"
-	case BlockedStair:
+	case SealedStair:
 		desc = "blocked " + NormalStair.ShortDesc(g)
 	}
 	return desc
@@ -72,7 +72,7 @@ func (st stair) ShortDesc(g *Game) (desc string) {
 		}
 	case WinStair:
 		desc = "a monolith portal"
-	case BlockedStair:
+	case SealedStair:
 		desc = "blocked " + NormalStair.ShortDesc(g)
 	}
 	return desc
@@ -94,7 +94,7 @@ func (st stair) Desc(g *Game) (desc string) {
 			desc = deepStairDesc
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
-	case BlockedStair:
+	case SealedStair:
 		desc = "Stairs lead to the next level of the Dayoriah Clan’s domain in Hareka’s Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
 	}
 	return desc
@@ -111,7 +111,7 @@ func (st stair) Style(g *Game) (r rune, fg gruid.Color) {
 		if g.Depth == WinDepth {
 			fg = ColorViolet
 		}
-	case BlockedStair:
+	case SealedStair:
 		fg = ColorFgMagicPlace
 	}
 	return r, fg
@@ -381,7 +381,7 @@ func (g *Game) MagicMapping(maxdist int) error {
 		draw := false
 		for _, i := range cdists[d] {
 			p := idxtopos(i)
-			c := g.Map.Cell(p)
+			c := g.Map.At(p)
 			if !explored(c) {
 				g.Map.SetExplored(p)
 				g.SeeNotable(c, p)
@@ -414,7 +414,7 @@ func (g *Game) BarrierStone() error {
 	}
 	for p, st := range g.Objects.Stairs {
 		// actually there is at most only such stair
-		if st == BlockedStair {
+		if st == SealedStair {
 			g.Objects.Stairs[p] = NormalStair
 		}
 	}
@@ -700,7 +700,7 @@ func (g *Game) EquipItem() error {
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	} else {
 		delete(g.Objects.Items, g.Player.P)
-		g.Map.SetCell(g.Player.P, GroundCell)
+		g.Map.Set(g.Player.P, GroundCell)
 		g.Printf("You equip the %s.", it.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	}
@@ -800,7 +800,7 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 	ptn, ok := g.Objects.Potions[p]
 	if !ok {
 		// should not happen
-		g.Map.SetCell(p, GroundCell)
+		g.Map.Set(p, GroundCell)
 		g.PrintStyled("Unexpected potion.", logError)
 		return
 	}
@@ -819,6 +819,6 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 		g.StoryPrintf("Drank %s (MP: %d).", ptn, g.Player.MP)
 	}
 	g.Printf("You drink %s.", ptn.ShortDesc(g))
-	g.Map.SetCell(p, GroundCell)
+	g.Map.Set(p, GroundCell)
 	delete(g.Objects.Potions, p)
 }

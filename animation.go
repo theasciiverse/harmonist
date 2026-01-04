@@ -576,7 +576,7 @@ func (md *model) FreeingShaedra() {
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
-		g.Map.SetCell(g.Places.Monolith, StairCell)
+		g.Map.Set(g.Places.Monolith, StairCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
 			md.anims.Frame(AnimDurMediumLong)
@@ -596,8 +596,8 @@ func (md *model) FreeingShaedra() {
 			md.anims.Draw(g.Places.Shaedra, 'Φ', ColorFgMagicPlace, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
-		g.Map.SetCell(g.Places.Shaedra, GroundCell)
-		g.Map.SetCell(g.Places.Marevor, ScrollCell)
+		g.Map.Set(g.Places.Shaedra, GroundCell)
+		g.Map.Set(g.Places.Marevor, ScrollCell)
 		g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
 		g.RescuedShaedra()
 		md.story = 0
@@ -627,7 +627,7 @@ func (md *model) TakingArtifact() {
 		g.PrintStyled("You take and use the artifact.", logSpecial)
 		md.confirm = true
 	case 1:
-		g.Map.SetCell(g.Places.Artifact, GroundCell)
+		g.Map.Set(g.Places.Artifact, GroundCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Monolith)
@@ -635,7 +635,7 @@ func (md *model) TakingArtifact() {
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
-		g.Map.SetCell(g.Places.Monolith, StairCell)
+		g.Map.Set(g.Places.Monolith, StairCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
@@ -647,7 +647,7 @@ func (md *model) TakingArtifact() {
 		g.PrintStyled("Syu: “Sorry, but I prefer bananas!”", logSpecial)
 		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	case 2:
-		g.Map.SetCell(g.Places.Marevor, GroundCell)
+		g.Map.Set(g.Places.Marevor, GroundCell)
 		AchRetrievedArtifact.Get(g)
 		md.story = 0
 		md.mode = modeNormal

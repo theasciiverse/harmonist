@@ -37,7 +37,7 @@ func (dp *dungeonPath) Neighbors(p gruid.Point) []gruid.Point {
 }
 
 func (dp *dungeonPath) Cost(from, to gruid.Point) int {
-	if terrain(dp.dungeon.Cell(to)) == WallCell {
+	if terrain(dp.dungeon.At(to)) == WallCell {
 		if dp.wcost > 0 {
 			return dp.wcost
 		}
@@ -74,7 +74,7 @@ type mappingPath struct {
 
 func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
 	d := dp.g.Map
-	if terrain(d.Cell(p)) == WallCell {
+	if terrain(d.At(p)) == WallCell {
 		return nil
 	}
 	return dp.nbs.Cardinal(p, valid)
@@ -102,7 +102,7 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 		return 50
 	}
 	cost := 1
-	c := tp.dg.m.Cell(from)
+	c := tp.dg.m.At(from)
 	if tp.dg.room[from] {
 		cost += 7
 	} else if !tp.dg.tunnel[from] && terrain(c) != GroundCell {
@@ -144,10 +144,10 @@ func (g *Game) ppPassable(p gruid.Point) bool {
 	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 		return false
 	}
-	return valid(p) && explored(d.Cell(p)) && (d.Cell(p).IsPlayerPassable() && !okT ||
+	return valid(p) && explored(d.At(p)) && (d.At(p).IsPlayerPassable() && !okT ||
 		okT && t.IsPlayerPassable() ||
 		g.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
-		g.Player.HasStatus(StatusDig) && (d.Cell(p).IsDiggable() && !okT || (okT && t.IsDiggable())))
+		g.Player.HasStatus(StatusDig) && (d.At(p).IsDiggable() && !okT || (okT && t.IsDiggable())))
 }
 
 type jumpPath struct {
@@ -180,7 +180,7 @@ type noisePath struct {
 func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
 	d := fp.g.Map
 	keep := func(q gruid.Point) bool {
-		return valid(q) && terrain(d.Cell(q)) != WallCell
+		return valid(q) && terrain(d.At(q)) != WallCell
 	}
 	return fp.nbs.Cardinal(p, keep)
 }
@@ -205,7 +205,7 @@ func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 		if !valid(q) {
 			return false
 		}
-		c := d.Cell(q)
+		c := d.At(q)
 		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall())
 	}
 	nbs := ap.nbs.Cardinal(p, keep)
@@ -239,7 +239,7 @@ func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
 		return false
 	}
 	g := mp.g
-	c := g.Map.Cell(p)
+	c := g.Map.At(p)
 	return m.CanPass(g, p) || c.IsDestructible()
 }
 
@@ -248,7 +248,7 @@ func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
 	if !m.CanPass(mp.g, p) {
 		return false
 	}
-	c := mp.g.Map.Cell(p)
+	c := mp.g.Map.At(p)
 	return c.IsNormalPatrolWay()
 }
 
@@ -270,7 +270,7 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 	g := mp.g
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
-		c := g.Map.Cell(to)
+		c := g.Map.At(to)
 		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() && !mp.monster.Status(MonsConfused) {
 			return 5
 		}
