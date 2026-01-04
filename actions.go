@@ -815,7 +815,7 @@ func (md *model) KeysHelp() {
 		"Advanced Game Actions", "",
 		"View previous messages", "m",
 		"Examine previous/next monster", "- +",
-		"Examine next stair/object", "> n",
+		"Examine next stair/magical item", "> n",
 		"Run (auto-move in direction)", "shift+arrows or HJKL",
 		"Travel (auto-move to destination)", "“.” or ENTER in keyboard examine mode",
 		"Autoexplore (use with caution)", "o",
