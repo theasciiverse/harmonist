@@ -558,7 +558,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 		}
 		again, eff, err := md.normalModeAction(action)
 		if err != nil {
-			md.g.Printf("%v", err)
+			md.g.Print(err.Error())
 		}
 		if again {
 			return eff
@@ -788,7 +788,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			}
 			err := md.g.UseMagara(md.menu.Active())
 			if err != nil {
-				md.g.Printf("%v", err)
+				md.g.Print(err.Error())
 				md.mode = modeNormal
 				break
 			}
@@ -803,7 +803,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			}
 			err := md.g.EquipMagara(md.menu.Active())
 			if err != nil {
-				md.g.Printf("%v", err)
+				md.g.Print(err.Error())
 				md.mode = modeNormal
 				break
 			}
@@ -815,29 +815,27 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			_, eff, err := md.normalModeAction(menuActions[md.menu.ActiveInvokable()])
 			if err != nil {
 				// should not happen
-				md.g.Printf("%v", err)
+				log.Printf("game menu: %v", err)
 			}
 			return eff
 		case modeSettings:
 			if act != ui.MenuInvoke {
 				break
 			}
-			md.g.Printf("%v", settingsActions[md.menu.Active()])
 			_, eff, err := md.normalModeAction(settingsActions[md.menu.Active()])
 			if err != nil {
 				// should not happen
-				md.g.Printf("%v", err)
+				log.Printf("settings menu: %v", err)
 			}
 			return eff
 		case modeWizard:
 			if act != ui.MenuInvoke {
 				break
 			}
-			md.g.Printf("%v", wizardActions[md.menu.Active()])
 			_, eff, err := md.normalModeAction(wizardActions[md.menu.Active()])
 			if err != nil {
 				// should not happen
-				md.g.Printf("%v", err)
+				log.Printf("wizard menu: %v", err)
 			}
 			return eff
 		}
@@ -865,8 +863,8 @@ func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff g
 		}
 	}
 	again, eff, err = md.normalModeAction(action)
-	if _, ok := err.(actionError); ok {
-		err = fmt.Errorf("Key “%s” does nothing. Type ? for help.", key)
+	if _, ok := err.(actionErrorUnknown); ok {
+		again, err = true, nil
 	}
 	return again, eff, err
 }

@@ -268,7 +268,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 	switch action {
 	case ActionNone:
 		again = true
-		err = actionErrorUnknown
+		err = actionErrorUnknown{}
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.targ.kbTargeting {
 			again, err = g.PlayerBump(g.Player.P.Add(keyToDir(action)))
@@ -424,7 +424,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 			again = true
 			md.openWizardMenu()
 		} else {
-			err = actionErrorUnknown
+			err = actionErrorUnknown{}
 		}
 	case ActionWizardDescend:
 		if g.Wizard && g.Depth == WinDepth && !g.LiberatedShaedra {
@@ -437,7 +437,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 				md.win()
 			}
 		} else {
-			err = actionErrorUnknown
+			err = actionErrorUnknown{}
 		}
 	case ActionWizard:
 		again = true
@@ -496,7 +496,7 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		}
 		md.mode = modeNormal
 	default:
-		err = actionErrorUnknown
+		err = actionErrorUnknown{}
 	}
 	if err != nil {
 		again = true
@@ -528,7 +528,7 @@ func (md *model) readScroll() {
 		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
-		for _, s := range strings.Split(text.Text(), "\n") {
+		for s := range strings.SplitSeq(text.Text(), "\n") {
 			stts = append(stts, ui.Text(s))
 		}
 		md.smallPager.SetLines(stts)
@@ -547,7 +547,7 @@ func (md *model) readScroll() {
 		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Story Message").WithStyle(st.WithFg(ColorCyan))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
-		for _, s := range strings.Split(text.Text(), "\n") {
+		for s := range strings.SplitSeq(text.Text(), "\n") {
 			stts = append(stts, ui.Text(s))
 		}
 		md.smallPager.SetLines(stts)
@@ -555,18 +555,10 @@ func (md *model) readScroll() {
 	}
 }
 
-type actionError int
+type actionErrorUnknown struct{}
 
-const (
-	actionErrorUnknown actionError = iota
-)
-
-func (e actionError) Error() string {
-	switch e {
-	case actionErrorUnknown:
-		return "unknown action"
-	}
-	return ""
+func (e actionErrorUnknown) Error() string {
+	return "unknown action"
 }
 
 func altBgEntries(entries []ui.MenuEntry) {
