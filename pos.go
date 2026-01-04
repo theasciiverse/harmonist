@@ -36,7 +36,7 @@ func dirString(dir gruid.Point) (s string) {
 	return s
 }
 
-func keyToDir(k action) (p gruid.Point) {
+func keyToDir(k Action) (p gruid.Point) {
 	switch k {
 	case ActionW, ActionRunW:
 		p = gruid.Point{-1, 0}

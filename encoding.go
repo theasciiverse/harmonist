@@ -34,8 +34,8 @@ func (g *Game) GameSave() ([]byte, error) {
 
 // Config describes available configuration options.
 type Config struct {
-	NormalModeKeys map[gruid.Key]action
-	TargetModeKeys map[gruid.Key]action
+	NormalModeKeys map[gruid.Key]Action
+	TargetModeKeys map[gruid.Key]Action
 	DarkColors     bool
 	Tiles          bool
 	Version        string

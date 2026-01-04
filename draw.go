@@ -9,6 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/ui"
 )
 
+// Draw implements Draw() for gruid.Model.
 func (md *model) Draw() gruid.Grid {
 	if !md.anims.Done() {
 		if !md.anims.draw {

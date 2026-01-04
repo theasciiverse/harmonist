@@ -96,8 +96,8 @@ type model struct {
 	pagerMarkup ui.StyledText
 	targ        mapTargInfo
 	logs        []ui.StyledText
-	keysNormal  map[gruid.Key]action
-	keysTarget  map[gruid.Key]action
+	keysNormal  map[gruid.Key]Action
+	keysTarget  map[gruid.Key]Action
 	finished    bool
 	statusFocus bool
 	anims       Animations
@@ -113,7 +113,7 @@ type mapTargInfo struct {
 }
 
 func (md *model) initKeys() {
-	md.keysNormal = map[gruid.Key]action{
+	md.keysNormal = map[gruid.Key]Action{
 		gruid.KeyArrowLeft:  ActionW,
 		gruid.KeyArrowDown:  ActionS,
 		gruid.KeyArrowUp:    ActionN,
@@ -129,7 +129,7 @@ func (md *model) initKeys() {
 		".":                 ActionWaitTurn,
 		gruid.KeyEnter:      ActionWaitTurn,
 		"o":                 ActionExplore,
-		"x":                 ActionExamine,
+		"x":                 ActionExamineToggle,
 		"v":                 ActionEvoke,
 		"V":                 ActionEvoke,
 		"z":                 ActionEvoke,
@@ -153,11 +153,11 @@ func (md *model) initKeys() {
 		"»":                 ActionWizardDescend,
 		"C":                 ActionSettings,
 		gruid.KeyTab:        ActionSettings,
-		gruid.KeyEscape:     ActionEscape,
 	}
-	md.keysTarget = map[gruid.Key]action{
-		".":            ActionTarget,
-		gruid.KeyEnter: ActionTarget,
+	md.keysTarget = map[gruid.Key]Action{
+		".":             ActionTarget,
+		gruid.KeyEnter:  ActionTarget,
+		gruid.KeyEscape: ActionExamineToggle,
 	}
 	CustomKeys = false
 }
@@ -503,7 +503,7 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 		if distance(p, md.g.Player.P) == 1 {
 			again, err = md.g.PlayerBump(p)
 		} else {
-			again, eff, err = md.normalModeAction(ActionTarget)
+			again, eff, err = md.DoAction(ActionTarget)
 		}
 		if err != nil {
 			again = true
@@ -544,7 +544,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 		update = true
 	case ui.MenuInvoke:
 		i := statusItem(md.status.Active())
-		var action action
+		var action Action
 		switch i {
 		case statusMenu:
 			action = ActionMenu
@@ -556,7 +556,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			action = ActionInteract
 			md.statusFocus = false
 		}
-		again, eff, err := md.normalModeAction(action)
+		again, eff, err := md.DoAction(action)
 		if err != nil {
 			md.g.Print(err.Error())
 		}
@@ -604,7 +604,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.statusDesc.SetText("Click to open magara evocation menu.")
 			md.statusFocus = true
 		case i == statusInteract:
-			s, ok := md.interact()
+			s, ok := md.CanInteract()
 			if !ok {
 				break
 			}
@@ -722,11 +722,10 @@ func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
 	case key.IsRune():
 		action := ConfigurableKeyActions[md.keysMenu.Active()]
 		//log.Printf("active %v, action %v", md.keysMenu.Active(), action)
-		if action.normalModeAction() {
-			md.keysNormal[key] = action
-		}
-		if action.targetingModeAction() {
+		if action.ExamineModeAction() {
 			md.keysTarget[key] = action
+		} else {
+			md.keysNormal[key] = action
 		}
 		GameConfig.NormalModeKeys = md.keysNormal
 		GameConfig.TargetModeKeys = md.keysTarget
@@ -812,7 +811,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			if act != ui.MenuInvoke {
 				break
 			}
-			_, eff, err := md.normalModeAction(menuActions[md.menu.ActiveInvokable()])
+			_, eff, err := md.DoAction(menuActions[md.menu.ActiveInvokable()])
 			if err != nil {
 				// should not happen
 				log.Printf("game menu: %v", err)
@@ -822,7 +821,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			if act != ui.MenuInvoke {
 				break
 			}
-			_, eff, err := md.normalModeAction(settingsActions[md.menu.Active()])
+			_, eff, err := md.DoAction(settingsActions[md.menu.Active()])
 			if err != nil {
 				// should not happen
 				log.Printf("settings menu: %v", err)
@@ -832,7 +831,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			if act != ui.MenuInvoke {
 				break
 			}
-			_, eff, err := md.normalModeAction(wizardActions[md.menu.Active()])
+			_, eff, err := md.DoAction(wizardActions[md.menu.Active()])
 			if err != nil {
 				// should not happen
 				log.Printf("wizard menu: %v", err)
@@ -862,7 +861,7 @@ func (md *model) normalModeKeyDown(key gruid.Key, shift bool) (again bool, eff g
 			action = ActionRunE
 		}
 	}
-	again, eff, err = md.normalModeAction(action)
+	again, eff, err = md.DoAction(action)
 	if _, ok := err.(actionErrorUnknown); ok {
 		again, err = true, nil
 	}
@@ -911,11 +910,10 @@ func (md *model) applyConfig() {
 		md.keysNormal = GameConfig.NormalModeKeys
 		// For ensuring menu access and esc functionality.
 		md.keysNormal[gruid.KeySpace] = ActionMenu
-		md.keysNormal[gruid.KeyEscape] = ActionEscape
 	}
 	if GameConfig.TargetModeKeys != nil {
 		md.keysTarget = GameConfig.TargetModeKeys
 		// For ensuring back to normal mode.
-		md.keysTarget[gruid.KeyEscape] = ActionExamine
+		md.keysTarget[gruid.KeyEscape] = ActionExamineToggle
 	}
 }

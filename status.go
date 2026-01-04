@@ -330,7 +330,7 @@ func (md *model) updateStatusInfo() {
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(letter('M', md.mode == modeMenu && md.menuMode == modeGameMenu))})
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(letter('I', md.mode == modeMenu && md.menuMode == modeInventory))})
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(letter('V', md.mode == modeMenu && md.menuMode == modeEvocation))})
-	_, interact := md.interact()
+	_, interact := md.CanInteract()
 	interactstt := stt.WithText("")
 	if interact {
 		interactstt = stt.WithText("[E]")

@@ -12,10 +12,19 @@ import (
 	"codeberg.org/anaseto/gruid/ui"
 )
 
-type action int
+// actionErrorUnknown represents an unknown action (mostly for incorrect
+// keypresses).
+type actionErrorUnknown struct{}
+
+func (e actionErrorUnknown) Error() string {
+	return "unknown action"
+}
+
+// Action represents the various kinds of UI actions.
+type Action int
 
 const (
-	ActionNone action = iota
+	ActionNone Action = iota
 	ActionW
 	ActionS
 	ActionN
@@ -27,7 +36,7 @@ const (
 	ActionWaitTurn
 	ActionDescend
 	ActionExplore
-	ActionExamine
+	ActionExamineToggle
 	ActionEvoke
 	ActionInteract
 	ActionInventory
@@ -44,7 +53,6 @@ const (
 	ActionNextMonster
 	ActionNextObject
 	ActionTarget
-	ActionEscape
 
 	ActionSettings
 	ActionMenu
@@ -59,7 +67,8 @@ const (
 	ActionWizardToggleMode
 )
 
-var ConfigurableKeyActions = [...]action{
+// ConfigurableKeyActions contains configurable UI actions.
+var ConfigurableKeyActions = [...]Action{
 	ActionW,
 	ActionS,
 	ActionN,
@@ -72,48 +81,21 @@ var ConfigurableKeyActions = [...]action{
 	ActionEvoke,
 	ActionInteract,
 	ActionInventory,
-	ActionExamine,
-	ActionExplore,
+	ActionExamineToggle,
 	ActionLogs,
-	ActionDump,
-	ActionSave,
-	ActionQuit,
-	ActionMenu,
 	ActionPreviousMonster,
 	ActionNextMonster,
 	ActionNextObject,
 	ActionNextStairs,
-	ActionTarget}
-
-func (k action) normalModeAction() bool {
-	switch k {
-	case ActionW, ActionS, ActionN, ActionE,
-		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
-		ActionWaitTurn,
-		ActionDescend,
-		ActionExplore,
-		ActionExamine,
-		ActionEvoke,
-		ActionInteract,
-		ActionInventory,
-		ActionLogs,
-		ActionDump,
-		ActionHelp,
-		ActionMenu,
-		ActionSave,
-		ActionQuit,
-		ActionSettings,
-		ActionWizard,
-		ActionWizardMenu,
-		ActionWizardInfo,
-		ActionWizardToggleMode:
-		return true
-	default:
-		return false
-	}
+	ActionTarget,
+	ActionExplore,
+	ActionDump,
+	ActionSave,
+	ActionQuit,
+	ActionMenu,
 }
 
-func (k action) String() (text string) {
+func (k Action) String() (text string) {
 	switch k {
 	case ActionW:
 		text = "Move west"
@@ -135,9 +117,7 @@ func (k action) String() (text string) {
 		text = "Wait a turn"
 	case ActionDescend:
 		text = "Descend stairs"
-	case ActionExplore:
-		text = "Autoexplore"
-	case ActionExamine:
+	case ActionExamineToggle:
 		text = "Examine"
 	case ActionEvoke:
 		text = "Evoke card"
@@ -147,6 +127,18 @@ func (k action) String() (text string) {
 		text = "Inventory"
 	case ActionLogs:
 		text = "View messages"
+	case ActionPreviousMonster:
+		text = "Target previous monster"
+	case ActionNextMonster:
+		text = "Target next monster"
+	case ActionNextObject:
+		text = "Target next stone/magara/item"
+	case ActionNextStairs:
+		text = "Target next stairs"
+	case ActionTarget:
+		text = "Go to"
+	case ActionExplore:
+		text = "Autoexplore"
 	case ActionDump:
 		text = "Dump game statistics"
 	case ActionSave:
@@ -179,59 +171,19 @@ func (k action) String() (text string) {
 	return text
 }
 
-func (k action) targetingModeDescription() (text string) {
+// ExamineModeAction reports whether the action is specific to examine mode.
+func (k Action) ExamineModeAction() bool {
 	switch k {
-	case ActionW:
-		text = "Move cursor west"
-	case ActionS:
-		text = "Move cursor south"
-	case ActionN:
-		text = "Move cursor north"
-	case ActionE:
-		text = "Move cursor east"
-	case ActionRunW:
-		text = "Big move cursor west"
-	case ActionRunS:
-		text = "Big move cursor south"
-	case ActionRunN:
-		text = "Big move north"
-	case ActionRunE:
-		text = "Big move east"
-	case ActionDescend:
-		text = "Target next stair"
-	case ActionPreviousMonster:
-		text = "Target previous monster"
-	case ActionNextMonster:
-		text = "Target next monster"
-	case ActionNextObject:
-		text = "Target next stone/magara/item"
-	case ActionNextStairs:
-		text = "Target next stairs"
 	case ActionTarget:
-		text = "Go to"
-	case ActionEscape:
-		text = "Quit targeting mode"
-	}
-	return text
-}
-
-func (k action) targetingModeAction() bool {
-	switch k {
-	case ActionW, ActionS, ActionN, ActionE,
-		ActionRunW, ActionRunS, ActionRunN, ActionRunE,
-		ActionPreviousMonster,
-		ActionNextMonster,
-		ActionNextObject,
-		ActionNextStairs,
-		ActionTarget,
-		ActionEscape:
 		return true
 	default:
 		return false
 	}
 }
 
-func (md *model) interact() (string, bool) {
+// CanInteract reports whether the player can interact with current cell, along
+// with a description of the interaction.
+func (md *model) CanInteract() (string, bool) {
 	g := md.g
 	c := g.Map.Cell(g.Player.P)
 	switch terrain(c) {
@@ -263,7 +215,11 @@ func (md *model) interact() (string, bool) {
 	return "", false
 }
 
-func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, err error) {
+// DoAction performs the given action. It reports whether the turn wasn't spent
+// (again), and may return an in-game error that needs to be logged.
+// TODO: We probably would want to just return a string message instead of an
+// error and adjust again, as in-game errors aren't really errors.
+func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err error) {
 	g := md.g
 	switch action {
 	case ActionNone:
@@ -318,9 +274,6 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		if g.MoveToTarget() {
 			again = false
 		}
-	case ActionEscape:
-		again = true
-		md.CancelExamine()
 	case ActionWaitTurn:
 		g.WaitTurn()
 	case ActionInteract:
@@ -376,9 +329,13 @@ func (md *model) normalModeAction(action action) (again bool, eff gruid.Effect, 
 		md.openIventory()
 	case ActionExplore:
 		again, err = g.Autoexplore()
-	case ActionExamine:
+	case ActionExamineToggle:
 		again = true
-		md.KeyboardExamine()
+		if md.targ.kbTargeting {
+			md.CancelExamine()
+		} else {
+			md.KeyboardExamine()
+		}
 	case ActionHelp:
 		again = true
 		md.KeysHelp()
@@ -513,6 +470,7 @@ func (md *model) wizardInfo() {
 	md.smallPager.SetLines(stts)
 }
 
+// readScroll perfroms scroll reading.
 func (md *model) readScroll() {
 	sc, ok := md.g.Objects.Scrolls[md.g.Player.P]
 	if !ok {
@@ -555,12 +513,7 @@ func (md *model) readScroll() {
 	}
 }
 
-type actionErrorUnknown struct{}
-
-func (e actionErrorUnknown) Error() string {
-	return "unknown action"
-}
-
+// altBgEntries alternates background color for a list of menu entries.
 func altBgEntries(entries []ui.MenuEntry) {
 	for i := range entries {
 		if i%2 == 1 {
@@ -570,7 +523,8 @@ func altBgEntries(entries []ui.MenuEntry) {
 	}
 }
 
-var settingsActions = []action{
+// settingsActions represents the various configuration actions.
+var settingsActions = []Action{
 	ActionSetKeys,
 	ActionInvertLOS,
 	ActionToggleShowNumbers,
@@ -594,14 +548,20 @@ func (md *model) openSettings() {
 	md.menuMode = modeSettings
 }
 
-func (md *model) keysForAction(a action) string {
+func (md *model) keysForAction(a Action) string {
 	keys := []gruid.Key{}
 	for k, action := range md.keysNormal {
+		if k == " " {
+			k = "SPACE"
+		}
 		if a == action && !k.In(keys) {
 			keys = append(keys, k)
 		}
 	}
 	for k, action := range md.keysTarget {
+		if k == " " {
+			k = "SPACE"
+		}
 		if a == action && !k.In(keys) {
 			keys = append(keys, k)
 		}
@@ -619,9 +579,6 @@ func (md *model) openKeyBindings() {
 	r := 'a'
 	for _, it := range ConfigurableKeyActions {
 		desc := it.String()
-		if !it.normalModeAction() {
-			desc = it.targetingModeDescription()
-		}
 		desc = fmt.Sprintf(" %-36s %s", desc, md.keysForAction(it))
 		entries = append(entries, ui.MenuEntry{
 			Text: ui.Text(desc),
@@ -636,7 +593,8 @@ func (md *model) openKeyBindings() {
 	md.menuMode = modeKeys
 }
 
-var menuActions = []action{
+// menuActions represents main game menu action.
+var menuActions = []Action{
 	ActionLogs,
 	ActionHelp,
 	ActionDump,
@@ -744,7 +702,9 @@ func (md *model) equipMagaraMenu() {
 	md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
 }
 
-var wizardActions = []action{
+// wizardActions represents the various actions in wizard menu. TODO: we
+// probably should just remove this and implement a system closer to Shamogu's.
+var wizardActions = []Action{
 	ActionWizardInfo,
 	ActionWizardToggleMode,
 }
@@ -765,6 +725,31 @@ func (md *model) openWizardMenu() {
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeWizard
+}
+
+func (md *model) KeysHelp() {
+	entries := []string{
+		"Basic Game Actions", "",
+		"Move/Jump", "arrows or hjkl or mouse left",
+		"Wait a turn", "“.” or 5 or enter or mouse left on @",
+		"Interact (Equip/Descend/Rest...)", "e",
+		"Evoke/Zap magara", "v or z",
+		"Inventory", "i",
+		"Toggle keyboard examine mode", "x",
+		"Open menu", "SPACE or mouse right",
+		"Close menu, inventory...", "SPACE or ESC or mouse left outside",
+		"Advanced Game Actions", "",
+		"View previous messages", "m",
+		"Examine previous/next monster", "- +",
+		"Examine next stair/magical item", "> n",
+		"Run (auto-move in direction)", "shift+arrows or HJKL",
+		"Travel (auto-move to destination)", "“.” or ENTER in keyboard examine mode",
+		"Autoexplore (use with caution)", "o",
+		"Other Common Actions", "",
+		"Save and quit", "S",
+		"Quit (without saving)", "Q",
+	}
+	md.updateKeysDescription("Keybindings (default values)", entries)
 }
 
 func (md *model) updateKeysDescription(title string, actions []string) {
@@ -793,31 +778,8 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 	md.pager.SetCursor(gruid.Point{0, 0})
 }
 
-func (md *model) KeysHelp() {
-	entries := []string{
-		"Basic Game Actions", "",
-		"Move/Jump", "arrows or hjkl or mouse left",
-		"Wait a turn", "“.” or 5 or enter or mouse left on @",
-		"Interact (Equip/Descend/Rest...)", "e",
-		"Evoke/Zap magara", "v or z",
-		"Inventory", "i",
-		"Toggle keyboard examine mode", "x",
-		"Open menu", "SPACE or mouse right",
-		"Close menu, inventory...", "SPACE or ESC or mouse left outside",
-		"Advanced Game Actions", "",
-		"View previous messages", "m",
-		"Examine previous/next monster", "- +",
-		"Examine next stair/magical item", "> n",
-		"Run (auto-move in direction)", "shift+arrows or HJKL",
-		"Travel (auto-move to destination)", "“.” or ENTER in keyboard examine mode",
-		"Autoexplore (use with caution)", "o",
-		"Other Common Actions", "",
-		"Save and quit", "S",
-		"Quit (without saving)", "Q",
-	}
-	md.updateKeysDescription("Keybindings (default values)", entries)
-}
-
+// checkShaedra checks whether we already rescued Shaedra or not, to prevent
+// going to optional levels before.
 func (md *model) checkShaedra(st stair) (err error) {
 	g := md.g
 	if g.Depth == WinDepth && st == NormalStair && terrain(g.Map.Cell(g.Places.Shaedra)) == StoryCell {
