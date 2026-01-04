@@ -33,8 +33,8 @@ for more information and tips about the game.
 Install from Sources
 --------------------
 
-First, you need to install the [go compiler](https://golang.org/), so that the
-`go` command is available.
+First, you need to install the [go compiler](https://golang.org/) (Go 1.24 or
+later), so that the `go` command is available.
 
 Harmonist uses the [gruid](https://codeberg.org/anaseto/gruid) library for
 grid-based user interfaces, which offers three different rendering drivers:

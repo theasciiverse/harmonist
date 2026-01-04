@@ -1,19 +1,27 @@
 # v? ?
 
-* Update to latest gruid version and require Go 1.23 or later.
-* Add "Messages" title to message pager.
+This release is a polish release with various UI improvements, most of them
+inspired from Shamogu.
+
+* Update to latest gruid version and require Go 1.24 or later.
+* Change color of out-of-view monster memory to light grey unless the monster
+  was resting, to make it clearer that it's out of view (inspired from a
+  similar change in Shamogu).
+* SDL2 version now uses graphic acceleration. It also uses a new custom
+  bindings package that is much smaller and compiles faster.
 * Make the various kinds of menus always open with first item as the active
   one. Previously, previous active item was remembered, but it wasn't
   done in a consistent or useful manner (different menus shared the same
   memory).
-* Change color of out-of-view monster memory to light grey unless the monster
-  was resting, to make it clearer that it's out of view (inspired from similar
-  change in Shamogu).
-* SDL2 version now uses graphic acceleration by default unless the -noaccel
-  flag is provided. It should work better on modern systems.
-* Various small UI improvements and fixes inspired from Shamogu, including
-  scaling command-line options for SDL2 version, and true color option for
-  terminal version.
+* Simplified controls taking inspiration from Shamogu. In particular, there's
+  no longer a separate *targeting mode help*. Non-movement targeting keys now
+  work in normal mode, too, without any conflicts.
+* Various other small UI improvements and fixes inspired from Shamogu,
+  including scaling command-line options for SDL2 version, true color
+  `-t` option for the terminal version, and updated/fixed titles in messages
+  and end of game summary pager windows.
+* Some tile drawings have been improved, including some improvements from
+  Shamogu, like a more visible `?` sign on the exploration frontier.
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
 * In native builds, rename game statistic's dump file to `dump.txt`
