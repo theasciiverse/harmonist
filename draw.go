@@ -222,15 +222,17 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if g.MonsterLOS[p] {
 			fgColor = ColorFgWanderingMonster
 		}
-		if cld, ok := g.Clouds[p]; ok && g.Player.Sees(p) {
+		infov := g.Player.Sees(p)
+		if cld, ok := g.Clouds[p]; ok && infov {
 			r = '§'
-			if cld == CloudFire {
+			switch cld {
+			case CloudFire:
 				fgColor = ColorFgWanderingMonster
-			} else if cld == CloudNight {
+			case CloudNight:
 				fgColor = ColorFgSleepingMonster
 			}
 		}
-		if g.Player.Sees(p) || (g.Wizard && g.WizardMode == WizardSeeAll) {
+		if infov || (g.Wizard && g.WizardMode == WizardSeeAll) {
 			m := g.MonsterAt(p)
 			if m.Exists() {
 				r = m.Kind.Letter()
@@ -245,7 +247,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if mons := g.lastMonsterKnownAt(p); (!g.Wizard || g.WizardMode == WizardNormal) && mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
-		if fgColor == ColorFgLOS && g.Illuminated(p) && c.IsIlluminable() {
+		if infov && fgColor == ColorFgLOS && g.Illuminated(p) && c.IsIlluminable() {
 			fgColor = ColorFgLOSLight
 		}
 	}
