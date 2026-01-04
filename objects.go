@@ -460,7 +460,7 @@ func (sc scroll) Text(g *Game) (desc string) {
 	case ScrollDayoriahMessage:
 		desc = `“The thief that infiltrated our turf and tried to retrieve our new acquisition has been captured. However, it is possible that she has an accomplice. Please be careful and stop every suspect.”
 
-[Order of a Dayoriah Clan's foreman, the paper is rather recent and you can't help but think the thief is actually Shaedra. So they really did capture her! You have to hurry and save her.]`
+[Order of a Dayoriah Clan’s foreman, the paper is rather recent and you can’t help but think the thief is actually Shaedra. So they really did capture her! You have to hurry and save her.]`
 	case ScrollLore:
 		i, ok := g.Objects.Lore[g.Player.P]
 		if !ok {
