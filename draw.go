@@ -264,10 +264,8 @@ func (m *Monster) StyleKnowledge() (r rune, fg gruid.Color) {
 		fg = ColorFgSleepingMonster
 	} else if m.Kind.Peaceful() && m.Seen {
 		fg = ColorFgPlayer
-	} else if m.Seen {
-		fg = ColorFgLOS
 	} else {
-		fg = ColorFgWanderingMonster
+		fg = ColorFgLOS
 	}
 	return r, fg
 }
