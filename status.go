@@ -375,6 +375,9 @@ func (md *model) updateStatusInfo() {
 		c := g.Map.At(p)
 		if terrain(c) != GroundCell {
 			r, fg := c.Style(g, p)
+			if g.Illuminated(p) && c.IsIlluminable() && fg == ColorFgLOS {
+				fg = ColorFgLOSLight
+			}
 			entries = append(entries, ui.MenuEntry{
 				Text:     stt.WithTextf("%c ", r).WithStyle(gruid.Style{Fg: fg, Attrs: AttrInMap}),
 				Disabled: true})
