@@ -144,7 +144,6 @@ var MapNames = map[rune]string{
 	'@':  "player",
 	'[':  "lbracket",
 	'\\': "backslash",
-	']':  "rbracket",
 	'^':  "rubble",
 	'_':  "stone",
 	'|':  "vbar",
