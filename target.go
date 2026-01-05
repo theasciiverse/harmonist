@@ -57,7 +57,7 @@ func (md *model) examine(p gruid.Point) {
 	md.SetCursor(p)
 	md.computeHighlight()
 	m := md.g.MonsterAt(p)
-	if m.Exists() && md.g.Player.Sees(p) {
+	if m.Exists() && (md.g.Player.Sees(p) || md.g.Wizard == WizardSeeAll) {
 		md.g.ComputeMonsterCone(m)
 	} else {
 		md.g.MonsterTargLOS = nil
@@ -67,16 +67,19 @@ func (md *model) examine(p gruid.Point) {
 }
 
 func (md *model) targetMonsters() []*Monster {
+	if md.g.Wizard == WizardMap {
+		return nil
+	}
 	tms := []*Monster{}
 	for _, m := range md.g.Monsters {
-		if !m.Exists() || !md.g.Player.Sees(m.P) {
+		if !m.Exists() || !md.g.Player.Sees(m.P) && md.g.Wizard != WizardSeeAll {
 			continue
 		}
 		tms = append(tms, m)
 	}
 	for p, i := range md.g.LastMonsterKnownAt {
 		m := md.g.Monsters[i]
-		if !m.Exists() || md.g.Player.Sees(m.P) {
+		if !m.Exists() || md.g.Player.Sees(m.P) || md.g.Wizard == WizardSeeAll {
 			continue
 		}
 		mons := &Monster{}
@@ -112,16 +115,15 @@ func (md *model) KeyboardExamine() {
 }
 
 type posInfo struct {
-	P           gruid.Point
-	Unknown     bool
-	Noise       bool
-	Unreachable bool
-	Sees        bool
-	Player      bool
-	Monster     *Monster
-	Cell        Cell
-	Cloud       string
-	Lighted     bool
+	P       gruid.Point
+	Unknown bool
+	Noise   bool
+	Sees    bool
+	Player  bool
+	Monster *Monster
+	Cell    Cell
+	Cloud   string
+	Lighted bool
 }
 
 func (md *model) drawPosInfo() {
@@ -163,9 +165,6 @@ func (md *model) drawPosInfo() {
 	if info.Noise {
 		features = append(features, "noise")
 	}
-	if info.Unreachable {
-		features = append(features, "unreachable")
-	}
 	if !info.Sees && !info.Unknown {
 		features = append(features, "seen")
 	} else if info.Unknown {
@@ -176,9 +175,6 @@ func (md *model) drawPosInfo() {
 		t += " (" + strings.Join(features[1:], ", ") + ")"
 	}
 	fg := ColorFg
-	if info.Unreachable {
-		fg = ColorOrange
-	}
 	desc := ""
 	if info.Unknown {
 		desc = "You do not know what is in there."
@@ -222,7 +218,7 @@ func (md *model) drawPosInfo() {
 	if !md.targ.ex.scroll {
 		formatBox(t, desc, fg)
 	}
-	if !mons.Seen {
+	if !mons.Seen && g.Wizard != WizardSeeAll {
 		formatBox("unknown monster", "You sensed a monster there.", mfg)
 	} else {
 		formatBox(title, strings.Join(mdesc, "\n"), mfg)
@@ -295,7 +291,15 @@ func (md *model) updatePosInfo() {
 	p := md.targ.ex.p
 	pi.P = p
 	switch {
-	case !explored(g.Map.At(p)):
+	case g.Wizard == WizardMap:
+		pi.Cell = g.Map.At(p)
+		pi.Sees = true
+		if g.Illuminated(p) && pi.Cell.IsIlluminable() {
+			pi.Lighted = true
+		}
+		md.targ.ex.info = pi
+		return
+	case !explored(g.Map.At(p)) && g.Wizard != WizardSeeAll:
 		pi.Unknown = true
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
@@ -305,30 +309,26 @@ func (md *model) updatePosInfo() {
 		}
 		md.targ.ex.info = pi
 		return
-		//case !targ.Reachable(g, pos):
-		//pi.Unreachable = true
-		//return
 	}
 	if p == g.Player.P {
 		pi.Player = true
 	}
-	if g.Player.Sees(p) {
-		pi.Sees = true
-	}
+	infov := g.Player.Sees(p) || g.Wizard == WizardSeeAll
+	pi.Sees = infov
 	c := g.Map.At(p)
-	if t, ok := g.TerrainKnowledge[p]; ok {
+	if t, ok := g.TerrainKnowledge[p]; ok && g.Wizard != WizardSeeAll {
 		c = t | c&Explored
 	}
-	if mons := g.MonsterAt(p); mons.Exists() && g.Player.Sees(p) {
+	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
-	} else if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+	} else if mons := g.lastMonsterKnownAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
 		pi.Monster = mons
 	}
-	if cld, ok := g.Clouds[p]; ok && g.Player.Sees(p) {
+	if cld, ok := g.Clouds[p]; ok && infov {
 		pi.Cloud = cld.String()
 	}
 	pi.Cell = c
-	if g.Illuminated(p) && c.IsIlluminable() && g.Player.Sees(p) {
+	if g.Illuminated(p) && c.IsIlluminable() && infov {
 		pi.Lighted = true
 	}
 	if g.Noise[p] || g.NoiseIllusion[p] {

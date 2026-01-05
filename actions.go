@@ -389,6 +389,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 	case ActionWizard:
 		again = true
+		md.g.md.CancelExamine()
 		switch md.g.Wizard {
 		case WizardNone:
 			md.g.PrintStyled("Do you really want to enter Wizard Mode ? (debug/cheat mode) [y/N]", logConfirm)

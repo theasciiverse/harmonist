@@ -542,6 +542,9 @@ func (m *Monster) Status(st monsterStatus) bool {
 }
 
 func (m *Monster) Exists() bool {
+	// NOTE: In harmonist, we assume the player always knows whether a
+	// known monster is alive or dead, which is ok, because the only source
+	// of death for monsters is swapping (and you know when it happens).
 	return m != nil && !m.Dead
 }
 
