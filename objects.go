@@ -193,9 +193,11 @@ func (stn stone) Style(g *Game) (r rune, fg gruid.Color) {
 	r = '∩'
 	switch stn {
 	case InertStone:
-		fg = ColorFgPlace
+		fg = ColorFg
 	case SealStone:
 		fg = ColorFgPlayer
+	case TreeStone:
+		fg = ColorGreen
 	case MappingStone, SensingStone:
 		fg = ColorViolet
 	case BarrelStone:

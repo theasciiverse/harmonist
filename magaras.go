@@ -446,7 +446,7 @@ func (g *Game) BlinkPos(mpassable bool) gruid.Point {
 		return invalidPos
 	}
 	q := losPos[RandInt(len(losPos))]
-	for i := 0; i < 4; i++ {
+	for range 4 {
 		p := losPos[RandInt(len(losPos))]
 		if distance(q, g.Player.P) < distance(p, g.Player.P) {
 			q = p
@@ -507,11 +507,8 @@ func (g *Game) EvokeTeleportOther() error {
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
 	}
-	max := 2
-	if max > len(ms) {
-		max = len(ms)
-	}
-	for i := 0; i < max; i++ {
+	ma := min(2, len(ms))
+	for i := range ma {
 		if ms[i].Search == invalidPos {
 			ms[i].Search = ms[i].P
 		}
@@ -676,13 +673,10 @@ func (g *Game) EvokeSleeping() error {
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
 	}
-	max := 3
-	if max > len(ms) {
-		max = len(ms)
-	}
+	ma := min(3, len(ms))
 	targets := []gruid.Point{}
 	// XXX: maybe use noise distance instead of LOS?
-	for i := 0; i < max; i++ {
+	for i := range ma {
 		mons := ms[i]
 		if mons.State != Resting {
 			g.Printf("%s falls asleep.", mons.Kind.Definite(true))
@@ -697,7 +691,7 @@ func (g *Game) EvokeSleeping() error {
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
 	}
-	if max == 1 {
+	if ma == 1 {
 		g.Print("A beam of sleeping emerges.")
 	} else {
 		g.Print("Two beams of sleeping emerge.")
@@ -712,12 +706,9 @@ func (g *Game) EvokeLignification() error {
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
 	}
-	max := 2
-	if max > len(ms) {
-		max = len(ms)
-	}
+	ma := min(2, len(ms))
 	targets := []gruid.Point{}
-	for i := 0; i < max; i++ {
+	for i := range ma {
 		mons := ms[i]
 		if mons.Status(MonsLignified) || mons.Kind.ResistsLignification() {
 			continue
@@ -731,7 +722,7 @@ func (g *Game) EvokeLignification() error {
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
 	}
-	if max == 1 {
+	if ma == 1 {
 		g.Print("A beam of lignification emerges.")
 	} else {
 		g.Print("Two beams of lignification emerge.")

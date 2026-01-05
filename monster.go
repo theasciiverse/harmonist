@@ -70,25 +70,17 @@ const (
 	MonsWorm
 	MonsMirrorSpecter
 	MonsTinyHarpy
-	//MonsOgre
 	MonsOricCelmist
 	MonsHarmonicCelmist
-	//MonsBrizzia
 	MonsDog
-	//MonsGiantBee
 	MonsHighGuard
-	//MonsHydra
-	//MonsSkeletonWarrior
 	MonsSpider
 	MonsWingedMilfid
-	//MonsLich
 	MonsEarthDragon
 	MonsAcidMound
 	MonsExplosiveNadre
-	//MonsMindCelmist
 	MonsVampire
 	MonsTreeMushroom
-	//MonsMarevorHelith
 	MonsButterfly
 	MonsCrazyImp
 	MonsHazeCat
