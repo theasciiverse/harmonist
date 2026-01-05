@@ -78,8 +78,8 @@ func (st stair) ShortDesc(g *Game) (desc string) {
 	return desc
 }
 
-const normalStairDesc = "Stairs lead to the next level of Dayoriah Clan’s domain in Hareka’s Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
-const deepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan’s domain in Hareka’s Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+const normalStairDesc = "Stairs lead to the next level of Dayoriah Clan’s domain in Hareka’s Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that enemies cannot follow you either."
+const deepStairDesc = "Those very deep stairs lead to the next level of Dayoriah Clan’s domain in Hareka’s Underground. You will not be able to come back, because an oric barrier seals the stairs when they are traversed by intruders. The upside of this is that enemies cannot follow you either."
 
 func (st stair) Desc(g *Game) (desc string) {
 	switch st {
@@ -95,7 +95,7 @@ func (st stair) Desc(g *Game) (desc string) {
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
 	case SealedStair:
-		desc = "Stairs lead to the next level of the Dayoriah Clan’s domain in Hareka’s Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that ennemies cannot follow you either."
+		desc = "Stairs lead to the next level of the Dayoriah Clan’s domain in Hareka’s Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that enemies cannot follow you either."
 	}
 	return desc
 }
