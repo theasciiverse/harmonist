@@ -382,7 +382,9 @@ func (md *model) updateStatusInfo() {
 				Text:     stt.WithTextf("%c ", r).WithStyle(gruid.Style{Fg: fg, Attrs: AttrInMap}),
 				Disabled: true})
 		}
-		if md.targ.kbTargeting {
+		if md.g.resting {
+			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@BResting...@N"), Disabled: true})
+		} else if md.targ.kbTargeting {
 			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@B[Examine]@N"), Disabled: true})
 		}
 	}
