@@ -48,7 +48,6 @@ type Game struct {
 	MonsterTargLOS     map[gruid.Point]bool
 	LightFOV           *rl.FOV
 	RaysCache          rayMap
-	Resting            bool
 	RestingTurns       int
 	LiberatedShaedra   bool
 	LiberatedArtifact  bool
@@ -71,6 +70,7 @@ type Game struct {
 	nbs         paths.Neighbors
 	rand        *rand.Rand
 
+	resting               bool
 	autoexploring         bool
 	autoexploreMapRebuild bool
 	autoTarget            gruid.Point
@@ -627,7 +627,7 @@ func (g *Game) ApplyRest() {
 
 func (g *Game) AutoPlayer() bool {
 	switch {
-	case g.Resting:
+	case g.resting:
 		const enoughRestTurns = 25
 		if g.RestingTurns < enoughRestTurns {
 			g.RestingTurns++
@@ -636,7 +636,7 @@ func (g *Game) AutoPlayer() bool {
 		if g.RestingTurns >= enoughRestTurns {
 			g.ApplyRest()
 		}
-		g.Resting = false
+		g.resting = false
 	case g.autoexploring:
 		switch {
 		case g.autoHalt:

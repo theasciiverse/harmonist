@@ -437,6 +437,10 @@ func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 }
 
 func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
+	if md.g.resting {
+		// Ignore keyboard actions while resting.
+		return nil
+	}
 	md.statusFocus = false
 	if !md.targ.kbTargeting && valid(md.targ.ex.p) {
 		md.CancelExamine()
@@ -462,6 +466,10 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 }
 
 func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
+	if md.g.resting {
+		// Ignore mouse actions while resting.
+		return nil
+	}
 	if msg.P.Y == UIHeight-1 {
 		return md.updateStatusMouse(msg)
 	}

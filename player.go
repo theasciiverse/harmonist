@@ -211,7 +211,7 @@ func (g *Game) Rest() error {
 	}
 	// TODO: animation
 	//g.ui.DrawMessage("Resting...")
-	g.Resting = true
+	g.resting = true
 	g.RestingTurns = RandInt(5) // you do not wake up when you want
 	g.Player.Bananas--
 	return nil
