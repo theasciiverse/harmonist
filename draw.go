@@ -149,6 +149,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		fgColor, bgColor = ColorFgLOS, ColorBgLOS
 		if len(g.nonWallNeighbors(p)) == 0 {
 			r = ' '
+			bgColor = ColorBgDark
 			return
 		}
 		r, fgColor = c.Style(g, p)
