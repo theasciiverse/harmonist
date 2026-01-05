@@ -200,7 +200,7 @@ func (md *model) drawPosInfo() {
 		title = fmt.Sprintf("%s (seen)", mons.Kind)
 	}
 	var mfg gruid.Color
-	if g.Player.Sees(mons.P) {
+	if g.Player.Sees(mons.P) || g.Wizard == WizardSeeAll {
 		mfg = mons.color(g)
 	} else {
 		_, mfg = mons.StyleKnowledge()
