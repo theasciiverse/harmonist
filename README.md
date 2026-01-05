@@ -48,7 +48,7 @@ command:
 	go build
 
 You should now have a working `harmonist` executable in the current directory.
-Use the `--help` option for command-line usage.
+Use the `-help` option for command-line usage.
 
 This version uses the [tcell](https://github.com/gdamore/tcell) terminal
 library. If your terminal supports true color, the `-t` option will provide the
@@ -70,7 +70,8 @@ bindings for SDL2. You need to install
 not SDL3).
 
 You should now have a working `harmonist` executable in the current directory.
-Use the `-help` option for command-line usage.
+Use the `-help` option for command-line usage. For example, `-F` launches the
+game in fullscreen.
 
 ### Browser (Tiles or ASCII)
 
