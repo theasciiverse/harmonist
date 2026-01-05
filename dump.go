@@ -51,9 +51,9 @@ func (g *Game) SortedKilledMonsters() monsSlice {
 
 func (g *Game) Dump() string {
 	buf := &strings.Builder{}
-	fmt.Fprintf(buf, " -- Harmonist version %s character file --\n\n", Version)
-	if g.Wizard {
-		fmt.Fprintf(buf, "**WIZARD MODE**\n")
+	fmt.Fprintf(buf, " ♣ Game Summary — Harmonist %s ♣\n\n", Version)
+	if g.Wizard != WizardNone {
+		fmt.Fprintf(buf, "ENABLED WIZARD MODE.\n")
 	}
 	if g.Player.HP > 0 && g.Depth == -1 {
 		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
@@ -323,7 +323,7 @@ func (g *Game) DumpDungeon() string {
 					r = '§'
 				}
 				m := g.MonsterAt(p)
-				if m.Exists() && (g.Player.LOS[m.P] || g.Wizard) {
+				if m.Exists() && g.Player.LOS[m.P] {
 					r = m.Kind.Letter()
 				}
 			}
@@ -349,9 +349,9 @@ func (g *Game) DumpedKilledMonsters() string {
 
 func (g *Game) SimplifedDump(msg string, err error) string {
 	buf := &strings.Builder{}
-	fmt.Fprintf(buf, " ♣ Harmonist version %s game summary ♣\n\n", Version)
-	if g.Wizard {
-		fmt.Fprintf(buf, "**WIZARD MODE**\n")
+	fmt.Fprintf(buf, " ♣ Game Summary — Harmonist %s ♣\n\n", Version)
+	if g.Wizard != WizardNone {
+		fmt.Fprintf(buf, "ENABLED WIZARD MODE.\n")
 	}
 	if g.Player.HP > 0 && g.Depth == -1 {
 		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")

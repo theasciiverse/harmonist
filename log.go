@@ -12,7 +12,6 @@ type logStyle int
 
 const (
 	logNormal logStyle = iota
-	logCritic
 	logNotable
 	logDamage
 	logSpecial
@@ -142,20 +141,18 @@ func (g *Game) ExplosionSound() (text string) {
 func (st logStyle) Rune() rune {
 	var r rune
 	switch st {
-	case logCritic:
-		r = 'm'
 	case logNotable:
 		r = 'y'
 	case logDamage:
 		r = 'o'
 	case logSpecial:
-		r = 'm'
+		r = 'c'
 	case logStatusEnd:
 		r = 'v'
 	case logError:
 		r = 'r'
 	case logConfirm:
-		r = 'c'
+		r = 'm'
 	default:
 		r = 'N'
 	}

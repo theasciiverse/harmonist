@@ -149,7 +149,6 @@ func (md *model) initKeys() {
 		"S":                 ActionSave,
 		"Q":                 ActionQuit,
 		"W":                 ActionWizard,
-		"@":                 ActionWizardMenu,
 		"»":                 ActionWizardDescend,
 		"C":                 ActionSettings,
 		gruid.KeyTab:        ActionSettings,
@@ -663,7 +662,7 @@ func (md *model) EndTurn() gruid.Effect {
 		return nil
 	}
 	if md.critical {
-		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logCritic)
+		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logDamage)
 		md.critical = false
 		md.confirm = true
 	}
@@ -731,7 +730,7 @@ func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
 		GameConfig.TargetModeKeys = md.keysTarget
 		err := SaveConfig()
 		if err != nil {
-			md.g.PrintStyled("Error while saving config changes.", logCritic)
+			md.g.PrintStyled("Error while saving config changes.", logError)
 		}
 		md.openKeyBindings()
 		return nil
@@ -757,7 +756,7 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 			GameConfig.TargetModeKeys = md.keysTarget
 			err := SaveConfig()
 			if err != nil {
-				md.g.PrintStyled("Error while resetting config changes.", logCritic)
+				md.g.PrintStyled("Error while resetting config changes.", logError)
 			}
 			md.openKeyBindings()
 		}
@@ -827,16 +826,6 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				log.Printf("settings menu: %v", err)
 			}
 			return eff
-		case modeWizard:
-			if act != ui.MenuInvoke {
-				break
-			}
-			_, eff, err := md.DoAction(wizardActions[md.menu.Active()])
-			if err != nil {
-				// should not happen
-				log.Printf("wizard menu: %v", err)
-			}
-			return eff
 		}
 	}
 	return nil
@@ -881,7 +870,7 @@ func (md *model) death() {
 
 func (md *model) win() {
 	g := md.g
-	if g.Wizard {
+	if g.Wizard != WizardNone {
 		g.PrintStyled("You escape by the magic portal! **WIZARD**", logSpecial)
 		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
 	} else {

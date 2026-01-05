@@ -46,7 +46,6 @@ const (
 	ActionSave
 	ActionQuit
 	ActionWizard
-	ActionWizardMenu
 	ActionWizardDescend
 
 	ActionPreviousMonster
@@ -93,6 +92,7 @@ var ConfigurableKeyActions = [...]Action{
 	ActionSave,
 	ActionQuit,
 	ActionMenu,
+	ActionWizard,
 }
 
 func (k Action) String() (text string) {
@@ -150,9 +150,7 @@ func (k Action) String() (text string) {
 	case ActionSettings:
 		text = "Configure settings"
 	case ActionWizard:
-		text = "Wizard (debug) mode"
-	case ActionWizardMenu:
-		text = "Wizard (debug) mode information"
+		text = "Wizard mode (irreversible)"
 	case ActionMenu:
 		text = "Action Menu"
 	case ActionSetKeys:
@@ -376,18 +374,11 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 			g.Print(msg)
 		}
 		md.mode = modeNormal
-	case ActionWizardMenu:
-		if g.Wizard {
-			again = true
-			md.openWizardMenu()
-		} else {
-			err = actionErrorUnknown{}
-		}
 	case ActionWizardDescend:
-		if g.Wizard && g.Depth == WinDepth && !g.LiberatedShaedra {
+		if g.Wizard != WizardNone && g.Depth == WinDepth && !g.LiberatedShaedra {
 			g.RescuedShaedra()
 		}
-		if g.Wizard && g.Depth < MaxDepth {
+		if g.Wizard != WizardNone && g.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			again = true
 			if g.Descend(DescendNormal) {
@@ -398,9 +389,16 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 	case ActionWizard:
 		again = true
-		if !md.g.Wizard {
-			md.g.PrintStyled("Do you really want to enter wizard mode (irreversible)? [y/N]", logConfirm)
+		switch md.g.Wizard {
+		case WizardNone:
+			md.g.PrintStyled("Do you really want to enter Wizard Mode ? (debug/cheat mode) [y/N]", logConfirm)
 			md.mode = modeWizardConfirmation
+		case WizardNormal:
+			md.g.Wizard = WizardSeeAll
+		case WizardSeeAll:
+			md.g.Wizard = WizardMap
+		default:
+			md.g.Wizard = WizardNormal
 		}
 	case ActionQuit:
 		again = true
@@ -443,13 +441,13 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		again = true
 		md.wizardInfo()
 	case ActionWizardToggleMode:
-		switch g.WizardMode {
+		switch g.Wizard {
 		case WizardNormal:
-			g.WizardMode = WizardMap
+			g.Wizard = WizardMap
 		case WizardMap:
-			g.WizardMode = WizardSeeAll
+			g.Wizard = WizardSeeAll
 		case WizardSeeAll:
-			g.WizardMode = WizardNormal
+			g.Wizard = WizardNormal
 		}
 		md.mode = modeNormal
 	default:
@@ -700,31 +698,6 @@ func (md *model) equipMagaraMenu() {
 	it := items[0]
 	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
 	md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
-}
-
-// wizardActions represents the various actions in wizard menu. TODO: we
-// probably should just remove this and implement a system closer to Shamogu's.
-var wizardActions = []Action{
-	ActionWizardInfo,
-	ActionWizardToggleMode,
-}
-
-func (md *model) openWizardMenu() {
-	entries := []ui.MenuEntry{}
-	r := 'a'
-	for _, it := range wizardActions {
-		entries = append(entries, ui.MenuEntry{
-			Text: ui.Textf("%c - %s", r, it),
-			Keys: []gruid.Key{gruid.Key(r)},
-		})
-		r++
-	}
-	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Wizard Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
-	md.menu.SetEntries(entries)
-	md.menu.SetActiveInvokable(0)
-	md.mode = modeMenu
-	md.menuMode = modeWizard
 }
 
 func (md *model) KeysHelp() {

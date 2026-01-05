@@ -75,7 +75,7 @@ func (md *model) Draw() gruid.Grid {
 				md.equipLabel.Box = &ui.Box{Title: ui.Textf("%s (ground)", it.String())}
 				md.equipLabel.Draw(md.gd.Slice(gruid.NewRange(0, gd.Size().Y, UIWidth/2, UIHeight-1)))
 			}
-		case modeGameMenu, modeSettings, modeWizard:
+		case modeGameMenu, modeSettings:
 			md.gd.Copy(md.menu.Draw())
 		case modeKeys, modeKeysChange:
 			gd := md.keysMenu.Draw()
@@ -145,9 +145,17 @@ func (md *model) drawMap(gd gruid.Grid) {
 func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
 	g := md.g
 	c := g.Map.At(p)
-	fgColor = ColorFg
-	bgColor = ColorBg
-	if !explored(c) && (!g.Wizard || g.WizardMode == WizardNormal) {
+	if g.Wizard == WizardMap {
+		fgColor, bgColor = ColorFgLOS, ColorBgLOS
+		if len(g.nonWallNeighbors(p)) == 0 {
+			r = ' '
+			return
+		}
+		r, fgColor = c.Style(g, p)
+		return
+	}
+	fgColor, bgColor = ColorFg, ColorBg
+	if !explored(c) && (g.Wizard == WizardNone || g.Wizard == WizardNormal) {
 		r = ' '
 		bgColor = ColorBgDark
 		if g.HasNonWallExploredNeighbor(p) {
@@ -166,13 +174,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		}
 		return
 	}
-	if g.Wizard && g.WizardMode != WizardNormal {
-		if !explored(c) && g.HasNonWallExploredNeighbor(p) && g.WizardMode == WizardSeeAll {
-			r = '¤'
-			fgColor = ColorFgDark
-			bgColor = ColorBgDark
-			return
-		}
+	if g.Wizard == WizardSeeAll {
 		if terrain(c) == WallCell {
 			if len(g.nonWallNeighbors(p)) == 0 {
 				r = ' '
@@ -180,14 +182,14 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			}
 		}
 	}
-	if g.Player.Sees(p) && !(g.Wizard && g.WizardMode == WizardMap) {
+	if g.Player.Sees(p) {
 		fgColor = ColorFgLOS
 		bgColor = ColorBgLOS
 	} else {
 		fgColor = ColorFgDark
 		bgColor = ColorBgDark
 	}
-	if trkn, okTrkn := g.TerrainKnowledge[p]; okTrkn && (!g.Wizard || g.WizardMode == WizardNormal) {
+	if trkn, okTrkn := g.TerrainKnowledge[p]; okTrkn && g.Wizard != WizardSeeAll {
 		c = trkn | c&Explored
 	}
 	var fgTerrain gruid.Color
@@ -198,7 +200,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			fgColor = ColorFgPlayer
 		} else if fgTerrain != ColorFgLOS {
 			fgColor = fgTerrain
-		} else if g.Player.Sees(p) {
+		} else if g.Player.Sees(p) || g.Wizard == WizardSeeAll {
 			mons := g.MonsterAt(p)
 			if mons.Exists() {
 				fgColor = mons.color(g)
@@ -207,7 +209,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		if _, ok := g.MagicalBarriers[p]; ok {
 			fgColor = ColorFgMagicPlace
 		}
-	case p == g.Player.P && !(g.Wizard && g.WizardMode == WizardMap):
+	case p == g.Player.P:
 		r = '@'
 		fgColor = ColorFgPlayer
 	default:
@@ -223,7 +225,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if g.MonsterLOS[p] {
 			fgColor = ColorFgWanderingMonster
 		}
-		infov := g.Player.Sees(p)
+		infov := g.Player.Sees(p) || g.Wizard == WizardSeeAll
 		if cld, ok := g.Clouds[p]; ok && infov {
 			r = '§'
 			switch cld {
@@ -233,19 +235,19 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 				fgColor = ColorFgSleepingMonster
 			}
 		}
-		if infov || (g.Wizard && g.WizardMode == WizardSeeAll) {
+		if infov {
 			m := g.MonsterAt(p)
 			if m.Exists() {
 				r = m.Kind.Letter()
 				fgColor = m.color(g)
 			}
-		} else if (!g.Wizard || g.WizardMode == WizardNormal) && g.Noise[p] {
+		} else if g.Noise[p] {
 			r = '♫'
 			fgColor = ColorFgWanderingMonster
 		} else if g.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
-		} else if mons := g.lastMonsterKnownAt(p); (!g.Wizard || g.WizardMode == WizardNormal) && mons.Exists() {
+		} else if mons := g.lastMonsterKnownAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
 		if infov && fgColor == ColorFgLOS && g.Illuminated(p) && c.IsIlluminable() {

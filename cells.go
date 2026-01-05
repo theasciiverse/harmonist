@@ -487,7 +487,7 @@ func (c Cell) Style(g *Game, p gruid.Point) (r rune, fg gruid.Color) {
 	case TableCell:
 		r, fg = 'π', ColorFgObject
 	case TreeCell:
-		r, fg = '♣', ColorFgConfusedMonster
+		r, fg = '♣', ColorGreen
 	case HoledWallCell:
 		r, fg = 'Π', ColorViolet
 	case ScrollCell:

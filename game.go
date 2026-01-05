@@ -58,8 +58,7 @@ type Game struct {
 	LogNextTick int
 	InfoEntry   string
 	Stats       stats
-	Wizard      bool
-	WizardMode  wizardMode
+	Wizard      wizardMode
 	Version     string
 	Places      places
 	Params      startParams
@@ -110,10 +109,12 @@ type startParams struct {
 	CrazyImp     int
 }
 
+// wizardMode represents the various wizard modes.
 type wizardMode int
 
 const (
-	WizardNormal wizardMode = iota
+	WizardNone wizardMode = iota
+	WizardNormal
 	WizardMap
 	WizardSeeAll
 )
@@ -606,8 +607,8 @@ func (g *Game) Descend(style descendstyle) bool {
 }
 
 func (g *Game) EnterWizardMode() {
-	g.Wizard = true
-	g.PrintStyled("Wizard mode activated: winner status disabled.", logSpecial)
+	g.Wizard = WizardNormal
+	g.PrintStyled("Wizard mode enabled.", logSpecial)
 	g.StoryPrint("Entered wizard mode.")
 }
 
@@ -686,10 +687,10 @@ func (g *Game) AutoPlayer() bool {
 
 func (g *Game) Died() bool {
 	if g.Player.HP <= 0 {
-		if g.Wizard {
+		if g.Wizard != WizardNone {
 			g.Player.HP = g.Player.HPMax()
-			g.PrintStyled("You died.", logSpecial)
-			g.StoryPrint("You died (wizard mode)")
+			g.PrintStyled("*** Wizard mode resurrects you! ***", logSpecial)
+			g.StoryPrint("Resurrected by the Wizard!")
 		} else {
 			g.LevelStats()
 			return true
