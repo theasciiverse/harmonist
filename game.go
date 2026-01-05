@@ -511,19 +511,6 @@ func (g *Game) CleanEvents() {
 	g.Turn++
 }
 
-func (g *Game) StairsSlice() []gruid.Point {
-	stairs := []gruid.Point{}
-	it := g.Map.Terrain.Iterator()
-	for it.Next() {
-		c := Cell(it.Cell())
-		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) {
-			continue
-		}
-		stairs = append(stairs, it.P())
-	}
-	return stairs
-}
-
 type descendstyle int
 
 const (

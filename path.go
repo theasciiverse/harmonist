@@ -144,7 +144,7 @@ func (g *Game) ppPassable(p gruid.Point) bool {
 	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
 		return false
 	}
-	return valid(p) && explored(d.At(p)) && (d.At(p).IsPlayerPassable() && !okT ||
+	return valid(p) && (explored(d.At(p)) || g.Wizard == WizardSeeAll) && (d.At(p).IsPlayerPassable() && !okT ||
 		okT && t.IsPlayerPassable() ||
 		g.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
 		g.Player.HasStatus(StatusDig) && (d.At(p).IsDiggable() && !okT || (okT && t.IsDiggable())))

@@ -66,41 +66,6 @@ func (md *model) examine(p gruid.Point) {
 	md.targ.ex.scroll = false
 }
 
-func (md *model) targetMonsters() []*Monster {
-	if md.g.Wizard == WizardMap {
-		return nil
-	}
-	tms := []*Monster{}
-	for _, m := range md.g.Monsters {
-		if !m.Exists() || !md.g.Player.Sees(m.P) && md.g.Wizard != WizardSeeAll {
-			continue
-		}
-		tms = append(tms, m)
-	}
-	for p, i := range md.g.LastMonsterKnownAt {
-		m := md.g.Monsters[i]
-		if !m.Exists() || md.g.Player.Sees(m.P) || md.g.Wizard == WizardSeeAll {
-			continue
-		}
-		mons := &Monster{}
-		*mons = *m
-		mons.P = p
-		tms = append(tms, mons)
-	}
-	sort.Slice(tms, func(i, j int) bool {
-		mi := tms[i]
-		mj := tms[j]
-		if md.g.Player.Sees(mi.P) && !md.g.Player.Sees(mj.P) {
-			return true
-		}
-		if !md.g.Player.Sees(mi.P) && md.g.Player.Sees(mj.P) {
-			return false
-		}
-		return distance(md.g.Player.P, mi.P) < distance(md.g.Player.P, mj.P)
-	})
-	return tms
-}
-
 // KeyboardExamine toggels keyboard examination mode on the player.
 func (md *model) KeyboardExamine() {
 	if md.targ.kbTargeting {
@@ -352,17 +317,19 @@ func (g *Game) computePathHighlight(p gruid.Point) {
 func (md *model) target() error {
 	g := md.g
 	p := md.targ.ex.p
-	if !explored(g.Map.At(p)) {
+	c := g.Map.At(p)
+	expl := explored(c) || g.Wizard == WizardSeeAll
+	if !expl {
 		return errors.New("You do not know this place.")
 	}
-	if terrain(g.Map.At(p)) == WallCell && !g.Player.HasStatus(StatusDig) {
+	if terrain(c) == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
 	path := g.PlayerPath(g.Player.P, p)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
-	if c := g.Map.At(p); explored(c) && terrain(c) != WallCell {
+	if expl && terrain(c) != WallCell {
 		g.autoTarget = p
 		return nil
 	}
@@ -395,10 +362,45 @@ func (md *model) nextMonster(key gruid.Key, data *examination) {
 	md.Examine(p)
 }
 
+func (md *model) targetMonsters() []*Monster {
+	if md.g.Wizard == WizardMap {
+		return nil
+	}
+	tms := []*Monster{}
+	for _, m := range md.g.Monsters {
+		if !m.Exists() || !md.g.Player.Sees(m.P) && md.g.Wizard != WizardSeeAll {
+			continue
+		}
+		tms = append(tms, m)
+	}
+	for p, i := range md.g.LastMonsterKnownAt {
+		m := md.g.Monsters[i]
+		if !m.Exists() || md.g.Player.Sees(m.P) || md.g.Wizard == WizardSeeAll {
+			continue
+		}
+		mons := &Monster{}
+		*mons = *m
+		mons.P = p
+		tms = append(tms, mons)
+	}
+	sort.Slice(tms, func(i, j int) bool {
+		mi := tms[i]
+		mj := tms[j]
+		if md.g.Player.Sees(mi.P) && !md.g.Player.Sees(mj.P) {
+			return true
+		}
+		if !md.g.Player.Sees(mi.P) && md.g.Player.Sees(mj.P) {
+			return false
+		}
+		return distance(md.g.Player.P, mi.P) < distance(md.g.Player.P, mj.P)
+	})
+	return tms
+}
+
 func (md *model) nextStair(data *examination) {
 	g := md.g
 	if data.sortedStairs == nil {
-		stairs := g.StairsSlice()
+		stairs := g.getStairs()
 		data.sortedStairs = g.SortedNearestTo(stairs, g.Player.P)
 	}
 	if len(data.sortedStairs) == 0 {
@@ -418,6 +420,20 @@ func (md *model) nextStair(data *examination) {
 	}
 }
 
+func (g *Game) getStairs() []gruid.Point {
+	stairs := []gruid.Point{}
+	it := g.Map.Terrain.Iterator()
+	seeStairs := g.Wizard == WizardSeeAll || g.Wizard == WizardMap
+	for it.Next() {
+		c := Cell(it.Cell())
+		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) && !seeStairs {
+			continue
+		}
+		stairs = append(stairs, it.P())
+	}
+	return stairs
+}
+
 func (md *model) nextObject(np gruid.Point, data *examination) {
 	g := md.g
 	nobject := data.nobject
@@ -433,13 +449,14 @@ func (md *model) nextObject(np gruid.Point, data *examination) {
 		}
 		data.objects = g.SortedNearestTo(data.objects, g.Player.P)
 	}
+	seeObjects := g.Wizard == WizardSeeAll || g.Wizard == WizardMap
 	for i := 0; i < len(data.objects); i++ {
 		p := data.objects[nobject]
 		nobject++
 		if nobject > len(data.objects)-1 {
 			nobject = 0
 		}
-		if explored(g.Map.At(p)) {
+		if explored(g.Map.At(p)) || seeObjects {
 			np = p
 			break
 		}
