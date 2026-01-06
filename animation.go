@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	AnimDurShort       = 25 * time.Millisecond
-	AnimDurShortMedium = 50 * time.Millisecond
-	AnimDurMedium      = 75 * time.Millisecond
-	AnimDurMediumLong  = 100 * time.Millisecond
+	AnimDurExtremelyShort = 15 * time.Millisecond
+	AnimDurShort          = 25 * time.Millisecond
+	AnimDurShortMedium    = 50 * time.Millisecond
+	AnimDurMedium         = 75 * time.Millisecond
+	AnimDurMediumLong     = 100 * time.Millisecond
 )
 
 type Animations struct {
@@ -122,6 +123,15 @@ func (a *Animations) Frame(d time.Duration) {
 	}
 	a.frames = append(a.frames, frame)
 	a.pgrid.Copy(a.grid)
+}
+
+// AnimationFrameFast updates the map and waits very briefly.
+func (md *model) AnimationFrameFast() {
+	if DisableAnimations {
+		return
+	}
+	md.startAnimSeq()
+	md.anims.Frame(AnimDurExtremelyShort)
 }
 
 func (md *model) SwappingAnimation(mp, pp gruid.Point) {

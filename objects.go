@@ -122,12 +122,10 @@ type stone int
 const (
 	InertStone stone = iota
 	BarrelStone
-	FogStone
+	EarthStone
 	QueenStone
 	NightStone
-	TreeStone
 	TeleportStone
-	MappingStone
 	SensingStone
 	// special
 	SealStone
@@ -139,18 +137,14 @@ func (stn stone) String() (text string) {
 		text = "inert stone"
 	case BarrelStone:
 		text = "barrel stone"
-	case FogStone:
-		text = "fog stone"
+	case EarthStone:
+		text = "earth stone"
 	case QueenStone:
 		text = "queenstone"
 	case NightStone:
 		text = "night stone"
-	case TreeStone:
-		text = "tree stone"
 	case TeleportStone:
 		text = "teleport stone"
-	case MappingStone:
-		text = "mapping stone"
 	case SensingStone:
 		text = "sensing stone"
 	case SealStone:
@@ -164,23 +158,19 @@ func (stn stone) Desc(g *Game) (text string) {
 	case InertStone:
 		text = "This magical stone has been depleted of magical energies."
 	case BarrelStone:
-		text = "Activating this magical stone will teleport you away to a barrel in the same level."
-	case FogStone:
-		text = "Activating this magical stone will produce fog in a 4-radius area using harmonic energies."
+		text = "Activating this magical stone will teleport you away to a random barrel in the same level. It reveals any other barrels on the map."
+	case EarthStone:
+		text = "It produces an oric explosion that destroys nearby walls. It reveals interior walls."
 	case QueenStone:
 		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters."
 	case NightStone:
 		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight."
-	case TreeStone:
-		text = "Activating this magical stone will lignify monsters in sight."
 	case TeleportStone:
 		text = "Activating this magical stone will teleport away monsters in sight."
-	case MappingStone:
-		text = "Activating this magical stone shows you the map layout and item locations in a wide area."
 	case SensingStone:
-		text = "Activating this magical stone shows you the current position of monsters in a wide area."
+		text = "Activating this magical stone shows you the current position of monsters."
 	case SealStone:
-		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs."
+		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs. It reveals the position of the target barrier."
 	}
 	return text
 }
@@ -193,17 +183,19 @@ func (stn stone) Style(g *Game) (r rune, fg gruid.Color) {
 	r = '∩'
 	switch stn {
 	case InertStone:
-		fg = ColorFg
+		fg = ColorForeground
 	case SealStone:
-		fg = ColorFgPlayer
-	case TreeStone:
+		fg = ColorBlue
+	case SensingStone:
+		fg = ColorMagenta
+	case EarthStone:
 		fg = ColorGreen
-	case MappingStone, SensingStone:
+	case NightStone:
 		fg = ColorViolet
 	case BarrelStone:
-		fg = ColorFgObject
-	default:
-		fg = ColorFgMagicPlace
+		fg = ColorYellow
+	case TeleportStone:
+		fg = ColorCyan
 	}
 	return r, fg
 }
@@ -225,25 +217,19 @@ func (g *Game) ActivateStone() (err error) {
 	case InertStone:
 		err = errors.New("The stone is inert.")
 	case BarrelStone:
-		g.Print("The stone teleports you away.")
-		g.TeleportToBarrel()
-	case FogStone:
-		g.Print("The stone releases fog.")
-		g.Fog(g.Player.P, FogStoneDistance)
+		g.ActivateBarrelStone()
+	case EarthStone:
+		g.ActivateEarthStone()
 	case QueenStone:
 		g.ActivateQueenStone()
 	case NightStone:
 		err = g.ActivateNightStone()
-	case TreeStone:
-		err = g.ActivateTreeStone()
 	case TeleportStone:
 		err = g.ActivateTeleportStone()
-	case MappingStone:
-		err = g.MagicMapping(MappingDistance)
 	case SensingStone:
-		err = g.Sensing()
+		err = g.ActivateSensingStone()
 	case SealStone:
-		err = g.BarrierStone()
+		err = g.ActivateSealStone()
 	}
 	if err != nil {
 		return err
@@ -257,6 +243,63 @@ const (
 	QueenStoneDistance = 15
 	MappingDistance    = 32
 )
+
+func (g *Game) ActivateEarthStone() {
+	g.Print("You activate the earth stone.")
+	pp := g.Player.P
+	g.OricExplosion(pp)
+	mp := &mappingPath{g: g}
+	draw, cost := false, 1
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{pp}, unreachable)
+	for _, n := range nodes {
+		if n.Cost > cost && draw {
+			g.md.AnimationFrameFast()
+			draw, cost = false, n.Cost
+		}
+		t := g.Map.At(n.P)
+		if terrain(t) != WallCell {
+			continue
+		}
+		if (!explored(t) || g.TerrainKnowledge[n.P] != WallCell) && g.Map.hasInteriorNeighbor(n.P) {
+			g.SeeTerrainAt(n.P)
+			draw = true
+		}
+	}
+}
+
+// Directions contains the four cardinal directions in direct order (east,
+// north, west, south).
+var Directions = []gruid.Point{
+	{1, 0},
+	{0, -1},
+	{-1, 0},
+	{0, 1},
+}
+
+// hasInteriorNeighbor reports whether there's a earth-menhir revelable wall at the
+// given position (wall adjacent to an interior wall).
+func (m *Map) hasInteriorNeighbor(p gruid.Point) bool {
+	for _, dir := range Directions {
+		if m.interiorWallAt(p.Add(dir)) {
+			return true
+		}
+	}
+	return false
+}
+
+// interiorWallAt reports whether there's an interior wall at the given
+// position (plain wall not connected to any non-wall tile).
+func (m *Map) interiorWallAt(p gruid.Point) bool {
+	if terrain(m.At(p)) != WallCell {
+		return false
+	}
+	for q := range Neighbors(p) {
+		if terrain(m.At(q)) != WallCell {
+			return false
+		}
+	}
+	return true
+}
 
 func (g *Game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.P)
@@ -310,6 +353,7 @@ func (g *Game) ActivateNightStone() error {
 	return nil
 }
 
+// XXX: unused now.
 func (g *Game) ActivateTreeStone() error {
 	targets := []*Monster{}
 	for _, mons := range g.Monsters {
@@ -352,10 +396,12 @@ func (g *Game) ActivateTeleportStone() error {
 	return nil
 }
 
-func (g *Game) TeleportToBarrel() {
+func (g *Game) ActivateBarrelStone() {
+	g.Print("You activate the barrel stone.")
 	barrels := []gruid.Point{}
 	for p := range g.Objects.Barrels {
 		barrels = append(barrels, p)
+		g.SeeTerrainAt(p)
 	}
 	p := barrels[RandInt(len(barrels))]
 	op := g.Player.P
@@ -398,26 +444,27 @@ func (g *Game) MagicMapping(maxdist int) error {
 	return nil
 }
 
-func (g *Game) Sensing() error {
+func (g *Game) ActivateSensingStone() error {
 	for _, mons := range g.Monsters {
-		if mons.Exists() && !g.Player.Sees(mons.P) && distance(mons.P, g.Player.P) <= MappingDistance {
+		if mons.Exists() && !g.Player.Sees(mons.P) {
 			mons.UpdateKnowledge(g, mons.P)
 		}
 	}
-	g.Printf("You briefly sense monsters around.")
+	g.Printf("You briefly sense monsters in the map.")
 	return nil
 }
 
-func (g *Game) BarrierStone() error {
+func (g *Game) ActivateSealStone() error {
 	if g.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
 		g.Print("You feel oric energies dissipating.")
 		return nil
 	}
 	for p, st := range g.Objects.Stairs {
-		// actually there is at most only such stair
+		// Actually there is at most only one such stair.
 		if st == SealedStair {
 			g.Objects.Stairs[p] = NormalStair
+			g.SeeTerrainAt(p)
 		}
 	}
 	g.Print("You feel oric energies dissipating.")
@@ -557,12 +604,12 @@ func (st story) Style(g *Game) (r rune, fg gruid.Color) {
 type item int
 
 const (
-	NoItem item = iota
-	CloakMagic
+	NoItem     item = iota
+	CloakMagic      // XXX boring
 	CloakHear
-	CloakVitality
-	CloakAcrobat // no exhaustion between jumps?
-	CloakShadows // reduce monster los?
+	CloakVitality // XXX boring
+	CloakAcrobat
+	CloakShadows
 	CloakSmoke
 	CloakConversion
 	AmuletTeleport

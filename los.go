@@ -352,11 +352,36 @@ func (g *Game) SeeNotable(c Cell, p gruid.Point) {
 	}
 }
 
+// SeePosition fully reveals position p to the player.
 func (g *Game) SeePosition(p gruid.Point) {
+	g.SeeTerrainAt(p)
+	if mons := g.lastMonsterKnownAt(p); !mons.Exists() || mons.P != p {
+		delete(g.LastMonsterKnownAt, p)
+		if mons.Exists() {
+			mons.LastKnownPos = invalidPos
+		}
+	}
+	delete(g.NoiseIllusion, p)
+	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
+		(distance(g.Player.P, p) <= 1 ||
+			distance(g.Player.P, g.Places.Marevor) <= 1 ||
+			distance(g.Player.P, g.Places.Monolith) <= 1) &&
+		g.Player.P != g.Places.Marevor &&
+		g.Player.P != g.Places.Monolith {
+		g.PushEventFirst(&playerEvent{Action: StorySequence}, g.Turn)
+		g.LiberatedShaedra = true
+	}
+}
+
+// SeeTerrainAt reveals terrain at position p to the player.
+func (g *Game) SeeTerrainAt(p gruid.Point) {
 	c := g.Map.At(p)
 	t, okT := g.TerrainKnowledge[p]
 	if !explored(c) {
 		see := "see"
+		if !g.Player.Sees(p) {
+			see = "sense"
+		}
 		if c.IsNotable() {
 			g.PrintfStyled("You %s %s.", logNotable, see, c.ShortDesc(g, p))
 			g.StopAuto()
@@ -382,22 +407,6 @@ func (g *Game) SeePosition(p gruid.Point) {
 		if c.IsPlayerPassable() {
 			delete(g.MagicalBarriers, p)
 		}
-	}
-	if mons := g.lastMonsterKnownAt(p); !mons.Exists() || mons.P != p {
-		delete(g.LastMonsterKnownAt, p)
-		if mons.Exists() {
-			mons.LastKnownPos = invalidPos
-		}
-	}
-	delete(g.NoiseIllusion, p)
-	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
-		(distance(g.Player.P, p) <= 1 ||
-			distance(g.Player.P, g.Places.Marevor) <= 1 ||
-			distance(g.Player.P, g.Places.Monolith) <= 1) &&
-		g.Player.P != g.Places.Marevor &&
-		g.Player.P != g.Places.Monolith {
-		g.PushEventFirst(&playerEvent{Action: StorySequence}, g.Turn)
-		g.LiberatedShaedra = true
 	}
 }
 

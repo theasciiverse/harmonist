@@ -235,39 +235,44 @@ func (cev *posEvent) Handle(g *Game) {
 		}
 	case DelayedOricExplosionEvent:
 		if cev.Timer <= 1 {
-			g.Player.Statuses[StatusDelay] = 0
-			g.Print(g.CrackSound())
-			g.NoiseIllusion[cev.P] = true
-			dij := &gridPath{dungeon: g.Map}
-			g.MakeNoise(OricExplosionNoise, cev.P)
-			nodes := g.PR.DijkstraMap(dij, []gruid.Point{cev.P}, 7)
-			fogs := []gruid.Point{}
-			terrains := []Cell{}
-			for _, n := range nodes {
-				c := g.Map.At(n.P)
-				if !c.IsDiggable() {
-					continue
-				}
-				g.Map.Set(n.P, RubbleCell)
-				g.Stats.Digs++
-				if g.Player.Sees(n.P) {
-					g.md.WallExplosionAnimation(n.P)
-				}
-				fogs = append(fogs, n.P)
-				terrains = append(terrains, terrain(c))
-			}
-			for _, p := range fogs {
-				g.Fog(p, 1)
-			}
-			g.ComputeLOS()
-			for i, p := range fogs {
-				g.UpdateKnowledge(p, terrains[i])
-			}
+			g.OricExplosion(cev.P)
 		} else {
 			cev.Timer--
 			g.Player.Statuses[StatusDelay] = cev.Timer
 			g.PushEventD(cev, DurationTurn)
 		}
+	}
+}
+
+// OricExplosion produces an oric explosion centered around the given position.
+func (g *Game) OricExplosion(at gruid.Point) {
+	g.Player.Statuses[StatusDelay] = 0
+	g.Print(g.CrackSound())
+	g.NoiseIllusion[at] = true
+	dij := &gridPath{dungeon: g.Map}
+	g.MakeNoise(OricExplosionNoise, at)
+	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, 7)
+	fogs := []gruid.Point{}
+	terrains := []Cell{}
+	for _, n := range nodes {
+		c := g.Map.At(n.P)
+		if !c.IsDiggable() {
+			continue
+		}
+		g.Map.Set(n.P, RubbleCell)
+		g.Stats.Digs++
+		if g.Player.Sees(n.P) {
+			g.md.WallExplosionAnimation(n.P)
+		}
+		fogs = append(fogs, n.P)
+		terrains = append(terrains, terrain(c))
+	}
+	for _, p := range fogs {
+		g.Fog(p, 1)
+	}
+	g.ComputeLOS()
+	for i, p := range fogs {
+		g.UpdateKnowledge(p, terrains[i])
 	}
 }
 

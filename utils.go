@@ -1,7 +1,10 @@
 package main
 
 import (
+	"iter"
 	"math/rand/v2"
+
+	"codeberg.org/anaseto/gruid"
 )
 
 func abs(x int) int {
@@ -44,4 +47,20 @@ func Indefinite(s string, upper bool) (text string) {
 		}
 	}
 	return text
+}
+
+// Neighbors returns an iterator over cardinal neighbors of the given position.
+func Neighbors(p gruid.Point) iter.Seq[gruid.Point] {
+	return func(yield func(gruid.Point) bool) {
+		for i := -1; i <= 1; i += 2 {
+			q := p.Shift(i, 0)
+			if valid(q) && !yield(q) {
+				return
+			}
+			q = p.Shift(0, i)
+			if valid(q) && !yield(q) {
+				return
+			}
+		}
+	}
 }

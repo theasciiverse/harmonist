@@ -1082,25 +1082,20 @@ func (mg *MapGen) genTree(g *Game) {
 
 // genStones places magical stones.
 func (mg *MapGen) genStones(g *Game) {
-	nstones := 3
-	switch mg.rand.IntN(8) {
-	case 1, 2, 3, 4, 5:
+	nstones := 2
+	if mg.rand.IntN(2) == 0 {
 		nstones++
-	case 6, 7:
-		nstones += 2
 	}
-	inroom := 2
 	if g.Params.Stones[g.Depth] {
-		nstones += 4 + mg.rand.IntN(3)
-		inroom += 2
+		nstones++
 	}
-	if mg.layout == RandomSmallWalkCaveUrbanised {
-		inroom++
-	}
-	for i := 0; i < nstones; i++ {
+	outsideStone := mg.rand.IntN(2) == 0
+	for i := range nstones {
 		p := invalidPos
 		var st stone
-		if i < inroom {
+		if i == 0 && outsideStone {
+			// The map contains a magical stone outside from a
+			// vault.
 			count := 0
 			for p == invalidPos {
 				count++
@@ -1138,20 +1133,15 @@ func (mg *MapGen) caveGroundCell() gruid.Point {
 }
 
 func (mg *MapGen) randomInStone(g *Game) stone {
-	if g.Params.MappingStone[g.Depth] {
-		g.Params.MappingStone[g.Depth] = false
-		return MappingStone
-	}
 	instones := []stone{
 		BarrelStone,
 		QueenStone,
-		TreeStone,
 		TeleportStone,
 		SensingStone,
 	}
 	if mg.rand.IntN(2) == 0 {
 		// fog stone less often inside
-		instones = append(instones, FogStone)
+		instones = append(instones, EarthStone)
 	}
 	return instones[RandInt(len(instones))]
 }
@@ -1159,10 +1149,9 @@ func (mg *MapGen) randomInStone(g *Game) stone {
 func (mg *MapGen) randomOutStone() stone {
 	instones := []stone{
 		BarrelStone,
-		FogStone,
+		EarthStone,
 		QueenStone,
 		NightStone,
-		TreeStone,
 		TeleportStone,
 	}
 	if mg.rand.IntN(2) == 0 {

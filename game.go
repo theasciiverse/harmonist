@@ -105,7 +105,6 @@ type startParams struct {
 	FakeStair    map[int]bool
 	ExtraBanana  map[int]int
 	HealthPotion map[int]bool
-	MappingStone map[int]bool
 	CrazyImp     int
 }
 
@@ -261,8 +260,6 @@ func (g *Game) InitFirstLevel() {
 	PutRandomLevels(g.Params.Lore, 8)
 	g.Params.HealthPotion = map[int]bool{}
 	PutRandomLevels(g.Params.HealthPotion, 5)
-	g.Params.MappingStone = map[int]bool{}
-	PutRandomLevels(g.Params.MappingStone, 3)
 	g.Params.Blocked = map[int]bool{}
 	if RandInt(10) > 0 {
 		g.Params.Blocked[2+RandInt(WinDepth-2)] = true
