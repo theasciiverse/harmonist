@@ -19,6 +19,7 @@ type room struct {
 	tunnels int
 }
 
+// places represents the position of various special places.
 type places struct {
 	Shaedra  gruid.Point
 	Monolith gruid.Point

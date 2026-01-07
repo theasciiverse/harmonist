@@ -61,8 +61,8 @@ type MapGen struct {
 	neighbors paths.Neighbors
 }
 
-// genMap generates the map using the given layout.
-func (g *Game) genMap(ml maplayout) {
+// GenMapWithLayout generates the map using the given layout.
+func (g *Game) GenMapWithLayout(ml maplayout) {
 	mg := MapGen{}
 	mg.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	mg.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
@@ -1184,7 +1184,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 // genQueenRock places queenrock tiles.
 func (mg *MapGen) genQueenRock() {
 	cavern := []gruid.Point{}
-	for i := range DungeonNCells {
+	for i := range MapSize {
 		p := idxtopos(i)
 		t := mg.m.At(p)
 		if t == CavernCell {
@@ -1255,7 +1255,7 @@ func (dg *MapGen) genCaveMap(size int) {
 		Grid: dg.m.Terrain,
 	}
 	wlk := walker{rand: dg.rand}
-	mg.RandomWalkCave(wlk, rl.Cell(GroundCell), float64(size)/float64(DungeonNCells), 8)
+	mg.RandomWalkCave(wlk, rl.Cell(GroundCell), float64(size)/float64(MapSize), 8)
 	dg.foliage(false)
 }
 

@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.5"
+var Version string = "v0.7.0-dev.6"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -20,65 +20,64 @@ var Version string = "v0.7.0-dev.5"
 // NOTE: the handling of map entities is a bit ad hoc and not extensible, but
 // it'd be a lot of work to update it to use Shamogu's approach.
 type Game struct {
-	Map                *Map
-	Player             *Player
-	Monsters           []*Monster
-	MonstersPosCache   []int // monster (dungeon index + 1) / no monster (0)
-	Bands              []bandInfo
-	Events             *rl.EventQueue
-	EventIndex         int
-	ExploredLevels     int
-	DepthPlayerTurn    int
-	Turn               int
-	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
-	Objects            Objects
-	ProcInfo           *ProcInfo
-	LastMonsterKnownAt map[gruid.Point]int
-	MonsterLOS         map[gruid.Point]bool
-	MonsterTargLOS     map[gruid.Point]bool
-	LightFOV           *rl.FOV
-	RaysCache          rayMap
-	RestingTurns       int
-	LiberatedShaedra   bool
-	LiberatedArtifact  bool
+	Map              *Map                 // terrain, cloud, noise map data
+	Player           *Player              // player entity
+	Monsters         []*Monster           // monster entities
+	MonstersPosCache []int                // monster (dungeon index + 1) / no monster (0)
+	MonsterBands     []bandInfo           // monster bands
+	Objects          Objects              // object entities
+	KnownMonster     map[gruid.Point]int  // monster memory cache by position
+	MonsterLOS       map[gruid.Point]bool // whether a position is in monster view
+	MonsterTargLOS   map[gruid.Point]bool // whether a position is in target monster view
+	LightFOV         *rl.FOV              // light map
 
-	Log         []logEntry
-	LogIndex    int
-	LogNextTick int
-	InfoEntry   string
-	Stats       stats
-	Wizard      wizardMode
-	Version     string
-	Places      places
-	Params      startParams
+	Events            *rl.EventQueue // event queue
+	ExploredLevels    int            // number of explored levels
+	LiberatedArtifact bool           // whether we got the artifact
+	LiberatedShaedra  bool           // whether Shaedra was liberated
+	Turn              int            // current turn
 
-	md          *model           // reference to the UI model
-	mfov        *rl.FOV          // monster field of view
-	PR          *paths.PathRange // path range for pathfinding
-	PRauto      *paths.PathRange // path range for auto-explore
-	autosources []gruid.Point    // cache for auto-explore sources
+	Log         []logEntry  // log entries
+	LogIndex    int         // current log entry index
+	LogNextTick int         // log entry index at turn start
+	Params      startParams // various procinfo params
+	Places      places      // special place placements
+	ProcInfo    *ProcInfo   // procedural generation information
+	Stats       stats       // game statistics
+	Version     string      // game version
+	Wizard      wizardMode  // wizard mode info
+
+	PR     *paths.PathRange // path range for pathfinding
+	PRauto *paths.PathRange // path range for auto-explore
+
+	autosources []gruid.Point        // cache for auto-explore sources
+	highlight   map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
+	md          *model               // reference to the UI model
+	mfov        *rl.FOV              // monster field of view
 	nbs         paths.Neighbors
 	rand        *rand.Rand
 
-	resting               bool
-	autoexploring         bool
-	autoexploreMapRebuild bool
-	autoTarget            gruid.Point
-	autoDir               gruid.Point
-	autoDirNeighbors      dirNeighbors
-	autoDirChanged        bool
-	autoHalt              bool
+	autoDir               gruid.Point  // direction for auto-movement
+	autoDirChanged        bool         // whether direction changed during auto-movement
+	autoDirNeighbors      dirNeighbors // configuration for auto-movement in direction
+	autoHalt              bool         // whether auto-movement needs to stop
+	autoTarget            gruid.Point  // target for auto-movement
+	autoexploreMapRebuild bool         // whether auto-explore maps needs rebuilding
+	autoexploring         bool         // whether currently auto-exploring
+	resting               bool         // whether currently resting
+	restingTurns          int          // number of turns resting
 }
 
-// ProcInfo contains procgen information.
+// ProcInfo contains procgen information for specific map levels.
 type ProcInfo struct {
-	GeneratedLore    map[int]bool
-	GeneratedMagaras []magaraKind
-	GeneratedCloaks  []item
-	GeneratedAmulets []item
-	GenPlan          [MaxDepth + 1]genFlavour
+	GeneratedLore    map[int]bool             // whether there's a lore text
+	GeneratedMagaras []magaraKind             // magara kind
+	GeneratedCloaks  []item                   // cloak kind
+	GeneratedAmulets []item                   // amulet kind
+	GenPlan          [MaxDepth + 1]genFlavour // cloak/amulet generation
 }
 
+// specialEvent represents special events that may happen in some map levels.
 type specialEvent int
 
 const (
@@ -90,6 +89,8 @@ const (
 
 const spEvMax = int(MistLevel)
 
+// startParams represents various procinfo informations for specific levels.
+// TODO: should probably be merged with ProcInfo.
 type startParams struct {
 	Lore         map[int]bool
 	Blocked      map[int]bool
@@ -117,6 +118,7 @@ const (
 	WizardSeeAll
 )
 
+// FreePassableCell returns a free passable cell without any actors.
 func (g *Game) FreePassableCell() gruid.Point {
 	d := g.Map
 	count := 0
@@ -143,16 +145,16 @@ func (g *Game) FreePassableCell() gruid.Point {
 	}
 }
 
-const MaxDepth = 11
-const WinDepth = 8
-
 const (
-	MapHeight     = 21
-	MapWidth      = 80
-	DungeonNCells = MapWidth * MapHeight
+	MaxDepth  = 11                   // maximum map level
+	WinDepth  = 8                    // shaedra's map level
+	MapHeight = 21                   // map height
+	MapWidth  = 80                   // map width
+	MapSize   = MapWidth * MapHeight // map size (in tiles)
 )
 
-func (g *Game) GenDungeon() {
+// GenMap generates the map.
+func (g *Game) GenMap() {
 	ml := AutomataCave
 	switch g.Map.Depth {
 	case 2, 6, 7:
@@ -181,9 +183,10 @@ func (g *Game) GenDungeon() {
 			ml = NaturalCave
 		}
 	}
-	g.genMap(ml)
+	g.GenMapWithLayout(ml)
 }
 
+// InitPlayer initializes the player, including magaras and inventory.
 func (g *Game) InitPlayer() {
 	g.Player = &Player{
 		HP:      DefaultHealth,
@@ -210,32 +213,22 @@ func (g *Game) InitPlayer() {
 	//g.Player.Magaras[2] = ConfusionMagara
 }
 
+// genFlavour represents special map flavours (amulet, cloak).
 type genFlavour int
 
 const (
 	GenNothing genFlavour = iota
-	//GenWeapon
-	GenAmulet
-	GenCloak
+	GenAmulet             // generate an amulet
+	GenCloak              // generate a cloak
 )
 
-func PutRandomLevels(m map[int]bool, n int) {
-	for i := 0; i < n; i++ {
-		j := 1 + RandInt(MaxDepth)
-		if !m[j] {
-			m[j] = true
-		} else {
-			i--
-		}
-	}
-}
-
+// InitFirstLevel performs initialization for the first map level, including
+// initializing procinfo for the whole dungeon.
 func (g *Game) InitFirstLevel() {
 	g.Version = Version
 	g.Map.Depth++ // start at 1
 	g.InitPlayer()
 	g.autoTarget = invalidPos
-	g.RaysCache = rayMap{}
 	g.ProcInfo.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
 	g.Stats.UsedMagaras = map[magaraKind]int{}
@@ -256,9 +249,9 @@ func (g *Game) InitFirstLevel() {
 		11: GenNothing,
 	}
 	g.Params.Lore = map[int]bool{}
-	PutRandomLevels(g.Params.Lore, 8)
+	putRandomLevels(g.Params.Lore, 8)
 	g.Params.HealthPotion = map[int]bool{}
-	PutRandomLevels(g.Params.HealthPotion, 5)
+	putRandomLevels(g.Params.HealthPotion, 5)
 	g.Params.Blocked = map[int]bool{}
 	if RandInt(10) > 0 {
 		g.Params.Blocked[2+RandInt(WinDepth-2)] = true
@@ -383,13 +376,25 @@ func (g *Game) InitFirstLevel() {
 	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 }
 
+func putRandomLevels(m map[int]bool, n int) {
+	for i := 0; i < n; i++ {
+		j := 1 + RandInt(MaxDepth)
+		if !m[j] {
+			m[j] = true
+		} else {
+			i--
+		}
+	}
+}
+
+// InitLevelStructures (re-)initializes various level-specific structures.
 func (g *Game) InitLevelStructures() {
 	g.Map.Noise = map[gruid.Point]bool{}
 	g.Map.NoiseIllusion = map[gruid.Point]bool{}
 	g.Map.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.Map.Clouds = map[gruid.Point]Cloud{}
-	g.MonstersPosCache = make([]int, DungeonNCells)
-	g.LastMonsterKnownAt = map[gruid.Point]int{}
+	g.MonstersPosCache = make([]int, MapSize)
+	g.KnownMonster = map[gruid.Point]int{}
 	g.MonsterLOS = map[gruid.Point]bool{}
 	g.Objects.Magaras = map[gruid.Point]Magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
@@ -432,7 +437,7 @@ func (g *Game) InitLevel() {
 	g.InitLevelStructures()
 
 	// Dungeon terrain
-	g.GenDungeon()
+	g.GenMap()
 
 	// Events
 	if g.Map.Depth == 1 {
@@ -473,16 +478,16 @@ func (g *Game) InitLevel() {
 	case EarthquakeLevel:
 		g.PushEvent(&posEvent{P: gruid.Point{MapWidth/2 - 15 + RandInt(30), MapHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
 			g.Turn+10+RandInt(50))
-
 	}
 
 	// initialize LOS
 	if g.Map.Depth == 1 {
 		g.PrintStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
 	}
-	if g.Map.Depth == WinDepth {
+	switch g.Map.Depth {
+	case WinDepth:
 		g.PrintStyled("Finally! Shaedra should be imprisoned somewhere around here.", logSpecial)
-	} else if g.Map.Depth == MaxDepth {
+	case MaxDepth:
 		g.PrintStyled("This the bottom floor, you now have to look for the artifact.", logSpecial)
 	}
 	g.ComputeLOS()
@@ -597,7 +602,6 @@ func (g *Game) Descend(style descendstyle) bool {
 		g.StoryPrint("Descended stairs")
 	}
 	g.Map.Depth++
-	g.DepthPlayerTurn = 0
 	g.InitLevel()
 	if err := g.Save(); err != nil {
 		log.Printf("error saving game: %v", err)
@@ -605,6 +609,7 @@ func (g *Game) Descend(style descendstyle) bool {
 	return false
 }
 
+// EnterWizardMode enters wizard mode.
 func (g *Game) EnterWizardMode() {
 	g.Wizard = WizardNormal
 	g.PrintStyled("Wizard mode enabled.", logSpecial)
@@ -630,11 +635,11 @@ func (g *Game) AutoPlayer() bool {
 	switch {
 	case g.resting:
 		const enoughRestTurns = 25
-		if g.RestingTurns < enoughRestTurns {
-			g.RestingTurns++
+		if g.restingTurns < enoughRestTurns {
+			g.restingTurns++
 			return true
 		}
-		if g.RestingTurns >= enoughRestTurns {
+		if g.restingTurns >= enoughRestTurns {
 			g.ApplyRest()
 		}
 		g.resting = false
@@ -701,13 +706,10 @@ func (g *Game) Died() bool {
 	return false
 }
 
-type msgAuto int
-
 // EndTurn finalizes a turn.
 func (g *Game) EndTurn() {
 	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
 	for {
-		pp := g.Player.P
 		if g.Died() {
 			return
 		}
@@ -728,10 +730,6 @@ func (g *Game) EndTurn() {
 			ev.Handle(g)
 		default:
 			log.Printf("bad event: %v", ev)
-		}
-		if g.Player.P != pp {
-			g.ComputeLOS()
-			pp = g.Player.P
 		}
 	}
 }

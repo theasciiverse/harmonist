@@ -36,7 +36,7 @@ func (md *model) SetCursor(p gruid.Point) {
 
 // CancelExamine cancels current targeting.
 func (md *model) CancelExamine() {
-	md.g.Highlight = nil
+	md.g.highlight = nil
 	md.g.MonsterTargLOS = nil
 	*md.targ.ex = examination{}
 	md.HideCursor()
@@ -270,7 +270,7 @@ func (md *model) updatePosInfo() {
 		if g.Map.Noise[p] || g.Map.NoiseIllusion[p] {
 			pi.Noise = true
 		}
-		if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+		if mons := g.KnownMonsterAt(p); mons.Exists() {
 			pi.Monster = mons
 		}
 		md.targ.ex.info = pi
@@ -287,7 +287,7 @@ func (md *model) updatePosInfo() {
 	}
 	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
-	} else if mons := g.lastMonsterKnownAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
+	} else if mons := g.KnownMonsterAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
 		pi.Monster = mons
 	}
 	if cld, ok := g.Map.Clouds[p]; ok && infov {
@@ -309,9 +309,9 @@ func (md *model) computeHighlight() {
 
 func (g *Game) computePathHighlight(p gruid.Point) {
 	path := g.PlayerPath(g.Player.P, p)
-	g.Highlight = map[gruid.Point]bool{}
+	g.highlight = map[gruid.Point]bool{}
 	for _, p := range path {
-		g.Highlight[p] = true
+		g.highlight[p] = true
 	}
 }
 
@@ -377,7 +377,7 @@ func (md *model) targetMonsters() []*Monster {
 		}
 		tms = append(tms, m)
 	}
-	for p, i := range md.g.LastMonsterKnownAt {
+	for p, i := range md.g.KnownMonster {
 		m := md.g.Monsters[i]
 		if !m.Exists() || md.g.Player.Sees(m.P) || md.g.Wizard == WizardSeeAll {
 			continue

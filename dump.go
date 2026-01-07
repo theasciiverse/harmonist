@@ -302,7 +302,7 @@ func (g *Game) DumpDungeon() string {
 		}
 		if !IsKnown(kt) {
 			buf.WriteRune(' ')
-			if i == DungeonNCells-1 {
+			if i == MapSize-1 {
 				buf.WriteString("│\n")
 			}
 			i++
@@ -329,7 +329,7 @@ func (g *Game) DumpDungeon() string {
 			}
 		}
 		buf.WriteRune(r)
-		if i == DungeonNCells-1 {
+		if i == MapSize-1 {
 			buf.WriteString("│\n")
 		}
 		i++

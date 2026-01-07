@@ -21,12 +21,6 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-type raynode struct {
-	Cost int
-}
-
-type rayMap map[gruid.Point]raynode
-
 type lighter struct {
 	rs raystyle
 	g  *Game
@@ -354,8 +348,8 @@ func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 // SeePosition fully reveals position p to the player.
 func (g *Game) SeePosition(p gruid.Point) {
 	g.SeeTerrainAt(p)
-	if mons := g.lastMonsterKnownAt(p); !mons.Exists() || mons.P != p {
-		delete(g.LastMonsterKnownAt, p)
+	if mons := g.KnownMonsterAt(p); !mons.Exists() || mons.P != p {
+		delete(g.KnownMonster, p)
 		if mons.Exists() {
 			mons.LastKnownPos = invalidPos
 		}
@@ -597,22 +591,25 @@ func (g *Game) ComputeMonsterCone(m *Monster) {
 	}
 }
 
+// UpdateKnowledge updates player's knowledge about the given monster.
 func (m *Monster) UpdateKnowledge(g *Game, p gruid.Point) {
-	if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+	if mons := g.KnownMonsterAt(p); mons.Exists() {
 		if mons.Index != m.Index {
 			mons.LastKnownPos = invalidPos
 		}
 	}
 	if m.LastKnownPos != invalidPos {
-		delete(g.LastMonsterKnownAt, m.LastKnownPos)
+		delete(g.KnownMonster, m.LastKnownPos)
 	}
-	g.LastMonsterKnownAt[p] = m.Index
+	g.KnownMonster[p] = m.Index
 	m.LastKnownState = m.State
 	m.LastKnownPos = p
 }
 
-func (g *Game) lastMonsterKnownAt(p gruid.Point) *Monster {
-	idx, ok := g.LastMonsterKnownAt[p]
+// KnownMonsterAt returns the memory of a monster at the given position, or nil
+// otherwise.
+func (g *Game) KnownMonsterAt(p gruid.Point) *Monster {
+	idx, ok := g.KnownMonster[p]
 	if ok {
 		return g.Monsters[idx]
 	}

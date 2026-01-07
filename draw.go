@@ -135,7 +135,7 @@ func (md *model) drawMap(gd gruid.Grid) {
 		p := it.P()
 		r, fg, bg := md.positionDrawing(p)
 		attrs := AttrInMap
-		if md.g.Highlight[p] && md.g.Wizard != WizardMap || p == md.targ.ex.p {
+		if md.g.highlight[p] && md.g.Wizard != WizardMap || p == md.targ.ex.p {
 			attrs |= AttrReverse
 		}
 		gd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
@@ -167,7 +167,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			r = '¤'
 			fgColor = ColorFgDark
 		}
-		if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+		if mons := g.KnownMonsterAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
 		if g.Map.Noise[p] {
@@ -249,7 +249,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if g.Map.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
-		} else if mons := g.lastMonsterKnownAt(p); mons.Exists() {
+		} else if mons := g.KnownMonsterAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
 		if g.Player.Sees(p) && fgColor == ColorFgLOS && g.Illuminated(p) && IsIlluminable(t) {

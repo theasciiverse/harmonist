@@ -149,7 +149,7 @@ var monsBands = []monsterBandData{
 // GenMonsters generates and places monsters.
 func (mg *MapGen) GenMonsters(g *Game) {
 	g.Monsters = []*Monster{}
-	g.Bands = []bandInfo{}
+	g.MonsterBands = []bandInfo{}
 	// common bands
 	bandsGuard := []monsterBand{LoneGuard}
 	bandsButterfly := []monsterBand{LoneButterfly}
@@ -983,7 +983,7 @@ func (mg *MapGen) putMonsterBand(g *Game, band monsterBand) bool {
 	default:
 		bdinf = mg.bandInfoPatrol(g, band, PlacePatrol)
 	}
-	g.Bands = append(g.Bands, bdinf)
+	g.MonsterBands = append(g.MonsterBands, bdinf)
 	var p gruid.Point
 	if len(bdinf.Path) == 0 {
 		// should not happen now
@@ -1003,7 +1003,7 @@ func (mg *MapGen) putMonsterBand(g *Game, band monsterBand) bool {
 		g.Monsters = append(g.Monsters, mons)
 		mons.Init()
 		mons.Index = len(g.Monsters) - 1
-		mons.Band = len(g.Bands) - 1
+		mons.Band = len(g.MonsterBands) - 1
 		mons.PlaceAtStart(g, p)
 		mons.Target = mons.NextTarget(g)
 		if i < len(monsters)-1 {

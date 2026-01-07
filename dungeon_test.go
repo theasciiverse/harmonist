@@ -68,7 +68,7 @@ func TestAutomataCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.genMap(AutomataCave)
+		g.GenMapWithLayout(AutomataCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -81,7 +81,7 @@ func TestRandomWalkCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.genMap(RandomWalkCave)
+		g.GenMapWithLayout(RandomWalkCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -94,7 +94,7 @@ func TestRandomWalkTreeCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.genMap(RandomWalkTreeCave)
+		g.GenMapWithLayout(RandomWalkTreeCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -107,7 +107,7 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.genMap(RandomSmallWalkCaveUrbanised)
+		g.GenMapWithLayout(RandomSmallWalkCaveUrbanised)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}
@@ -126,7 +126,7 @@ func TestNaturalCave(t *testing.T) {
 		g.initrand()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
-		g.genMap(NaturalCave)
+		g.GenMapWithLayout(NaturalCave)
 		if !g.Map.connex(g.PR) {
 			t.Errorf("Not connex:\n%s\n", g.Map.String())
 		}

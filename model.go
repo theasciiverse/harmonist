@@ -422,6 +422,8 @@ func (md *model) updateWizardConfirmation(msg gruid.Msg) {
 	}
 }
 
+type msgAuto int
+
 func (md *model) updateNormal(msg gruid.Msg) gruid.Effect {
 	var eff gruid.Effect
 	switch msg := msg.(type) {
@@ -687,7 +689,7 @@ func (md *model) updateMapInfo() {
 	md.g.ComputeNoise()
 	md.g.ComputeLOS()
 	md.g.ComputeMonsterLOS()
-	if md.g.Highlight != nil {
+	if md.g.highlight != nil {
 		md.examine(md.targ.ex.p)
 	}
 }

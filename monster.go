@@ -456,7 +456,7 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 			// monster should be.
 			m.UpdateKnowledge(g, p)
 		} else {
-			delete(g.LastMonsterKnownAt, m.P)
+			delete(g.KnownMonster, m.P)
 			m.LastKnownPos = invalidPos
 		}
 	}
@@ -620,7 +620,7 @@ func (m *Monster) Explode(g *Game) {
 
 func (m *Monster) NaturalAwake(g *Game) {
 	m.Target = m.NextTarget(g)
-	switch g.Bands[m.Band].Beh {
+	switch g.MonsterBands[m.Band].Beh {
 	case BehGuard:
 		m.StartWatching()
 	default:
@@ -676,7 +676,7 @@ func (m *Monster) SearchAround(g *Game, p gruid.Point, radius int) gruid.Point {
 }
 
 func (m *Monster) NextTarget(g *Game) (p gruid.Point) {
-	band := g.Bands[m.Band]
+	band := g.MonsterBands[m.Band]
 	p = m.P
 	switch band.Beh {
 	case BehWander:
@@ -822,7 +822,7 @@ func (m *Monster) HandleWatching(g *Game) {
 	} else {
 		// pick a random cell: more escape strategies for the player
 		m.Target = m.NextTarget(g)
-		switch g.Bands[m.Band].Beh {
+		switch g.MonsterBands[m.Band].Beh {
 		case BehGuard:
 			m.Alternate()
 			if m.P != m.Target {
@@ -1587,7 +1587,7 @@ func (m *Monster) MakeAware(g *Game) {
 }
 
 func (m *Monster) GatherBand(g *Game) {
-	if !monsBands[g.Bands[m.Band].Kind].Band {
+	if !monsBands[g.MonsterBands[m.Band].Kind].Band {
 		return
 	}
 	dij := &noisePath{g: g}
