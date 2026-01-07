@@ -184,7 +184,7 @@ func (g *Game) genMap(ml maplayout) {
 	mg.PR.CCMapAll(newPather(func(p gruid.Point) bool {
 		return valid(p) && Passable(g.Map.At(p))
 	}))
-	mg.genMonsters(g)
+	mg.GenMonsters(g)
 	mg.putCavernCells()
 	if mg.rand.IntN(2) == 0 {
 		mg.genQueenRock()

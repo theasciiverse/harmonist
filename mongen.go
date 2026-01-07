@@ -6,8 +6,148 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-// genMonsters generates and places monsters.
-func (mg *MapGen) genMonsters(g *Game) {
+// bandInfo represents monster band information for generation.
+type bandInfo struct {
+	Path []gruid.Point
+	I    int
+	Kind monsterBand
+	Beh  mbehaviour
+}
+
+type monsterBand int
+
+const (
+	LoneGuard monsterBand = iota
+	LoneHighGuard
+	LoneYack
+	LoneOricCelmist
+	LoneHarmonicCelmist
+	LoneSatowalgaPlant
+	LoneBlinkingFrog
+	LoneWorm
+	LoneMirrorSpecter
+	LoneDog
+	LoneExplosiveNadre
+	LoneWingedMilfid
+	LoneMadNixe
+	LoneTreeMushroom
+	LoneEarthDragon
+	LoneButterfly
+	LoneVampire
+	LoneHarpy
+	LoneHazeCat
+	LoneAcidMound
+	LoneSpider
+	PairGuard
+	PairYack
+	PairFrog
+	PairDog
+	PairTreeMushroom
+	PairSpider
+	PairHazeCat
+	PairSatowalga
+	PairWorm
+	PairOricCelmist
+	PairHarmonicCelmist
+	PairVampire
+	PairNixe
+	PairExplosiveNadre
+	PairWingedMilfid
+	SpecialLoneVampire
+	SpecialLoneNixe
+	SpecialLoneMilfid
+	SpecialLoneOricCelmist
+	SpecialLoneHarmonicCelmist
+	SpecialLoneHighGuard
+	SpecialLoneHarpy
+	SpecialLoneTreeMushroom
+	SpecialLoneMirrorSpecter
+	SpecialLoneAcidMound
+	SpecialLoneHazeCat
+	SpecialLoneSpider
+	SpecialLoneBlinkingFrog
+	SpecialLoneExplosiveNadre
+	SpecialLoneYack
+	SpecialLoneDog
+	UniqueCrazyImp
+)
+
+type mbehaviour int
+
+const (
+	BehPatrol mbehaviour = iota
+	BehGuard
+	BehWander
+	BehExplore
+	BehCrazyImp
+)
+
+// monsterBandData holds generation info for a given kind of monster band.
+type monsterBandData struct {
+	Distribution map[monsterKind]int // distribution of several monster kinds
+	Band         bool                // whether there are several monsters
+	Monster      monsterKind         // single kind of monster band
+}
+
+// monsBands lists all the possible monster bands.
+var monsBands = []monsterBandData{
+	LoneGuard:                  {Monster: MonsGuard},
+	LoneHighGuard:              {Monster: MonsHighGuard},
+	LoneYack:                   {Monster: MonsYack},
+	LoneOricCelmist:            {Monster: MonsOricCelmist},
+	LoneHarmonicCelmist:        {Monster: MonsHarmonicCelmist},
+	LoneSatowalgaPlant:         {Monster: MonsSatowalgaPlant},
+	LoneBlinkingFrog:           {Monster: MonsBlinkingFrog},
+	LoneWorm:                   {Monster: MonsWorm},
+	LoneMirrorSpecter:          {Monster: MonsMirrorSpecter},
+	LoneDog:                    {Monster: MonsDog},
+	LoneExplosiveNadre:         {Monster: MonsExplosiveNadre},
+	LoneWingedMilfid:           {Monster: MonsWingedMilfid},
+	LoneMadNixe:                {Monster: MonsMadNixe},
+	LoneTreeMushroom:           {Monster: MonsTreeMushroom},
+	LoneEarthDragon:            {Monster: MonsEarthDragon},
+	LoneButterfly:              {Monster: MonsButterfly},
+	LoneVampire:                {Monster: MonsVampire},
+	LoneHarpy:                  {Monster: MonsTinyHarpy},
+	LoneHazeCat:                {Monster: MonsHazeCat},
+	LoneAcidMound:              {Monster: MonsAcidMound},
+	LoneSpider:                 {Monster: MonsSpider},
+	PairGuard:                  {Band: true, Distribution: map[monsterKind]int{MonsGuard: 2}},
+	PairYack:                   {Band: true, Distribution: map[monsterKind]int{MonsYack: 2}},
+	PairFrog:                   {Band: true, Distribution: map[monsterKind]int{MonsBlinkingFrog: 2}},
+	PairDog:                    {Band: true, Distribution: map[monsterKind]int{MonsDog: 2}},
+	PairTreeMushroom:           {Band: true, Distribution: map[monsterKind]int{MonsTreeMushroom: 2}},
+	PairSpider:                 {Band: true, Distribution: map[monsterKind]int{MonsSpider: 2}},
+	PairHazeCat:                {Band: true, Distribution: map[monsterKind]int{MonsHazeCat: 2}},
+	PairSatowalga:              {Band: true, Distribution: map[monsterKind]int{MonsSatowalgaPlant: 2}},
+	PairWorm:                   {Band: true, Distribution: map[monsterKind]int{MonsWorm: 2}},
+	PairVampire:                {Band: true, Distribution: map[monsterKind]int{MonsVampire: 2}},
+	PairOricCelmist:            {Band: true, Distribution: map[monsterKind]int{MonsOricCelmist: 2}},
+	PairHarmonicCelmist:        {Band: true, Distribution: map[monsterKind]int{MonsHarmonicCelmist: 2}},
+	PairNixe:                   {Band: true, Distribution: map[monsterKind]int{MonsMadNixe: 2}},
+	PairExplosiveNadre:         {Band: true, Distribution: map[monsterKind]int{MonsExplosiveNadre: 2}},
+	PairWingedMilfid:           {Band: true, Distribution: map[monsterKind]int{MonsWingedMilfid: 2}},
+	SpecialLoneVampire:         {Monster: MonsVampire},
+	SpecialLoneNixe:            {Monster: MonsMadNixe},
+	SpecialLoneMilfid:          {Monster: MonsWingedMilfid},
+	SpecialLoneOricCelmist:     {Monster: MonsOricCelmist},
+	SpecialLoneHarmonicCelmist: {Monster: MonsHarmonicCelmist},
+	SpecialLoneHighGuard:       {Monster: MonsHighGuard},
+	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
+	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
+	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
+	SpecialLoneAcidMound:       {Monster: MonsAcidMound},
+	SpecialLoneHazeCat:         {Monster: MonsHazeCat},
+	SpecialLoneSpider:          {Monster: MonsSpider},
+	SpecialLoneBlinkingFrog:    {Monster: MonsBlinkingFrog},
+	SpecialLoneDog:             {Monster: MonsDog},
+	SpecialLoneExplosiveNadre:  {Monster: MonsExplosiveNadre},
+	SpecialLoneYack:            {Monster: MonsYack},
+	UniqueCrazyImp:             {Monster: MonsCrazyImp},
+}
+
+// GenMonsters generates and places monsters.
+func (mg *MapGen) GenMonsters(g *Game) {
 	g.Monsters = []*Monster{}
 	g.Bands = []bandInfo{}
 	// common bands
@@ -462,7 +602,7 @@ func (mg *MapGen) genMonsters(g *Game) {
 }
 
 func (g *Game) genBand(band monsterBand) []monsterKind {
-	mbd := MonsBands[band]
+	mbd := monsBands[band]
 	if !mbd.Band {
 		return []monsterKind{mbd.Monster}
 	}

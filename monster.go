@@ -7,16 +7,17 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-type monsterState int
+// Mindstate represents the various monster mindstates.
+type Mindstate int
 
 const (
-	Resting monsterState = iota
+	Resting Mindstate = iota
 	Hunting
 	Wandering
 	Watching
 )
 
-func (m monsterState) String() string {
+func (m Mindstate) String() string {
 	var st string
 	switch m {
 	case Resting:
@@ -31,6 +32,7 @@ func (m monsterState) String() string {
 	return st
 }
 
+// monsterStatus represents a monster status effect.
 type monsterStatus int
 
 const (
@@ -41,6 +43,7 @@ const (
 	MonsLignified
 )
 
+// NMonsStatus is the number of distinct monster status effects.
 const NMonsStatus = int(MonsLignified) + 1
 
 func (st monsterStatus) String() (text string) {
@@ -59,6 +62,7 @@ func (st monsterStatus) String() (text string) {
 	return text
 }
 
+// monsterKind represents the various kinds of monsters.
 type monsterKind int
 
 const (
@@ -92,10 +96,6 @@ func (mk monsterKind) String() string {
 
 func (mk monsterKind) Letter() rune {
 	return MonsData[mk].letter
-}
-
-func (mk monsterKind) BaseAttack() int {
-	return 1
 }
 
 func (mk monsterKind) Dangerousness() int {
@@ -230,25 +230,15 @@ func (mk monsterKind) Desc() string {
 }
 
 func (mk monsterKind) Indefinite(capital bool) (text string) {
-	switch mk {
-	//case MonsMarevorHelith:
-	//text = mk.String()
-	default:
-		text = Indefinite(mk.String(), capital)
-	}
+	text = Indefinite(mk.String(), capital)
 	return text
 }
 
 func (mk monsterKind) Definite(capital bool) (text string) {
-	switch mk {
-	//case MonsMarevorHelith:
-	//text = mk.String()
-	default:
-		if capital {
-			text = fmt.Sprintf("The %s", mk.String())
-		} else {
-			text = fmt.Sprintf("the %s", mk.String())
-		}
+	if capital {
+		text = fmt.Sprintf("The %s", mk.String())
+	} else {
+		text = fmt.Sprintf("the %s", mk.String())
 	}
 	return text
 }
@@ -277,215 +267,74 @@ func (ms monsize) String() (text string) {
 	return text
 }
 
+// monsterData gathers information about a monster kind.
 type monsterData struct {
-	size          monsize
-	letter        rune
-	name          string
-	dangerousness int
+	size          monsize // monster size (used in some size checks)
+	letter        rune    // monster letter
+	name          string  // monster name
+	dangerousness int     // amount of danger it represents (for monster generation)
 }
 
+// MonsData gathers data about the various monster kinds.
 var MonsData = []monsterData{
-	MonsGuard:     {MonsMedium, 'g', "guard", 3},
-	MonsTinyHarpy: {MonsSmall, 't', "tiny harpy", 3},
-	//MonsOgre:            {10, 2, 20, 3, 'O', "ogre", 7},
+	MonsGuard:           {MonsMedium, 'g', "guard", 3},
+	MonsTinyHarpy:       {MonsSmall, 't', "tiny harpy", 3},
 	MonsOricCelmist:     {MonsMedium, 'o', "oric celmist", 9},
 	MonsHarmonicCelmist: {MonsMedium, 'h', "harmonic celmist", 9},
 	MonsWorm:            {MonsSmall, 'w', "farmer worm", 4},
-	//MonsBrizzia:         {15, 1, 10, 3, 'z', "brizzia", 6},
-	MonsAcidMound: {MonsSmall, 'a', "acid mound", 4},
-	MonsDog:       {MonsMedium, 'd', "dog", 5},
-	MonsYack:      {MonsMedium, 'y', "yack", 5},
-	//MonsGiantBee:        {5, 1, 10, 1, 'B', "giant bee", 6},
-	MonsHighGuard: {MonsMedium, 'G', "high guard", 5},
-	//MonsHydra:           {10, 1, 10, 4, 'H', "hydra", 10},
-	//MonsSkeletonWarrior: {10, 1, 10, 3, 'S', "skeleton warrior", 6},
-	MonsSpider:       {MonsSmall, 's', "spider", 15},
-	MonsWingedMilfid: {MonsMedium, 'W', "winged milfid", 6},
-	MonsBlinkingFrog: {MonsMedium, 'F', "blinking frog", 6},
-	//MonsLich:           {10, MonsMedium, 'L', "lich", 15},
-	MonsEarthDragon:    {MonsLarge, 'D', "earth dragon", 18},
-	MonsMirrorSpecter:  {MonsMedium, 'm', "mirror specter", 11},
-	MonsExplosiveNadre: {MonsMedium, 'n', "explosive nadre", 8},
-	MonsSatowalgaPlant: {MonsLarge, 'P', "satowalga plant", 7},
-	MonsMadNixe:        {MonsMedium, 'N', "mad nixe", 14},
-	//MonsMindCelmist:     {10, 1, 20, 2, 'c', "mind celmist", 12},
-	MonsVampire:      {MonsMedium, 'V', "vampire", 13},
-	MonsTreeMushroom: {MonsLarge, 'T', "tree mushroom", 17},
-	//MonsMarevorHelith: {10, MonsMedium, 'M', "Marevor Helith", 18},
-	MonsButterfly: {MonsSmall, 'b', "kerejat", 2},
-	MonsCrazyImp:  {MonsSmall, 'i', "Crazy Imp", 19},
-	MonsHazeCat:   {MonsSmall, 'c', "haze cat", 16},
+	MonsAcidMound:       {MonsSmall, 'a', "acid mound", 4},
+	MonsDog:             {MonsMedium, 'd', "dog", 5},
+	MonsYack:            {MonsMedium, 'y', "yack", 5},
+	MonsHighGuard:       {MonsMedium, 'G', "high guard", 5},
+	MonsSpider:          {MonsSmall, 's', "spider", 15},
+	MonsWingedMilfid:    {MonsMedium, 'W', "winged milfid", 6},
+	MonsBlinkingFrog:    {MonsMedium, 'F', "blinking frog", 6},
+	MonsEarthDragon:     {MonsLarge, 'D', "earth dragon", 18},
+	MonsMirrorSpecter:   {MonsMedium, 'm', "mirror specter", 11},
+	MonsExplosiveNadre:  {MonsMedium, 'n', "explosive nadre", 8},
+	MonsSatowalgaPlant:  {MonsLarge, 'P', "satowalga plant", 7},
+	MonsMadNixe:         {MonsMedium, 'N', "mad nixe", 14},
+	MonsVampire:         {MonsMedium, 'V', "vampire", 13},
+	MonsTreeMushroom:    {MonsLarge, 'T', "tree mushroom", 17},
+	MonsButterfly:       {MonsSmall, 'b', "kerejat", 2},
+	MonsCrazyImp:        {MonsSmall, 'i', "Crazy Imp", 19},
+	MonsHazeCat:         {MonsSmall, 'c', "haze cat", 16},
 }
 
+// MonsDesc holds description data for the various kinds of monsters.
 var MonsDesc = []string{
-	MonsGuard:     "Guards are low rank soldiers who patrol between Dayoriah Clan’s buildings.",
-	MonsTinyHarpy: "Tiny harpies are little humanoid flying creatures. They are aggressive when hungry, but peaceful when satiated. This Underground harpy species eats fruits (including bananas) and other vegetables.",
-	//MonsOgre:            "Ogres are big clunky humanoids that can hit really hard.",
+	MonsGuard:           "Guards are low rank soldiers who patrol between Dayoriah Clan’s buildings.",
+	MonsTinyHarpy:       "Tiny harpies are little humanoid flying creatures. They are aggressive when hungry, but peaceful when satiated. This Underground harpy species eats fruits (including bananas) and other vegetables.",
 	MonsOricCelmist:     "Oric celmists are mages that can create magical barriers in cells adjacent to you, complicating your escape.\n\nDayoriah Clan’s oric celmists are famous for their knowledge of oric magic force manipulations. They are the ones who instigated the steal of Marevor’s Gem Portal Artifact. According to Marevor, they plan on doing some dangerous oric experiments with the Artifact, though that’s all you can say about it, because his boring explanations were a bit over your head.",
 	MonsHarmonicCelmist: "Harmonic celmists are mages specialized in manipulation of sound and light. They can illuminate you with harmonic light, making it more difficult to hide from them. They also use alert harmonic sounds around you.\n\nHarmonies are usually mainly used for sneaking around in the shadows, but they can also be used to reveal ennemies, sadly for you. Although harmonies are often considered as less prestigious magic energies than oric energies, the Dayoriah Clan knows how to make good use of them, as they clearly showed when they stole Marevor’s Gem Portal Artifact.",
 	MonsWorm:            "Farmer worms are ugly creeping creatures. They furrow as they move, helping new foliage to grow.",
-	//MonsBrizzia:         "Brizzias are big slow moving biped creatures. They are quite hardy, and when hurt they can cause nausea, impeding the use of potions.",
-	MonsAcidMound: "Acid mounds are acidic creatures. They can corrode your magaras, reducing their number of charges.",
-	MonsDog:       "Dogs are carnivore quadrupeds. They can bark, and smell you from up to 5 tiles away when hunting or watching for you.",
-	MonsYack:      "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seeing you they may attack, pushing you up to 5 cells away.",
-	//MonsGiantBee:        "Giant bees are fragile but extremely fast moving creatures. Their bite can sometimes enrage you.",
-	MonsHighGuard: "High guards watch over a particular location. They can throw javelins.",
-	//MonsHydra:           "Hydras are enormous creatures with four heads that can hit you each at once.",
-	//MonsSkeletonWarrior: "Skeleton warriors are good fighters, clad in chain mail.",
-	MonsSpider:       "Spiders are small creatures, with panoramic vision and whose bite can confuse you.",
-	MonsWingedMilfid: "Winged milfids are  humanoids that can fly over you and make you swap positions. They tend to be very aggressive creatures.",
-	MonsBlinkingFrog: "Blinking frogs are big frog-like creatures, whose bite can make you blink away. The science behind their attack is not clear, but many think it relies on some kind of oric deviation magic. They can jump to attack from below.",
-	//MonsLich:           "Liches are non-living mages wearing a leather armour. They can throw a bolt of torment at you, halving your HP.",
-	MonsEarthDragon:    "Earth dragons are big creatures from a dragon species that wander in the Underground. They are peaceful creatures, but they may hurt you inadvertently, pushing you up to 6 tiles away (3 if confused). They naturally emit powerful oric energies, allowing them to eat rocks and dig tunnels. Their oric energies can confuse you if you’re close enough, for example if they hurt you or you jump over them.",
-	MonsMirrorSpecter:  "Mirror specters are very insubstantial creatures, which can absorb your mana.",
-	MonsExplosiveNadre: "Nadres are dragon-like biped creatures that are famous for exploding upon dying. Explosive nadres are a tiny nadre race that explodes upon attacking. The explosion confuses any adjacent creatures and occasionally destroys walls.",
-	MonsSatowalgaPlant: "Satowalga Plants are immobile bushes that throw viscous acidic projectiles at you, destroying some of your magara charges. They attack at half normal speed.",
-	MonsMadNixe:        "Nixes are magical humanoids. Usually, they specialize in illusion harmonic magic, but the so called mad nixes are a perverted variant who learned the oric arts to create a spell that can attract their foes to them, so that they can kill them without pursuing them.",
-	//MonsMindCelmist:     "Mind celmists are mages that use magical smitting mind attacks that bypass armour. They can occasionally confuse or slow you. They try to avoid melee.",
-	MonsVampire:      "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
-	MonsTreeMushroom: "Tree mushrooms are big clunky creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
-	//MonsMarevorHelith: "Marevor Helith is an ancient undead nakrus very fond of teleporting people away. He is a well-known expert in the field of magaras - items that many people simply call magical objects. His current research focus is monolith creation. Marevor, a repentant necromancer, is now searching for his old disciple Jaixel in the Underground to help him overcome the past.",
-	MonsButterfly: "Underground’s butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
-	MonsCrazyImp:  "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by smell. While singing it may attract unwanted attention.",
-	MonsHazeCat:   "Haze cats are a special variety of cats found in the Underground. They have very good night vision and are always alert.",
-}
-
-type bandInfo struct {
-	Path []gruid.Point
-	I    int
-	Kind monsterBand
-	Beh  mbehaviour
-}
-
-type monsterBand int
-
-const (
-	LoneGuard monsterBand = iota
-	LoneHighGuard
-	LoneYack
-	LoneOricCelmist
-	LoneHarmonicCelmist
-	LoneSatowalgaPlant
-	LoneBlinkingFrog
-	LoneWorm
-	LoneMirrorSpecter
-	LoneDog
-	LoneExplosiveNadre
-	LoneWingedMilfid
-	LoneMadNixe
-	LoneTreeMushroom
-	LoneEarthDragon
-	LoneButterfly
-	LoneVampire
-	LoneHarpy
-	LoneHazeCat
-	LoneAcidMound
-	LoneSpider
-	PairGuard
-	PairYack
-	PairFrog
-	PairDog
-	PairTreeMushroom
-	PairSpider
-	PairHazeCat
-	PairSatowalga
-	PairWorm
-	PairOricCelmist
-	PairHarmonicCelmist
-	PairVampire
-	PairNixe
-	PairExplosiveNadre
-	PairWingedMilfid
-	SpecialLoneVampire
-	SpecialLoneNixe
-	SpecialLoneMilfid
-	SpecialLoneOricCelmist
-	SpecialLoneHarmonicCelmist
-	SpecialLoneHighGuard
-	SpecialLoneHarpy
-	SpecialLoneTreeMushroom
-	SpecialLoneMirrorSpecter
-	SpecialLoneAcidMound
-	SpecialLoneHazeCat
-	SpecialLoneSpider
-	SpecialLoneBlinkingFrog
-	SpecialLoneExplosiveNadre
-	SpecialLoneYack
-	SpecialLoneDog
-	UniqueCrazyImp
-)
-
-type monsterBandData struct {
-	Distribution map[monsterKind]int
-	Band         bool
-	Monster      monsterKind
-}
-
-var MonsBands = []monsterBandData{
-	LoneGuard:                  {Monster: MonsGuard},
-	LoneHighGuard:              {Monster: MonsHighGuard},
-	LoneYack:                   {Monster: MonsYack},
-	LoneOricCelmist:            {Monster: MonsOricCelmist},
-	LoneHarmonicCelmist:        {Monster: MonsHarmonicCelmist},
-	LoneSatowalgaPlant:         {Monster: MonsSatowalgaPlant},
-	LoneBlinkingFrog:           {Monster: MonsBlinkingFrog},
-	LoneWorm:                   {Monster: MonsWorm},
-	LoneMirrorSpecter:          {Monster: MonsMirrorSpecter},
-	LoneDog:                    {Monster: MonsDog},
-	LoneExplosiveNadre:         {Monster: MonsExplosiveNadre},
-	LoneWingedMilfid:           {Monster: MonsWingedMilfid},
-	LoneMadNixe:                {Monster: MonsMadNixe},
-	LoneTreeMushroom:           {Monster: MonsTreeMushroom},
-	LoneEarthDragon:            {Monster: MonsEarthDragon},
-	LoneButterfly:              {Monster: MonsButterfly},
-	LoneVampire:                {Monster: MonsVampire},
-	LoneHarpy:                  {Monster: MonsTinyHarpy},
-	LoneHazeCat:                {Monster: MonsHazeCat},
-	LoneAcidMound:              {Monster: MonsAcidMound},
-	LoneSpider:                 {Monster: MonsSpider},
-	PairGuard:                  {Band: true, Distribution: map[monsterKind]int{MonsGuard: 2}},
-	PairYack:                   {Band: true, Distribution: map[monsterKind]int{MonsYack: 2}},
-	PairFrog:                   {Band: true, Distribution: map[monsterKind]int{MonsBlinkingFrog: 2}},
-	PairDog:                    {Band: true, Distribution: map[monsterKind]int{MonsDog: 2}},
-	PairTreeMushroom:           {Band: true, Distribution: map[monsterKind]int{MonsTreeMushroom: 2}},
-	PairSpider:                 {Band: true, Distribution: map[monsterKind]int{MonsSpider: 2}},
-	PairHazeCat:                {Band: true, Distribution: map[monsterKind]int{MonsHazeCat: 2}},
-	PairSatowalga:              {Band: true, Distribution: map[monsterKind]int{MonsSatowalgaPlant: 2}},
-	PairWorm:                   {Band: true, Distribution: map[monsterKind]int{MonsWorm: 2}},
-	PairVampire:                {Band: true, Distribution: map[monsterKind]int{MonsVampire: 2}},
-	PairOricCelmist:            {Band: true, Distribution: map[monsterKind]int{MonsOricCelmist: 2}},
-	PairHarmonicCelmist:        {Band: true, Distribution: map[monsterKind]int{MonsHarmonicCelmist: 2}},
-	PairNixe:                   {Band: true, Distribution: map[monsterKind]int{MonsMadNixe: 2}},
-	PairExplosiveNadre:         {Band: true, Distribution: map[monsterKind]int{MonsExplosiveNadre: 2}},
-	PairWingedMilfid:           {Band: true, Distribution: map[monsterKind]int{MonsWingedMilfid: 2}},
-	SpecialLoneVampire:         {Monster: MonsVampire},
-	SpecialLoneNixe:            {Monster: MonsMadNixe},
-	SpecialLoneMilfid:          {Monster: MonsWingedMilfid},
-	SpecialLoneOricCelmist:     {Monster: MonsOricCelmist},
-	SpecialLoneHarmonicCelmist: {Monster: MonsHarmonicCelmist},
-	SpecialLoneHighGuard:       {Monster: MonsHighGuard},
-	SpecialLoneHarpy:           {Monster: MonsTinyHarpy},
-	SpecialLoneTreeMushroom:    {Monster: MonsTreeMushroom},
-	SpecialLoneMirrorSpecter:   {Monster: MonsMirrorSpecter},
-	SpecialLoneAcidMound:       {Monster: MonsAcidMound},
-	SpecialLoneHazeCat:         {Monster: MonsHazeCat},
-	SpecialLoneSpider:          {Monster: MonsSpider},
-	SpecialLoneBlinkingFrog:    {Monster: MonsBlinkingFrog},
-	SpecialLoneDog:             {Monster: MonsDog},
-	SpecialLoneExplosiveNadre:  {Monster: MonsExplosiveNadre},
-	SpecialLoneYack:            {Monster: MonsYack},
-	UniqueCrazyImp:             {Monster: MonsCrazyImp},
+	MonsAcidMound:       "Acid mounds are acidic creatures. They can corrode your magaras, reducing their number of charges.",
+	MonsDog:             "Dogs are carnivore quadrupeds. They can bark, and smell you from up to 5 tiles away when hunting or watching for you.",
+	MonsYack:            "Yacks are quite large herbivorous quadrupeds. They tend to eat grass peacefully, but upon seeing you they may attack, pushing you up to 5 cells away.",
+	MonsHighGuard:       "High guards watch over a particular location. They can throw javelins.",
+	MonsSpider:          "Spiders are small creatures, with panoramic vision and whose bite can confuse you.",
+	MonsWingedMilfid:    "Winged milfids are  humanoids that can fly over you and make you swap positions. They tend to be very aggressive creatures.",
+	MonsBlinkingFrog:    "Blinking frogs are big frog-like creatures, whose bite can make you blink away. The science behind their attack is not clear, but many think it relies on some kind of oric deviation magic. They can jump to attack from below.",
+	MonsEarthDragon:     "Earth dragons are big creatures from a dragon species that wander in the Underground. They are peaceful creatures, but they may hurt you inadvertently, pushing you up to 6 tiles away (3 if confused). They naturally emit powerful oric energies, allowing them to eat rocks and dig tunnels. Their oric energies can confuse you if you’re close enough, for example if they hurt you or you jump over them.",
+	MonsMirrorSpecter:   "Mirror specters are very insubstantial creatures, which can absorb your mana.",
+	MonsExplosiveNadre:  "Nadres are dragon-like biped creatures that are famous for exploding upon dying. Explosive nadres are a tiny nadre race that explodes upon attacking. The explosion confuses any adjacent creatures and occasionally destroys walls.",
+	MonsSatowalgaPlant:  "Satowalga Plants are immobile bushes that throw viscous acidic projectiles at you, destroying some of your magara charges. They attack at half normal speed.",
+	MonsMadNixe:         "Nixes are magical humanoids. Usually, they specialize in illusion harmonic magic, but the so called mad nixes are a perverted variant who learned the oric arts to create a spell that can attract their foes to them, so that they can kill them without pursuing them.",
+	MonsVampire:         "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
+	MonsTreeMushroom:    "Tree mushrooms are big clunky creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
+	MonsButterfly:       "Underground’s butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
+	MonsCrazyImp:        "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by smell. While singing it may attract unwanted attention.",
+	MonsHazeCat:         "Haze cats are a special variety of cats found in the Underground. They have very good night vision and are always alert.",
 }
 
 // Monster represents a monster's state and characteristics.
 type Monster struct {
-	Kind           monsterKind
-	Band           int
-	Index          int
-	Dir            gruid.Point
-	Attack         int
+	Kind           monsterKind // monster kind
+	Band           int         // index of band it belongs
+	Index          int         // index in g.Monsters
+	Dir            gruid.Point // direction (for monster fov)
 	Dead           bool
-	State          monsterState
+	State          Mindstate
 	Statuses       [NMonsStatus]int
 	P              gruid.Point
 	LastKnownPos   gruid.Point
@@ -494,7 +343,7 @@ type Monster struct {
 	FireReady      bool
 	Seen           bool
 	LOS            map[gruid.Point]bool
-	LastKnownState monsterState
+	LastKnownState Mindstate
 	Swapped        bool
 	Watching       int
 	Left           bool
@@ -504,7 +353,6 @@ type Monster struct {
 }
 
 func (m *Monster) Init() {
-	m.Attack = m.Kind.BaseAttack()
 	m.P = invalidPos
 	m.LOS = make(map[gruid.Point]bool)
 	m.LastKnownPos = invalidPos
@@ -749,7 +597,7 @@ func (m *Monster) Explode(g *Game) {
 				mons.StartWatching()
 			}
 		} else if g.Player.P == p {
-			m.InflictDamage(g, 1, 1)
+			m.InflictDamage(g)
 		} else if IsDestructible(t) && RandInt(3) > 0 {
 			if IsDiggable(t) {
 				g.Map.Set(p, RubbleCell)
@@ -810,16 +658,6 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 	}
 	return fnb[RandInt(len(fnb))]
 }
-
-type mbehaviour int
-
-const (
-	BehPatrol mbehaviour = iota
-	BehGuard
-	BehWander
-	BehExplore
-	BehCrazyImp
-)
 
 var SearchAroundCache []gruid.Point
 
@@ -1237,7 +1075,6 @@ func (m *Monster) HitPlayer(g *Game) {
 	if g.Player.HP <= 0 || distance(g.Player.P, m.P) > 1 {
 		return
 	}
-	dmg := m.Attack
 	clang := RandInt(4) == 0
 	noise := g.HitNoise(clang)
 	g.MakeNoise(noise, g.Player.P)
@@ -1245,8 +1082,8 @@ func (m *Monster) HitPlayer(g *Game) {
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.PrintfStyled("%s hits you (%d dmg).%s", logDamage, m.Kind.Definite(true), dmg, sclang)
-	m.InflictDamage(g, dmg, m.Attack)
+	g.PrintfStyled("%s hits you (1 dmg).%s", logDamage, m.Kind.Definite(true), sclang)
+	m.InflictDamage(g)
 	if g.Player.HP <= 0 {
 		return
 	}
@@ -1585,18 +1422,17 @@ func (m *Monster) ThrowJavelin(g *Game) bool {
 	if blocked {
 		return false
 	}
-	dmg := DmgNormal
 	clang := RandInt(4) == 0
 	noise := g.HitNoise(clang)
 	var sclang string
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.Printf("%s throws a javelin at you (%d dmg).%s", m.Kind.Definite(true), dmg, sclang)
+	g.Printf("%s throws a javelin at you (1 dmg).%s", m.Kind.Definite(true), sclang)
 	g.StoryPrintf("Targeted by %s javelin", m.Kind)
 	g.md.MonsterJavelinAnimation(g.Ray(m.P), true)
 	g.MakeNoise(noise, g.Player.P)
-	m.InflictDamage(g, dmg, dmg)
+	m.InflictDamage(g)
 	m.ExhaustTime(g, 10+RandInt(5))
 	return true
 }
@@ -1623,12 +1459,11 @@ func (m *Monster) ThrowAcid(g *Game) bool {
 	if blocked {
 		return false
 	}
-	dmg := DmgNormal
 	noise := g.HitNoise(false) // no clang with acid projectiles
-	g.Printf("%s throws acid at you (%d dmg).", m.Kind.Definite(true), dmg)
+	g.Printf("%s throws acid at you (1 dmg).", m.Kind.Definite(true))
 	g.md.MonsterProjectileAnimation(g.Ray(m.P), '*', ColorGreen)
 	g.MakeNoise(noise, g.Player.P)
-	m.InflictDamage(g, dmg, dmg)
+	m.InflictDamage(g)
 	m.Corrode(g)
 	m.ExhaustTime(g, 2)
 	return true
@@ -1752,7 +1587,7 @@ func (m *Monster) MakeAware(g *Game) {
 }
 
 func (m *Monster) GatherBand(g *Game) {
-	if !MonsBands[g.Bands[m.Band].Kind].Band {
+	if !monsBands[g.Bands[m.Band].Kind].Band {
 		return
 	}
 	dij := &noisePath{g: g}

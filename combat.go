@@ -9,22 +9,13 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-func (g *Game) DamagePlayer(damage int) {
-	g.Stats.Damage += damage
-	g.Stats.DDamage[g.Depth] += damage
-	g.Player.HPbonus -= damage
-	if g.Player.HPbonus < 0 {
-		g.Player.HP += g.Player.HPbonus
-		g.Player.HPbonus = 0
-	}
-}
-
-func (m *Monster) InflictDamage(g *Game, damage, max int) {
+// InflictDamage makes the monster inflict 1 damage on the player.
+func (m *Monster) InflictDamage(g *Game) {
 	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
-	g.DamagePlayer(damage)
+	g.damagePlayer()
 	g.md.WoundedAnimation()
-	if oldHP > max && g.Player.HP <= max {
+	if oldHP > 1 && g.Player.HP <= 1 {
 		g.StoryPrintf("Critical hit by %s (HP: %d)", m.Kind, g.Player.HP)
 		g.md.WoundedAnimation() // twice
 		g.md.criticalHPWarning()
@@ -38,6 +29,17 @@ func (m *Monster) InflictDamage(g *Game, damage, max int) {
 	}
 }
 
+// damagePlayer handles 1 damage for the player.
+func (g *Game) damagePlayer() {
+	g.Stats.Damage += 1
+	g.Stats.DDamage[g.Depth] += 1
+	g.Player.HPbonus -= 1
+	if g.Player.HPbonus < 0 {
+		g.Player.HP += g.Player.HPbonus
+		g.Player.HPbonus = 0
+	}
+}
+
 func (md *model) criticalHPWarning() {
 	if md.mode == modeNormal {
 		md.mode = modeHPCritical
@@ -45,6 +47,7 @@ func (md *model) criticalHPWarning() {
 	md.critical = true
 }
 
+// MakeMonstersAware handles monster awareness of the player.
 func (g *Game) MakeMonstersAware() {
 	for _, m := range g.Monsters {
 		if m.Dead {
@@ -59,12 +62,10 @@ func (g *Game) MakeMonstersAware() {
 	}
 }
 
+// MakeNoise makes a given amount of noise at the given position.
 func (g *Game) MakeNoise(noise int, at gruid.Point) {
 	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{at}, noise)
-	//if at.Distance(g.Player.Pos)-noise < DefaultLOSRange && noise > 4 {
-	//g.ui.LOSWavesAnimation(noise, WaveNoise, at)
-	//}
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -88,6 +89,7 @@ func (g *Game) MakeNoise(noise int, at gruid.Point) {
 	}
 }
 
+// LeaveRoomForPlayer moves a peaceful monster to make room for the player.
 func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 	dij := &monPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
@@ -109,7 +111,7 @@ func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 			dist = distance(n.P, m.P)
 		}
 	}
-	// free should be valid except in really rare cases
+	// free should be valid except in really rare cases.
 	return free
 }
 
@@ -138,6 +140,7 @@ func (g *Game) FindJumpTarget(m *Monster) gruid.Point {
 	return free
 }
 
+// Jump handles jumping over a monster.
 func (g *Game) Jump(mons *Monster) (bool, error) {
 	if mons.Peaceful(g) && mons.Kind != MonsEarthDragon {
 		op := mons.P
@@ -196,6 +199,7 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 	return false, nil
 }
 
+// WallJump performs a jump by propulsing off a wall.
 func (g *Game) WallJump(p gruid.Point) error {
 	t := g.Map.At(g.Player.P)
 	if IsEnclosing(t) {
@@ -250,6 +254,7 @@ func (g *Game) WallJump(p gruid.Point) error {
 	return nil
 }
 
+// HitNoise returns the amount of noise corresponding to a hit.
 func (g *Game) HitNoise(clang bool) int {
 	noise := BaseHitNoise
 	if clang {
@@ -258,10 +263,8 @@ func (g *Game) HitNoise(clang bool) int {
 	return noise
 }
 
-const (
-	DmgNormal = 1
-)
-
+// HandleKill handles a monster death (like when falling into the abyss or
+// drowning).
 func (g *Game) HandleKill(mons *Monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
@@ -274,6 +277,7 @@ func (g *Game) HandleKill(mons *Monster) {
 	g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))
 }
 
+// The following constants represents various kinds of noise amounts.
 const (
 	WallNoise              = 10
 	ExplosionNoise         = 14
@@ -289,6 +293,7 @@ const (
 	OricExplosionNoise     = 20
 )
 
+// ClangMsg returns text for a noisy hit.
 func (g *Game) ClangMsg() (sclang string) {
 	return " Smash!"
 }
