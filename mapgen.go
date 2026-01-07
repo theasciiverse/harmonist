@@ -67,10 +67,8 @@ func (g *Game) genMap(ml maplayout) {
 	mg.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	mg.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	mg.layout = ml
-	m := &Map{
-		Terrain:      rl.NewGrid(MapWidth, MapHeight),
-		KnownTerrain: rl.NewGrid(MapWidth, MapHeight),
-	}
+	m := g.Map
+	m.Terrain.Fill(WallCell)
 	m.KnownTerrain.Fill(Unknown)
 	mg.m = m
 	mg.tunnel = make(map[gruid.Point]bool)
@@ -94,7 +92,7 @@ func (g *Game) genMap(ml maplayout) {
 	}
 	var places []gruid.Point
 	var nspecial = 4
-	if sr := g.Params.Special[g.Depth]; sr != noSpecialRoom {
+	if sr := g.Params.Special[g.Map.Depth]; sr != noSpecialRoom {
 		nspecial--
 		pl := PlacementEdge
 		if mg.rand.IntN(3) == 0 {
@@ -107,7 +105,7 @@ func (g *Game) genMap(ml maplayout) {
 			places, ok = mg.genRooms(sr.Templates(), 1, pl)
 			count++
 			if count > 150 {
-				if g.Depth == WinDepth || g.Depth == MaxDepth {
+				if g.Map.Depth == WinDepth || g.Map.Depth == MaxDepth {
 					panic("special room")
 				}
 				break
@@ -117,7 +115,7 @@ func (g *Game) genMap(ml maplayout) {
 			}
 		}
 	}
-	switch g.Depth {
+	switch g.Map.Depth {
 	case WinDepth:
 		mg.genShaedraCell(g)
 		nspecial--
@@ -126,7 +124,7 @@ func (g *Game) genMap(ml maplayout) {
 		nspecial--
 	}
 	normal := 5
-	if g.Depth < 3 {
+	if g.Map.Depth < 3 {
 		nspecial--
 		normal--
 	}
@@ -143,7 +141,7 @@ func (g *Game) genMap(ml maplayout) {
 		mg.genRooms(roomNormalTemplates, normal+5, PlacementRandom)
 	case NaturalCave:
 		nspecial++
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			nspecial += 2
 		}
 		mg.genRooms(roomBigTemplates, nspecial, PlacementRandom)
@@ -169,8 +167,8 @@ func (g *Game) genMap(ml maplayout) {
 			mg.genLake(t)
 		}
 	}
-	if g.Depth < MaxDepth {
-		if g.Params.Blocked[g.Depth] {
+	if g.Map.Depth < MaxDepth {
+		if g.Params.Blocked[g.Map.Depth] {
 			mg.genStairs(g, SealedStair)
 		} else {
 			mg.genStairs(g, NormalStair)
@@ -557,20 +555,20 @@ func (dg *MapGen) clearUnconnected(g *Game) {
 // lights, trees, holed walls, windows, and lore.
 func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
 	g.Objects.Stones = map[gruid.Point]stone{}
-	if g.Params.Blocked[g.Depth] || g.Depth == MaxDepth {
+	if g.Params.Blocked[g.Map.Depth] || g.Map.Depth == MaxDepth {
 		mg.genSealStone(g)
 	}
 	bananas := 1
-	bananas += g.Params.ExtraBanana[g.Depth]
+	bananas += g.Params.ExtraBanana[g.Map.Depth]
 	for i := 0; i < bananas; i++ {
 		mg.genBanana(g)
 	}
-	if !g.Params.NoMagara[g.Depth] {
+	if !g.Params.NoMagara[g.Map.Depth] {
 		mg.genMagara(g)
 	}
 	mg.genItem(g)
 	mg.genPotion(g, MagicPotion)
-	if g.Params.HealthPotion[g.Depth] {
+	if g.Params.HealthPotion[g.Map.Depth] {
 		mg.genPotion(g, HealthPotion)
 	}
 	mg.genStones(g)
@@ -595,7 +593,7 @@ func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
 			ntables++
 		}
 	}
-	if g.Params.Tables[g.Depth] {
+	if g.Params.Tables[g.Map.Depth] {
 		ntables += 2 + mg.rand.IntN(2)
 	}
 	for i := 0; i < ntables; i++ {
@@ -627,7 +625,7 @@ func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
 			ntrees--
 		}
 	}
-	if g.Params.Trees[g.Depth] {
+	if g.Params.Trees[g.Map.Depth] {
 		ntrees += 2 + mg.rand.IntN(2)
 	}
 	for i := 0; i < ntrees; i++ {
@@ -637,7 +635,7 @@ func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
 	if mg.rand.IntN(3) > 0 {
 		nhw++
 	}
-	if g.Params.Holes[g.Depth] {
+	if g.Params.Holes[g.Map.Depth] {
 		nhw += 3 + mg.rand.IntN(2)
 	}
 	switch ml {
@@ -651,7 +649,7 @@ func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
 	if nhw == 1 {
 		nwin++
 	}
-	if g.Params.Windows[g.Depth] {
+	if g.Params.Windows[g.Map.Depth] {
 		nwin += 4 + mg.rand.IntN(3)
 	}
 	switch ml {
@@ -661,7 +659,7 @@ func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
 		}
 	}
 	mg.putWindows(g, nwin)
-	if g.Params.Lore[g.Depth] {
+	if g.Params.Lore[g.Map.Depth] {
 		mg.putLore(g)
 	}
 }
@@ -684,10 +682,10 @@ func (mg *MapGen) putLore(g *Game) {
 			panic("infinite loop")
 		}
 		i := mg.rand.IntN(len(LoreMessages))
-		if g.GeneratedLore[i] {
+		if g.ProcInfo.GeneratedLore[i] {
 			continue
 		}
-		g.GeneratedLore[i] = true
+		g.ProcInfo.GeneratedLore[i] = true
 		g.Objects.Lore[p] = i
 		g.Objects.Scrolls[p] = ScrollLore
 		g.Map.Set(p, ScrollCell)
@@ -750,7 +748,7 @@ loop:
 		}
 	}
 	g.Player.P = r.RandomPlace(PlacePatrol)
-	switch g.Depth {
+	switch g.Map.Depth {
 	case 1, 4:
 	default:
 		return
@@ -784,7 +782,7 @@ loopnb:
 		}
 	}
 	g.Map.Set(itpos, ScrollCell)
-	switch g.Depth {
+	switch g.Map.Depth {
 	case 1:
 		g.Objects.Scrolls[itpos] = ScrollStory
 	case 4:
@@ -891,7 +889,7 @@ func (mg *MapGen) hasTooManyWallNeighbors(p gruid.Point) bool {
 
 // genItem generates a magical equipment item (cloak or amulet).
 func (mg *MapGen) genItem(g *Game) {
-	plan := g.GenPlan[g.Depth]
+	plan := g.ProcInfo.GenPlan[g.Map.Depth]
 	if plan != GenAmulet && plan != GenCloak {
 		return
 	}
@@ -909,10 +907,10 @@ func (mg *MapGen) genItem(g *Game) {
 	switch plan {
 	case GenCloak:
 		it = g.RandomCloak()
-		g.GeneratedCloaks = append(g.GeneratedCloaks, it)
+		g.ProcInfo.GeneratedCloaks = append(g.ProcInfo.GeneratedCloaks, it)
 	case GenAmulet:
 		it = g.RandomAmulet()
-		g.GeneratedAmulets = append(g.GeneratedAmulets, it)
+		g.ProcInfo.GeneratedAmulets = append(g.ProcInfo.GeneratedAmulets, it)
 	}
 	g.Objects.Items[p] = it
 }
@@ -946,7 +944,7 @@ func (mg *MapGen) genMagara(g *Game) {
 	g.Map.Set(p, MagaraCell)
 	mag := g.RandomMagara()
 	g.Objects.Magaras[p] = mag
-	g.GeneratedMagaras = append(g.GeneratedMagaras, mag.Kind)
+	g.ProcInfo.GeneratedMagaras = append(g.ProcInfo.GeneratedMagaras, mag.Kind)
 }
 
 // genStairs generates real stairs (possibly sealed).
@@ -973,7 +971,7 @@ func (mg *MapGen) genStairs(g *Game, st stair) {
 
 // genFakeStairs generates fake stairs.
 func (mg *MapGen) genFakeStairs(g *Game) {
-	if !g.Params.FakeStair[g.Depth] {
+	if !g.Params.FakeStair[g.Map.Depth] {
 		return
 	}
 	var ri, pj int
@@ -1045,7 +1043,7 @@ func (mg *MapGen) genStones(g *Game) {
 	if mg.rand.IntN(2) == 0 {
 		nstones++
 	}
-	if g.Params.Stones[g.Depth] {
+	if g.Params.Stones[g.Map.Depth] {
 		nstones++
 	}
 	outsideStone := mg.rand.IntN(2) == 0

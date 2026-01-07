@@ -55,12 +55,12 @@ func (g *Game) Dump() string {
 	if g.Wizard != WizardNone {
 		fmt.Fprintf(buf, "ENABLED WIZARD MODE.\n")
 	}
-	if g.Player.HP > 0 && g.Depth == -1 {
+	if g.Player.HP > 0 && g.Map.Depth == -1 {
 		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
 	} else if g.Player.HP <= 0 {
-		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
 	} else {
-		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
 	}
 	if g.LiberatedShaedra {
 		fmt.Fprint(buf, "\n")
@@ -99,7 +99,7 @@ func (g *Game) Dump() string {
 		fmt.Fprintf(buf, "%d monsters died.\n", g.Stats.Killed)
 	}
 	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
-	maxDepth := max(g.Depth, g.ExploredLevels)
+	maxDepth := max(g.Map.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
 		s = ""
@@ -178,7 +178,7 @@ func (g *Game) DetailedStatistics(w io.Writer) {
 	fmt.Fprintf(w, "You spent %d%% turns wounded.\n", g.Stats.TWounded*100/(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsLOS*100/(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %d%% turns wounded with monsters in sight.\n", g.Stats.TMWounded*100/(g.Stats.Turns+1))
-	maxDepth := max(g.Depth-1, g.ExploredLevels)
+	maxDepth := max(g.Map.Depth-1, g.ExploredLevels)
 	if g.Player.HP <= 0 {
 		maxDepth++
 	}
@@ -319,7 +319,7 @@ func (g *Game) DumpDungeon() string {
 				r = '@'
 			default:
 				r, _ = g.TerrainStyle(kt, p)
-				if _, ok := g.Clouds[p]; ok && g.Player.LOS[p] {
+				if _, ok := g.Map.Clouds[p]; ok && g.Player.LOS[p] {
 					r = '§'
 				}
 				m := g.MonsterAt(p)
@@ -353,12 +353,12 @@ func (g *Game) SimplifedDump(msg string, err error) string {
 	if g.Wizard != WizardNone {
 		fmt.Fprintf(buf, "ENABLED WIZARD MODE.\n")
 	}
-	if g.Player.HP > 0 && g.Depth == -1 {
+	if g.Player.HP > 0 && g.Map.Depth == -1 {
 		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
 	} else if g.Player.HP <= 0 {
-		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
 	} else {
-		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Depth)
+		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
 	}
 	if g.LiberatedShaedra {
 		fmt.Fprint(buf, "You rescued Shaedra.\n")
@@ -371,7 +371,7 @@ func (g *Game) SimplifedDump(msg string, err error) string {
 		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
 	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
-	maxDepth := max(g.Depth, g.ExploredLevels)
+	maxDepth := max(g.Map.Depth, g.ExploredLevels)
 	s := "s"
 	if maxDepth == 1 {
 		s = ""

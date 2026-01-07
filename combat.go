@@ -32,7 +32,7 @@ func (m *Monster) InflictDamage(g *Game) {
 // damagePlayer handles 1 damage for the player.
 func (g *Game) damagePlayer() {
 	g.Stats.Damage += 1
-	g.Stats.DDamage[g.Depth] += 1
+	g.Stats.DDamage[g.Map.Depth] += 1
 	g.Player.HPbonus -= 1
 	if g.Player.HPbonus < 0 {
 		g.Player.HP += g.Player.HPbonus

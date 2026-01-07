@@ -232,6 +232,7 @@ func (md *model) init() gruid.Effect {
 	load, err := g.Load()
 	md.g.md = md // handy cycle
 	if !load {
+		g.Init()
 		g.InitLevel()
 		g.checks()
 	} else {

@@ -53,7 +53,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	if t == WallCell {
 		return wallcost
 	}
-	if _, ok := g.Clouds[from]; ok {
+	if _, ok := g.Map.Clouds[from]; ok {
 		return wallcost
 	}
 	// specific diagonal costs
@@ -132,7 +132,7 @@ func (g *Game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
 	opaque = true
 	hard = true
 	for _, p := range ps {
-		_, ok := g.Clouds[p]
+		_, ok := g.Map.Clouds[p]
 		if ok {
 			continue
 		}
@@ -360,7 +360,7 @@ func (g *Game) SeePosition(p gruid.Point) {
 			mons.LastKnownPos = invalidPos
 		}
 	}
-	delete(g.NoiseIllusion, p)
+	delete(g.Map.NoiseIllusion, p)
 	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
 		(distance(g.Player.P, p) <= 1 ||
 			distance(g.Player.P, g.Places.Marevor) <= 1 ||
@@ -393,7 +393,7 @@ func (g *Game) SeeTerrainAt(p gruid.Point) {
 			g.Printf("There is no longer a wall there.")
 			g.StopAuto()
 			g.autoexploreMapRebuild = true
-		} else if cld, ok := g.Clouds[p]; ok && cld == CloudFire && t != kt && Flammable(kt) {
+		} else if cld, ok := g.Map.Clouds[p]; ok && cld == CloudFire && t != kt && Flammable(kt) {
 			g.Printf("There are flames there.")
 			g.StopAuto()
 			g.autoexploreMapRebuild = true
@@ -404,7 +404,7 @@ func (g *Game) SeeTerrainAt(p gruid.Point) {
 		g.Map.KnownTerrain.Set(p, t)
 	}
 	if t != BarrierCell {
-		delete(g.MagicalBarriers, p)
+		delete(g.Map.MagicalBarriers, p)
 	}
 }
 
@@ -428,8 +428,8 @@ func (g *Game) ComputeNoise() {
 	rg := DefaultLOSRange
 	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, rg)
 	count := 0
-	for k := range g.Noise {
-		delete(g.Noise, k)
+	for k := range g.Map.Noise {
+		delete(g.Map.Noise, k)
 	}
 	rmax := 2
 	if g.Player.Inventory.Body == CloakHear {
@@ -445,28 +445,28 @@ func (g *Game) ComputeNoise() {
 			switch mons.Kind {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
 				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
-					g.Noise[n.P] = true
+					g.Map.Noise[n.P] = true
 					g.Print("You hear an imperceptible air movement.")
 					count++
 				}
 			case MonsWingedMilfid, MonsTinyHarpy:
-				g.Noise[n.P] = true
+				g.Map.Noise[n.P] = true
 				g.Print("You hear the flapping of wings.")
 				count++
 			case MonsEarthDragon, MonsTreeMushroom, MonsYack:
-				g.Noise[n.P] = true
+				g.Map.Noise[n.P] = true
 				g.Print("You hear heavy footsteps.")
 				count++
 			case MonsWorm, MonsAcidMound:
-				g.Noise[n.P] = true
+				g.Map.Noise[n.P] = true
 				g.Print("You hear a creep noise.")
 				count++
 			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
-				g.Noise[n.P] = true
+				g.Map.Noise[n.P] = true
 				g.Print("You hear light footsteps.")
 				count++
 			default:
-				g.Noise[n.P] = true
+				g.Map.Noise[n.P] = true
 				g.Print("You hear footsteps.")
 				count++
 			}

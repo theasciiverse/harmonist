@@ -1545,11 +1545,11 @@ func (m *Monster) MakeHunt(g *Game) (noticed bool) {
 	if m.State != Hunting {
 		m.State = Hunting
 		g.Stats.NSpotted++
-		g.Stats.DSpotted[g.Depth]++
+		g.Stats.DSpotted[g.Map.Depth]++
 		if !m.Alerted {
 			g.Stats.NUSpotted++
-			g.Stats.DUSpotted[g.Depth]++
-			if g.Stats.DUSpotted[g.Depth] >= 90*len(g.Monsters)/100 {
+			g.Stats.DUSpotted[g.Map.Depth]++
+			if g.Stats.DUSpotted[g.Map.Depth] >= 90*len(g.Monsters)/100 {
 				AchUnstealthy.Get(g)
 			}
 		}

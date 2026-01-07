@@ -278,7 +278,7 @@ func (g *Game) TerrainName(t rl.Cell, p gruid.Point) (desc string) {
 	case WindowCell:
 		desc = "closed window"
 	case ChasmCell:
-		if g.Depth == MaxDepth || g.Depth == WinDepth {
+		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 			desc = "deep chasm"
 		} else {
 			desc = "chasm"
@@ -290,7 +290,7 @@ func (g *Game) TerrainName(t rl.Cell, p gruid.Point) (desc string) {
 	case CavernCell:
 		desc = "cave ground"
 	case FakeStairCell:
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			desc = deepStairShortDesc
 		} else {
 			desc = normalStairShortDesc
@@ -350,7 +350,7 @@ func (g *Game) TerrainShortDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case WindowCell:
 		desc = "a closed window"
 	case ChasmCell:
-		if g.Depth == MaxDepth || g.Depth == WinDepth {
+		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 			desc = "a deep chasm"
 		} else {
 			desc = "a chasm"
@@ -362,7 +362,7 @@ func (g *Game) TerrainShortDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case CavernCell:
 		desc = "cave ground"
 	case FakeStairCell:
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			desc = deepStairShortDesc
 		} else {
 			desc = normalStairShortDesc
@@ -422,7 +422,7 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case WindowCell:
 		desc = "A transparent window in the wall."
 	case ChasmCell:
-		if g.Depth == MaxDepth || g.Depth == WinDepth {
+		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 			desc = "A deep chasm. If you jump into it, you’ll be dead."
 		} else {
 			desc = "A chasm. If you jump into it, you’ll reach the next level, but you’ll be seriously injured."
@@ -434,7 +434,7 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case CavernCell:
 		desc = "This is natural cave ground."
 	case FakeStairCell:
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			desc = deepStairDesc
 		} else {
 			desc = normalStairDesc
@@ -524,7 +524,7 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 		r, fg = 'Θ', ColorViolet
 	case ChasmCell:
 		r, fg = '◊', ColorFgLOS
-		if g.Depth == MaxDepth || g.Depth == WinDepth {
+		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case WaterCell:
@@ -535,7 +535,7 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 		r, fg = ',', ColorFgLOS
 	case FakeStairCell:
 		r, fg = '>', ColorFgPlace
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case PotionCell:

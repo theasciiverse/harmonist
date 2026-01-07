@@ -25,7 +25,7 @@ func TestInitLevel(t *testing.T) {
 			if g.Map.At(g.Player.P) != GroundCell {
 				t.Errorf("Player starting cell is not ground: %+v", g.TerrainShortDesc(g.Map.At(g.Player.P), g.Player.P))
 			}
-			if g.Depth == WinDepth {
+			if g.Map.Depth == WinDepth {
 				if g.Map.At(g.Places.Shaedra) != StoryCell {
 					t.Errorf("Shaedra not there: %+v", g.Places.Shaedra)
 				}
@@ -33,7 +33,7 @@ func TestInitLevel(t *testing.T) {
 					t.Errorf("bad Shaedra place: %+v", g.Places.Shaedra)
 				}
 			}
-			if g.Depth == MaxDepth {
+			if g.Map.Depth == MaxDepth {
 				if g.Map.At(g.Places.Artifact) != StoryCell {
 					t.Errorf("Artifact not there: %+v", g.Places.Artifact)
 				}
@@ -41,7 +41,7 @@ func TestInitLevel(t *testing.T) {
 					t.Errorf("bad Artifact place: %+v", g.Places.Shaedra)
 				}
 			}
-			if g.Depth == MaxDepth || g.Depth == WinDepth {
+			if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 				if g.Map.At(g.Places.Marevor) != StoryCell {
 					t.Errorf("Marevor not there: %+v", g.Places.Artifact)
 				}
@@ -49,7 +49,7 @@ func TestInitLevel(t *testing.T) {
 					t.Errorf("bad Marevor place: %+v", g.Places.Shaedra)
 				}
 			}
-			if g.Depth == MaxDepth || g.Depth == WinDepth {
+			if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 				if g.Map.At(g.Places.Monolith) != StoryCell {
 					t.Errorf("Monolith not there: %+v", g.Places.Artifact)
 				}
@@ -57,7 +57,7 @@ func TestInitLevel(t *testing.T) {
 					t.Errorf("bad Monolith place: %+v", g.Places.Shaedra)
 				}
 			}
-			if g.Depth != WinDepth {
+			if g.Map.Depth != WinDepth {
 				if len(g.Objects.Magaras) != 1 {
 					t.Errorf("bad number of magaras: %+v", g.Objects.Magaras)
 				}
@@ -74,7 +74,7 @@ func TestInitLevel(t *testing.T) {
 					g.Player.HP = 10
 				}
 			}
-			g.Depth++
+			g.Map.Depth++
 		}
 	}
 }
@@ -100,7 +100,7 @@ func BenchmarkInitLevel(b *testing.B) {
 		g := &Game{}
 		for depth := 0; depth < MaxDepth; depth++ {
 			g.InitLevel()
-			g.Depth++
+			g.Map.Depth++
 		}
 	}
 }

@@ -95,7 +95,7 @@ func (g *Game) RandomStartingMagara() Magara {
 loop:
 	for {
 		mag = mags[RandInt(len(mags))]
-		for _, m := range g.GeneratedMagaras {
+		for _, m := range g.ProcInfo.GeneratedMagaras {
 			if m == mag {
 				continue loop
 			}
@@ -117,7 +117,7 @@ func (g *Game) RandomMagara() Magara {
 loop:
 	for {
 		mag = mags[RandInt(len(mags))]
-		if slices.Contains(g.GeneratedMagaras, mag) {
+		if slices.Contains(g.ProcInfo.GeneratedMagaras, mag) {
 			continue loop
 		}
 		break
@@ -202,7 +202,7 @@ func (g *Game) UseMagara(i int) (err error) {
 	}
 	g.Stats.MagarasUsed++
 	g.Stats.UsedMagaras[mag.Kind]++
-	g.Stats.DMagaraUses[g.Depth]++
+	g.Stats.DMagaraUses[g.Map.Depth]++
 	g.Player.MP -= mag.MPCost(g)
 	g.Player.Magaras[i].Charges--
 	g.StoryPrintf("Evoked %s (MP: %d, Charges: %d)", mag, g.Player.MP, g.Player.Magaras[i].Charges)
@@ -645,9 +645,9 @@ func (g *Game) Fog(at gruid.Point, radius int) {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
-		_, ok := g.Clouds[n.P]
+		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {
-			g.Clouds[n.P] = CloudFog
+			g.Map.Clouds[n.P] = CloudFog
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
@@ -753,7 +753,7 @@ func (g *Game) EvokeNoise() error {
 	const noiseDist = 23
 	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, noiseDist)
 	noises := []gruid.Point{}
-	g.NoiseIllusion = map[gruid.Point]bool{}
+	g.Map.NoiseIllusion = map[gruid.Point]bool{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() {
 			continue
@@ -792,7 +792,7 @@ func (g *Game) EvokeNoise() error {
 		}
 		mons.Target = target
 		noises = append(noises, target)
-		g.NoiseIllusion[target] = true
+		g.Map.NoiseIllusion[target] = true
 	}
 	g.md.NoiseAnimation(noises)
 	g.Print("Monsters are tricked by magical sounds.")
@@ -872,8 +872,8 @@ func (g *Game) MagicalBarrierAt(p gruid.Point) {
 		return
 	}
 	g.Map.Set(p, BarrierCell)
-	delete(g.Clouds, p)
-	g.MagicalBarriers[p] = t
+	delete(g.Map.Clouds, p)
+	g.Map.MagicalBarriers[p] = t
 	g.PushEvent(&posEvent{P: p, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
 	g.ComputeLOS()
 }

@@ -145,10 +145,10 @@ type posEvent struct {
 func (cev *posEvent) Handle(g *Game) {
 	switch cev.Action {
 	case CloudEnd:
-		delete(g.Clouds, cev.P)
+		delete(g.Map.Clouds, cev.P)
 		g.ComputeLOS()
 	case ObstructionEnd:
-		if t, ok := g.MagicalBarriers[cev.P]; ok {
+		if t, ok := g.Map.MagicalBarriers[cev.P]; ok {
 			g.Map.Set(cev.P, t)
 		}
 	case ObstructionProgression:
@@ -161,7 +161,7 @@ func (cev *posEvent) Handle(g *Game) {
 		g.PushEvent(&posEvent{Action: ObstructionProgression},
 			g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/4))
 	case FireProgression:
-		if _, ok := g.Clouds[cev.P]; !ok {
+		if _, ok := g.Map.Clouds[cev.P]; !ok {
 			break
 		}
 		for _, p := range g.playerPassableNeighbors(cev.P) {
@@ -170,15 +170,15 @@ func (cev *posEvent) Handle(g *Game) {
 			}
 			g.Burn(p)
 		}
-		delete(g.Clouds, cev.P)
+		delete(g.Map.Clouds, cev.P)
 		g.NightFog(cev.P, 1)
 		g.ComputeLOS()
 	case NightProgression:
-		if _, ok := g.Clouds[cev.P]; !ok {
+		if _, ok := g.Map.Clouds[cev.P]; !ok {
 			break
 		}
 		if cev.Timer <= 0 {
-			delete(g.Clouds, cev.P)
+			delete(g.Map.Clouds, cev.P)
 			g.ComputeLOS()
 			break
 		}
@@ -195,7 +195,7 @@ func (cev *posEvent) Handle(g *Game) {
 		g.PrintStyled("Craack!", logSpecial)
 		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.P)
-		g.NoiseIllusion[cev.P] = true
+		g.Map.NoiseIllusion[cev.P] = true
 		it := g.Map.Terrain.Iterator()
 		for it.Next() {
 			p := it.P()
@@ -213,7 +213,7 @@ func (cev *posEvent) Handle(g *Game) {
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Print("Pop!")
-			g.NoiseIllusion[cev.P] = true
+			g.Map.NoiseIllusion[cev.P] = true
 			g.MakeNoise(DelayedHarmonicNoise, cev.P)
 		} else {
 			cev.Timer--
@@ -235,7 +235,7 @@ func (cev *posEvent) Handle(g *Game) {
 func (g *Game) OricExplosion(at gruid.Point) {
 	g.Player.Statuses[StatusDelay] = 0
 	g.Print(g.CrackSound())
-	g.NoiseIllusion[at] = true
+	g.Map.NoiseIllusion[at] = true
 	dij := &gridPath{dungeon: g.Map}
 	g.MakeNoise(OricExplosionNoise, at)
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, 7)
@@ -265,9 +265,9 @@ func (g *Game) NightFog(at gruid.Point, radius int) {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
-		_, ok := g.Clouds[n.P]
+		_, ok := g.Map.Clouds[n.P]
 		if !ok {
-			g.Clouds[n.P] = CloudNight
+			g.Map.Clouds[n.P] = CloudNight
 			g.PushEventD(&posEvent{Action: NightProgression,
 				P: n.P, Timer: DurationNightFog}, DurationCloudProgression)
 
@@ -299,7 +299,7 @@ func (g *Game) MakeCreatureSleep(p gruid.Point) {
 }
 
 func (g *Game) Burn(p gruid.Point) {
-	if _, ok := g.Clouds[p]; ok {
+	if _, ok := g.Map.Clouds[p]; ok {
 		return
 	}
 	t := g.Map.At(p)
@@ -319,7 +319,7 @@ func (g *Game) Burn(p gruid.Point) {
 		g.Print("The tree vanishes in magical flames.")
 	}
 	g.Map.Set(p, GroundCell)
-	g.Clouds[p] = CloudFire
+	g.Map.Clouds[p] = CloudFire
 	if g.Player.Sees(p) {
 		g.ComputeLOS()
 	}

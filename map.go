@@ -10,8 +10,13 @@ import (
 
 // Map represents a map level.
 type Map struct {
-	Terrain      rl.Grid // terrain
-	KnownTerrain rl.Grid // player's terrain knowledge
+	Depth           int
+	Terrain         rl.Grid                 // terrain
+	KnownTerrain    rl.Grid                 // player's terrain knowledge
+	MagicalBarriers map[gruid.Point]rl.Cell // original terrain (under the barrier)
+	Clouds          map[gruid.Point]Cloud
+	Noise           map[gruid.Point]bool
+	NoiseIllusion   map[gruid.Point]bool
 }
 
 // At returns the terrain cell at the given point.

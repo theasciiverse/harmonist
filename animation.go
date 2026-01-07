@@ -552,7 +552,7 @@ func (md *model) AbyssFallAnimation() {
 }
 
 func (md *model) Story() {
-	switch md.g.Depth {
+	switch md.g.Map.Depth {
 	case WinDepth:
 		md.FreeingShaedra()
 	case MaxDepth:

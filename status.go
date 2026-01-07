@@ -221,7 +221,7 @@ func (md *model) statusMPColor() rune {
 func (md *model) sortedStatuses() statusSlice {
 	g := md.g
 	sts := statusSlice{}
-	if cld, ok := g.Clouds[g.Player.P]; ok && cld == CloudFire {
+	if cld, ok := g.Map.Clouds[g.Player.P]; ok && cld == CloudFire {
 		g.Player.Statuses[StatusFlames] = 1
 		defer func() {
 			g.Player.Statuses[StatusFlames] = 0
@@ -259,10 +259,10 @@ func (md *model) updateStatusInfo() {
 	})
 	// depth
 	var depth string
-	if g.Depth == -1 {
+	if g.Map.Depth == -1 {
 		depth = " D:Out! "
 	} else {
-		depth = fmt.Sprintf(" D:%d ", g.Depth)
+		depth = fmt.Sprintf(" D:%d ", g.Map.Depth)
 	}
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(depth), Disabled: true})
 

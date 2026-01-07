@@ -10,13 +10,13 @@ import (
 type Objects struct {
 	Stairs     map[gruid.Point]stair
 	Stones     map[gruid.Point]stone
-	Magaras    map[gruid.Point]Magara // TODO simplify? (there's never more than one)
+	Magaras    map[gruid.Point]Magara
 	Barrels    map[gruid.Point]bool
 	Bananas    map[gruid.Point]bool
 	Lights     map[gruid.Point]bool // true: on, false: off
 	Scrolls    map[gruid.Point]scroll
 	Story      map[gruid.Point]story
-	Lore       map[gruid.Point]int // TODO simplify? (there's never more than one)
+	Lore       map[gruid.Point]int
 	Items      map[gruid.Point]item
 	FakeStairs map[gruid.Point]bool
 	Potions    map[gruid.Point]potion
@@ -48,7 +48,7 @@ const deepStairShortDesc = "deep stairs downwards"
 func (st stair) ShortString(g *Game) (desc string) {
 	switch st {
 	case NormalStair:
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			desc = deepStairShortDesc
 		} else {
 			desc = normalStairShortDesc
@@ -64,7 +64,7 @@ func (st stair) ShortString(g *Game) (desc string) {
 func (st stair) ShortDesc(g *Game) (desc string) {
 	switch st {
 	case NormalStair:
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			desc = deepStairShortDesc
 		} else {
 			desc = normalStairShortDesc
@@ -84,12 +84,12 @@ func (st stair) Desc(g *Game) (desc string) {
 	switch st {
 	case WinStair:
 		desc = "Going through this portal will make you escape from this place, going back to the Surface."
-		if g.Depth < MaxDepth {
+		if g.Map.Depth < MaxDepth {
 			desc += " If you’re courageous enough, you may skip this portal and continue going deeper in the dungeon, to find Marevor’s magara, finishing Shaedra’s failed mission."
 		}
 	case NormalStair:
 		desc = normalStairDesc
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			desc = deepStairDesc
 			desc += " You may want to take those after freeing Shaedra from her cell."
 		}
@@ -107,7 +107,7 @@ func (st stair) Style(g *Game) (r rune, fg gruid.Color) {
 		r = 'Δ'
 	case NormalStair:
 		fg = ColorFgPlace
-		if g.Depth == WinDepth {
+		if g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case SealedStair:
@@ -421,7 +421,7 @@ func (g *Game) ActivateSensingStone() error {
 }
 
 func (g *Game) ActivateSealStone() error {
-	if g.Depth == MaxDepth {
+	if g.Map.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
 		g.Print("You feel oric energies dissipating.")
 		return nil
@@ -739,7 +739,7 @@ func (g *Game) RandomCloak() (it item) {
 loop:
 	for {
 		it = cloaks[RandInt(len(cloaks))]
-		for _, cl := range g.GeneratedCloaks {
+		for _, cl := range g.ProcInfo.GeneratedCloaks {
 			if cl == it {
 				continue loop
 			}
@@ -758,7 +758,7 @@ func (g *Game) RandomAmulet() (it item) {
 loop:
 	for {
 		it = amulets[RandInt(len(amulets))]
-		for _, cl := range g.GeneratedAmulets {
+		for _, cl := range g.ProcInfo.GeneratedAmulets {
 			if cl == it {
 				continue loop
 			}

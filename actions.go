@@ -369,10 +369,10 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 		md.mode = modeNormal
 	case ActionWizardDescend:
-		if g.Wizard != WizardNone && g.Depth == WinDepth && !g.LiberatedShaedra {
+		if g.Wizard != WizardNone && g.Map.Depth == WinDepth && !g.LiberatedShaedra {
 			g.RescuedShaedra()
 		}
-		if g.Wizard != WizardNone && g.Depth < MaxDepth {
+		if g.Wizard != WizardNone && g.Map.Depth < MaxDepth {
 			g.StoryPrint("Descended wizardly")
 			again = true
 			if g.Descend(DescendNormal) {
@@ -484,10 +484,10 @@ func (md *model) readScroll() {
 		}
 		md.smallPager.SetLines(stts)
 		md.smallPager.SetCursor(gruid.Point{0, 0})
-		if !md.g.Stats.Lore[md.g.Depth] {
+		if !md.g.Stats.Lore[md.g.Map.Depth] {
 			md.g.StoryPrint("Read lore message")
 		}
-		md.g.Stats.Lore[md.g.Depth] = true
+		md.g.Stats.Lore[md.g.Map.Depth] = true
 		if len(md.g.Stats.Lore) == 4 {
 			AchLoreStudent.Get(md.g)
 		}
@@ -750,7 +750,7 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 // going to optional levels before.
 func (md *model) checkShaedra(st stair) (err error) {
 	g := md.g
-	if g.Depth == WinDepth && st == NormalStair && g.Map.At(g.Places.Shaedra) == StoryCell {
+	if g.Map.Depth == WinDepth && st == NormalStair && g.Map.At(g.Places.Shaedra) == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")
 	}
 	return err

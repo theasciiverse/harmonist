@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.4"
+var Version string = "v0.7.0-dev.5"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -27,21 +27,12 @@ type Game struct {
 	Bands              []bandInfo
 	Events             *rl.EventQueue
 	EventIndex         int
-	Depth              int
 	ExploredLevels     int
 	DepthPlayerTurn    int
 	Turn               int
 	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
 	Objects            Objects
-	Clouds             map[gruid.Point]Cloud
-	MagicalBarriers    map[gruid.Point]rl.Cell // original terrain (under the barrier)
-	GeneratedLore      map[int]bool
-	GeneratedMagaras   []magaraKind
-	GeneratedCloaks    []item
-	GeneratedAmulets   []item
-	GenPlan            [MaxDepth + 1]genFlavour
-	Noise              map[gruid.Point]bool
-	NoiseIllusion      map[gruid.Point]bool
+	ProcInfo           *ProcInfo
 	LastMonsterKnownAt map[gruid.Point]int
 	MonsterLOS         map[gruid.Point]bool
 	MonsterTargLOS     map[gruid.Point]bool
@@ -77,6 +68,15 @@ type Game struct {
 	autoDirNeighbors      dirNeighbors
 	autoDirChanged        bool
 	autoHalt              bool
+}
+
+// ProcInfo contains procgen information.
+type ProcInfo struct {
+	GeneratedLore    map[int]bool
+	GeneratedMagaras []magaraKind
+	GeneratedCloaks  []item
+	GeneratedAmulets []item
+	GenPlan          [MaxDepth + 1]genFlavour
 }
 
 type specialEvent int
@@ -154,7 +154,7 @@ const (
 
 func (g *Game) GenDungeon() {
 	ml := AutomataCave
-	switch g.Depth {
+	switch g.Map.Depth {
 	case 2, 6, 7:
 		ml = RandomWalkCave
 		if RandInt(3) == 0 {
@@ -162,9 +162,9 @@ func (g *Game) GenDungeon() {
 		}
 	case 4, 10, 11:
 		ml = RandomWalkTreeCave
-		if RandInt(4) == 0 && g.Depth < 11 {
+		if RandInt(4) == 0 && g.Map.Depth < 11 {
 			ml = RandomSmallWalkCaveUrbanised
-		} else if g.Depth == 11 && RandInt(2) == 0 {
+		} else if g.Map.Depth == 11 && RandInt(2) == 0 {
 			ml = RandomSmallWalkCaveUrbanised
 		}
 	case 9:
@@ -199,9 +199,9 @@ func (g *Game) InitPlayer() {
 		{},
 		{},
 	}
-	g.GeneratedMagaras = []magaraKind{}
+	g.ProcInfo.GeneratedMagaras = []magaraKind{}
 	g.Player.Magaras[0] = g.RandomStartingMagara()
-	g.GeneratedMagaras = append(g.GeneratedMagaras, g.Player.Magaras[0].Kind)
+	g.ProcInfo.GeneratedMagaras = append(g.ProcInfo.GeneratedMagaras, g.Player.Magaras[0].Kind)
 	g.Player.Inventory.Misc = MarevorMagara
 	g.Player.FOV = rl.NewFOV(visionRange(g.Player.P, TreeRange))
 	// Testing
@@ -232,17 +232,17 @@ func PutRandomLevels(m map[int]bool, n int) {
 
 func (g *Game) InitFirstLevel() {
 	g.Version = Version
-	g.Depth++ // start at 1
+	g.Map.Depth++ // start at 1
 	g.InitPlayer()
 	g.autoTarget = invalidPos
 	g.RaysCache = rayMap{}
-	g.GeneratedLore = map[int]bool{}
+	g.ProcInfo.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
 	g.Stats.UsedMagaras = map[magaraKind]int{}
 	g.Stats.Achievements = map[achievement]int{}
 	g.Stats.Lore = map[int]bool{}
 	g.Stats.Statuses = map[status]int{}
-	g.GenPlan = [MaxDepth + 1]genFlavour{
+	g.ProcInfo.GenPlan = [MaxDepth + 1]genFlavour{
 		1:  GenNothing,
 		2:  GenCloak,
 		3:  GenNothing,
@@ -370,13 +370,13 @@ func (g *Game) InitFirstLevel() {
 	permi := RandInt(WinDepth - 1)
 	switch permi {
 	case 0, 1, 2, 3:
-		g.GenPlan[permi+1], g.GenPlan[permi+2] = g.GenPlan[permi+2], g.GenPlan[permi+1]
+		g.ProcInfo.GenPlan[permi+1], g.ProcInfo.GenPlan[permi+2] = g.ProcInfo.GenPlan[permi+2], g.ProcInfo.GenPlan[permi+1]
 	}
 	if RandInt(4) == 0 {
-		g.GenPlan[6], g.GenPlan[7] = g.GenPlan[7], g.GenPlan[6]
+		g.ProcInfo.GenPlan[6], g.ProcInfo.GenPlan[7] = g.ProcInfo.GenPlan[7], g.ProcInfo.GenPlan[6]
 	}
 	if RandInt(4) == 0 {
-		g.GenPlan[MaxDepth-1], g.GenPlan[MaxDepth] = g.GenPlan[MaxDepth], g.GenPlan[MaxDepth-1]
+		g.ProcInfo.GenPlan[MaxDepth-1], g.ProcInfo.GenPlan[MaxDepth] = g.ProcInfo.GenPlan[MaxDepth], g.ProcInfo.GenPlan[MaxDepth-1]
 	}
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
@@ -384,10 +384,13 @@ func (g *Game) InitFirstLevel() {
 }
 
 func (g *Game) InitLevelStructures() {
+	g.Map.Noise = map[gruid.Point]bool{}
+	g.Map.NoiseIllusion = map[gruid.Point]bool{}
+	g.Map.MagicalBarriers = map[gruid.Point]rl.Cell{}
+	g.Map.Clouds = map[gruid.Point]Cloud{}
 	g.MonstersPosCache = make([]int, DungeonNCells)
-	g.Noise = map[gruid.Point]bool{}
-	g.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.LastMonsterKnownAt = map[gruid.Point]int{}
+	g.MonsterLOS = map[gruid.Point]bool{}
 	g.Objects.Magaras = map[gruid.Point]Magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
 	g.Objects.Items = map[gruid.Point]item{}
@@ -398,20 +401,31 @@ func (g *Game) InitLevelStructures() {
 	g.Objects.Lights = map[gruid.Point]bool{}
 	g.Objects.FakeStairs = map[gruid.Point]bool{}
 	g.Objects.Potions = map[gruid.Point]potion{}
-	g.NoiseIllusion = map[gruid.Point]bool{}
-	g.Clouds = map[gruid.Point]Cloud{}
-	g.MonsterLOS = map[gruid.Point]bool{}
 	g.Stats.AtNotablePos = map[gruid.Point]bool{}
 }
 
 var Testing = false
 
-func (g *Game) InitLevel() {
+// Init initializes some data structures.
+func (g *Game) Init() {
 	if g.rand == nil {
 		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
+	if g.Map == nil {
+		g.Map = &Map{
+			Terrain:      rl.NewGrid(MapWidth, MapHeight),
+			KnownTerrain: rl.NewGrid(MapWidth, MapHeight),
+		}
+	}
+	if g.ProcInfo == nil {
+		g.ProcInfo = &ProcInfo{}
+	}
+}
+
+// InitLevel initializes states for a new map level.
+func (g *Game) InitLevel() {
 	// Starting data
-	if g.Depth == 0 {
+	if g.Map.Depth == 0 {
 		g.InitFirstLevel()
 	}
 
@@ -421,7 +435,7 @@ func (g *Game) InitLevel() {
 	g.GenDungeon()
 
 	// Events
-	if g.Depth == 1 {
+	if g.Map.Depth == 1 {
 		g.StoryPrintf("Started with %s", g.Player.Magaras[0])
 		g.Events = rl.NewEventQueue()
 		//g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
@@ -441,7 +455,7 @@ func (g *Game) InitLevel() {
 	for _, m := range monsters {
 		g.PushEvent(&monsterTurnEvent{Index: m.Index}, g.Turn)
 	}
-	switch g.Params.Event[g.Depth] {
+	switch g.Params.Event[g.Map.Depth] {
 	case UnstableLevel:
 		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		g.StoryPrint("Special event: magically unstable level")
@@ -463,12 +477,12 @@ func (g *Game) InitLevel() {
 	}
 
 	// initialize LOS
-	if g.Depth == 1 {
+	if g.Map.Depth == 1 {
 		g.PrintStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
 	}
-	if g.Depth == WinDepth {
+	if g.Map.Depth == WinDepth {
 		g.PrintStyled("Finally! Shaedra should be imprisoned somewhere around here.", logSpecial)
-	} else if g.Depth == MaxDepth {
+	} else if g.Map.Depth == MaxDepth {
 		g.PrintStyled("This the bottom floor, you now have to look for the artifact.", logSpecial)
 	}
 	g.ComputeLOS()
@@ -479,6 +493,7 @@ func (g *Game) InitLevel() {
 	}
 }
 
+// CleanEvents clears events between map levels.
 func (g *Game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
 		switch ev.(type) {
@@ -506,6 +521,7 @@ func (g *Game) CleanEvents() {
 	g.Turn++
 }
 
+// descendStyle represents the various forms of going to the next map level.
 type descendstyle int
 
 const (
@@ -514,61 +530,62 @@ const (
 	DescendFall
 )
 
+// Descend goes to the next map level. Returns true on win (last map level).
 func (g *Game) Descend(style descendstyle) bool {
 	g.LevelStats()
-	if g.Stats.DUSpotted[g.Depth] < 3 {
+	if g.Stats.DUSpotted[g.Map.Depth] < 3 {
 		AchStealthNovice.Get(g)
 	}
-	if g.Depth >= 3 {
-		if g.Stats.DRests[g.Depth] == 0 && g.Stats.DRests[g.Depth-1] == 0 {
+	if g.Map.Depth >= 3 {
+		if g.Stats.DRests[g.Map.Depth] == 0 && g.Stats.DRests[g.Map.Depth-1] == 0 {
 			AchInsomniaNovice.Get(g)
 		}
 	}
-	if g.Depth >= 5 {
-		if g.Stats.DRests[g.Depth] == 0 && g.Stats.DRests[g.Depth-1] == 0 && g.Stats.DRests[g.Depth-2] == 0 &&
-			g.Stats.DRests[g.Depth-3] == 0 {
+	if g.Map.Depth >= 5 {
+		if g.Stats.DRests[g.Map.Depth] == 0 && g.Stats.DRests[g.Map.Depth-1] == 0 && g.Stats.DRests[g.Map.Depth-2] == 0 &&
+			g.Stats.DRests[g.Map.Depth-3] == 0 {
 			AchInsomniaInitiate.Get(g)
 		}
 	}
-	if g.Depth >= 8 {
-		if g.Stats.DRests[g.Depth] == 0 && g.Stats.DRests[g.Depth-1] == 0 && g.Stats.DRests[g.Depth-2] == 0 &&
-			g.Stats.DRests[g.Depth-3] == 0 && g.Stats.DRests[g.Depth-4] == 0 && g.Stats.DRests[g.Depth-5] == 0 {
+	if g.Map.Depth >= 8 {
+		if g.Stats.DRests[g.Map.Depth] == 0 && g.Stats.DRests[g.Map.Depth-1] == 0 && g.Stats.DRests[g.Map.Depth-2] == 0 &&
+			g.Stats.DRests[g.Map.Depth-3] == 0 && g.Stats.DRests[g.Map.Depth-4] == 0 && g.Stats.DRests[g.Map.Depth-5] == 0 {
 			AchInsomniaMaster.Get(g)
 		}
 	}
-	if g.Depth >= 3 {
-		if g.Stats.DMagaraUses[g.Depth] == 0 && g.Stats.DMagaraUses[g.Depth-1] == 0 {
+	if g.Map.Depth >= 3 {
+		if g.Stats.DMagaraUses[g.Map.Depth] == 0 && g.Stats.DMagaraUses[g.Map.Depth-1] == 0 {
 			AchAntimagicNovice.Get(g)
 		}
 	}
-	if g.Depth >= 5 {
-		if g.Stats.DMagaraUses[g.Depth] == 0 && g.Stats.DMagaraUses[g.Depth-1] == 0 && g.Stats.DMagaraUses[g.Depth-2] == 0 &&
-			g.Stats.DMagaraUses[g.Depth-3] == 0 {
+	if g.Map.Depth >= 5 {
+		if g.Stats.DMagaraUses[g.Map.Depth] == 0 && g.Stats.DMagaraUses[g.Map.Depth-1] == 0 && g.Stats.DMagaraUses[g.Map.Depth-2] == 0 &&
+			g.Stats.DMagaraUses[g.Map.Depth-3] == 0 {
 			AchAntimagicInitiate.Get(g)
 		}
 	}
-	if g.Depth >= 8 {
-		if g.Stats.DMagaraUses[g.Depth] == 0 && g.Stats.DMagaraUses[g.Depth-1] == 0 && g.Stats.DMagaraUses[g.Depth-2] == 0 &&
-			g.Stats.DMagaraUses[g.Depth-3] == 0 && g.Stats.DMagaraUses[g.Depth-4] == 0 && g.Stats.DMagaraUses[g.Depth-5] == 0 {
+	if g.Map.Depth >= 8 {
+		if g.Stats.DMagaraUses[g.Map.Depth] == 0 && g.Stats.DMagaraUses[g.Map.Depth-1] == 0 && g.Stats.DMagaraUses[g.Map.Depth-2] == 0 &&
+			g.Stats.DMagaraUses[g.Map.Depth-3] == 0 && g.Stats.DMagaraUses[g.Map.Depth-4] == 0 && g.Stats.DMagaraUses[g.Map.Depth-5] == 0 {
 			AchAntimagicMaster.Get(g)
 		}
 	}
-	if g.Depth >= 5 {
-		if g.Stats.DUSpotted[g.Depth] < 3 && g.Stats.DSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 {
+	if g.Map.Depth >= 5 {
+		if g.Stats.DUSpotted[g.Map.Depth] < 3 && g.Stats.DSpotted[g.Map.Depth-1] < 3 && g.Stats.DSpotted[g.Map.Depth-2] < 3 {
 			AchStealthInitiate.Get(g)
 		}
 	}
-	if g.Depth >= 8 {
-		if g.Stats.DUSpotted[g.Depth] < 3 && g.Stats.DUSpotted[g.Depth-1] < 3 && g.Stats.DSpotted[g.Depth-2] < 3 &&
-			g.Stats.DSpotted[g.Depth-3] < 3 {
+	if g.Map.Depth >= 8 {
+		if g.Stats.DUSpotted[g.Map.Depth] < 3 && g.Stats.DUSpotted[g.Map.Depth-1] < 3 && g.Stats.DSpotted[g.Map.Depth-2] < 3 &&
+			g.Stats.DSpotted[g.Map.Depth-3] < 3 {
 			AchStealthMaster.Get(g)
 		}
 	}
 	t := g.Map.At(g.Player.P)
 	if t == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
 		g.StoryPrint("Escaped!")
-		g.ExploredLevels = g.Depth
-		g.Depth = -1
+		g.ExploredLevels = g.Map.Depth
+		g.Map.Depth = -1
 		return true
 	}
 	if style != DescendNormal {
@@ -579,7 +596,7 @@ func (g *Game) Descend(style descendstyle) bool {
 		g.Print("You descend deeper in the dungeon.")
 		g.StoryPrint("Descended stairs")
 	}
-	g.Depth++
+	g.Map.Depth++
 	g.DepthPlayerTurn = 0
 	g.InitLevel()
 	if err := g.Save(); err != nil {
@@ -594,12 +611,13 @@ func (g *Game) EnterWizardMode() {
 	g.StoryPrint("Entered wizard mode.")
 }
 
+// ApplyRest handles hp and mp regeneration.
 func (g *Game) ApplyRest() {
 	g.Player.HP = g.Player.HPMax()
 	g.Player.HPbonus = 0
 	g.Player.MP = g.Player.MPMax()
 	g.Stats.Rest++
-	g.Stats.DRests[g.Depth]++
+	g.Stats.DRests[g.Map.Depth]++
 	g.PrintStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
 	g.StoryPrintf("Rested in barrel (bananas: %d)", g.Player.Bananas)
 	if g.Stats.Rest == 10 {
@@ -607,6 +625,7 @@ func (g *Game) ApplyRest() {
 	}
 }
 
+// AutoPlayer reports whether auto-playing should remain on.
 func (g *Game) AutoPlayer() bool {
 	switch {
 	case g.resting:
@@ -667,6 +686,7 @@ func (g *Game) AutoPlayer() bool {
 	return false
 }
 
+// Died reports whether the player died.
 func (g *Game) Died() bool {
 	if g.Player.HP <= 0 {
 		if g.Wizard != WizardNone {
@@ -683,6 +703,7 @@ func (g *Game) Died() bool {
 
 type msgAuto int
 
+// EndTurn finalizes a turn.
 func (g *Game) EndTurn() {
 	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
 	for {
@@ -715,6 +736,7 @@ func (g *Game) EndTurn() {
 	}
 }
 
+// checks performs some sanity checks.
 func (g *Game) checks() {
 	if !Testing {
 		return
@@ -731,6 +753,8 @@ func (g *Game) checks() {
 	}
 }
 
+// randInt returns a random integer like rand.IntN but returns zero for
+// non-positive values.
 func (g *Game) randInt(n int) int {
 	if n <= 0 {
 		return 0

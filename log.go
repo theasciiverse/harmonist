@@ -95,7 +95,7 @@ func (g *Game) PrintEntry(e logEntry) {
 	}
 	e.MText = e.String()
 	if LogGame {
-		log.Printf("Depth %d:Turn %d:%v", g.Depth, g.Turn, e.dumpString())
+		log.Printf("Depth %d:Turn %d:%v", g.Map.Depth, g.Turn, e.dumpString())
 	}
 	g.Log = append(g.Log, e)
 	g.LogIndex++
@@ -105,11 +105,11 @@ func (g *Game) PrintEntry(e logEntry) {
 }
 
 func (g *Game) StoryPrint(s string) {
-	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Depth, g.Turn, s))
+	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Map.Depth, g.Turn, s))
 }
 
 func (g *Game) StoryPrintf(format string, a ...interface{}) {
-	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Depth, g.Turn, fmt.Sprintf(format, a...)))
+	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Map.Depth, g.Turn, fmt.Sprintf(format, a...)))
 }
 
 func (g *Game) CrackSound() (text string) {

@@ -267,7 +267,7 @@ func (md *model) updatePosInfo() {
 		return
 	case !IsKnown(g.Map.KnownTerrain.At(p)) && g.Wizard != WizardSeeAll:
 		pi.Unknown = true
-		if g.Noise[p] || g.NoiseIllusion[p] {
+		if g.Map.Noise[p] || g.Map.NoiseIllusion[p] {
 			pi.Noise = true
 		}
 		if mons := g.lastMonsterKnownAt(p); mons.Exists() {
@@ -290,14 +290,14 @@ func (md *model) updatePosInfo() {
 	} else if mons := g.lastMonsterKnownAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
 		pi.Monster = mons
 	}
-	if cld, ok := g.Clouds[p]; ok && infov {
+	if cld, ok := g.Map.Clouds[p]; ok && infov {
 		pi.Cloud = cld.String()
 	}
 	pi.Cell = t
 	if infov && g.Illuminated(p) && IsIlluminable(t) {
 		pi.Lighted = true
 	}
-	if g.Noise[p] || g.NoiseIllusion[p] {
+	if g.Map.Noise[p] || g.Map.NoiseIllusion[p] {
 		pi.Noise = true
 	}
 	md.targ.ex.info = pi

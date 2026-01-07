@@ -139,7 +139,7 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 func (g *Game) ppPassable(p gruid.Point) bool {
-	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && g.Player.Sees(p) {
+	if cld, ok := g.Map.Clouds[p]; ok && cld == CloudFire && g.Player.Sees(p) {
 		return false
 	}
 	kt := g.Map.KnownTerrain.At(p)
@@ -199,7 +199,7 @@ func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 	d := ap.g.Map.KnownTerrain
 	keep := func(q gruid.Point) bool {
 		kt := d.At(q)
-		if cld, ok := ap.g.Clouds[q]; ok && cld == CloudFire {
+		if cld, ok := ap.g.Map.Clouds[q]; ok && cld == CloudFire {
 			// XXX little info leak
 			return false
 		}

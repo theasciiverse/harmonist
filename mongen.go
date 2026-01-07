@@ -181,7 +181,7 @@ func (mg *MapGen) GenMonsters(g *Game) {
 	bandOricCelmistPair := []monsterBand{PairOricCelmist}
 	bandHarmonicCelmistPair := []monsterBand{PairHarmonicCelmist}
 	// special bands
-	if g.Params.Special[g.Depth] != noSpecialRoom {
+	if g.Params.Special[g.Map.Depth] != noSpecialRoom {
 		switch mg.special {
 		case roomVampires:
 			mg.putRandomBandN(g, []monsterBand{SpecialLoneVampire}, 2)
@@ -254,14 +254,14 @@ func (mg *MapGen) GenMonsters(g *Game) {
 			mg.putRandomBandN(g, bandOricCelmists, 2)
 		}
 	}
-	if g.Depth == g.Params.CrazyImp {
+	if g.Map.Depth == g.Params.CrazyImp {
 		mg.putRandomBand(g, []monsterBand{UniqueCrazyImp})
 	}
 	mg.putRandomBandN(g, bandsButterfly, 2)
 	if mg.layout == RandomSmallWalkCaveUrbanised {
-		mg.putRandomBandN(g, bandsGuard, 1+(g.Depth+1)/4)
+		mg.putRandomBandN(g, bandsGuard, 1+(g.Map.Depth+1)/4)
 	}
-	switch g.Depth {
+	switch g.Map.Depth {
 	case 1:
 		// 8-9
 		if mg.rand.IntN(2) == 0 {

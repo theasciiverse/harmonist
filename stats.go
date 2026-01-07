@@ -86,15 +86,15 @@ func (g *Game) LevelStats() {
 			exp++
 		}
 	}
-	g.Stats.DExplPerc[g.Depth] = exp * 100 / free
-	if g.Stats.DExplPerc[g.Depth] > 93 {
+	g.Stats.DExplPerc[g.Map.Depth] = exp * 100 / free
+	if g.Stats.DExplPerc[g.Map.Depth] > 93 {
 		AchNoviceExplorer.Get(g)
 	}
-	if g.Depth >= 5 && g.Stats.DExplPerc[g.Depth] > 93 && g.Stats.DExplPerc[g.Depth-1] > 93 && g.Stats.DExplPerc[g.Depth-2] > 93 {
+	if g.Map.Depth >= 5 && g.Stats.DExplPerc[g.Map.Depth] > 93 && g.Stats.DExplPerc[g.Map.Depth-1] > 93 && g.Stats.DExplPerc[g.Map.Depth-2] > 93 {
 		AchInitiateExplorer.Get(g)
 	}
-	if g.Depth >= 8 && g.Stats.DExplPerc[g.Depth] > 93 && g.Stats.DExplPerc[g.Depth-1] > 93 && g.Stats.DExplPerc[g.Depth-2] > 93 &&
-		g.Stats.DExplPerc[g.Depth-3] > 93 && g.Stats.DExplPerc[g.Depth-4] > 93 {
+	if g.Map.Depth >= 8 && g.Stats.DExplPerc[g.Map.Depth] > 93 && g.Stats.DExplPerc[g.Map.Depth-1] > 93 && g.Stats.DExplPerc[g.Map.Depth-2] > 93 &&
+		g.Stats.DExplPerc[g.Map.Depth-3] > 93 && g.Stats.DExplPerc[g.Map.Depth-4] > 93 {
 		AchMasterExplorer.Get(g)
 	}
 	//g.Stats.DBurns[g.Depth] = g.Stats.CurBurns // XXX to avoid little dump info leak
@@ -110,9 +110,9 @@ func (g *Game) LevelStats() {
 			smons++
 		}
 	}
-	g.Stats.DSleepingPerc[g.Depth] = smons * 100 / nmons
-	g.Stats.DKilledPerc[g.Depth] = kmons * 100 / nmons
-	g.Stats.DUSpottedPerc[g.Depth] = g.Stats.DUSpotted[g.Depth] * 100 / nmons
+	g.Stats.DSleepingPerc[g.Map.Depth] = smons * 100 / nmons
+	g.Stats.DKilledPerc[g.Map.Depth] = kmons * 100 / nmons
+	g.Stats.DUSpottedPerc[g.Map.Depth] = g.Stats.DUSpotted[g.Map.Depth] * 100 / nmons
 }
 
 type achievement string

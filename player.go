@@ -200,7 +200,7 @@ func (g *Game) Rest() error {
 	if g.Map.At(g.Player.P) != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
-	if cld, ok := g.Clouds[g.Player.P]; ok && cld == CloudFire {
+	if cld, ok := g.Map.Clouds[g.Player.P]; ok && cld == CloudFire {
 		return errors.New("You cannot rest on flames.")
 	}
 	if !g.NeedsRegenRest() && !g.StatusRest() {
@@ -333,7 +333,7 @@ func (g *Game) FallAbyss(style descendstyle) {
 	if g.Player.Bananas > 0 {
 		g.Player.Bananas--
 	}
-	if style == DescendFall && g.Depth == MaxDepth || g.Depth == WinDepth {
+	if style == DescendFall && g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 		g.Player.HP = 0
 		return
 	}
@@ -346,7 +346,7 @@ func (g *Game) AbyssJumpConfirmation() {
 }
 
 func (g *Game) DeepChasmDepth() bool {
-	return g.Depth == WinDepth || g.Depth == MaxDepth
+	return g.Map.Depth == WinDepth || g.Map.Depth == MaxDepth
 }
 
 func (g *Game) AbyssJump() error {
@@ -411,9 +411,9 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 			}
 		}
 		if g.Player.Inventory.Body == CloakSmoke {
-			_, ok := g.Clouds[g.Player.P]
+			_, ok := g.Map.Clouds[g.Player.P]
 			if !ok && AllowsFog(g.Map.At(g.Player.P)) {
-				g.Clouds[g.Player.P] = CloudFog
+				g.Map.Clouds[g.Player.P] = CloudFog
 				g.PushEventD(&posEvent{P: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
 		}
@@ -439,9 +439,9 @@ func (g *Game) SwiftFog() {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
-		_, ok := g.Clouds[n.P]
+		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {
-			g.Clouds[n.P] = CloudFog
+			g.Map.Clouds[n.P] = CloudFog
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}

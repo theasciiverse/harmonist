@@ -170,10 +170,10 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		if mons := g.lastMonsterKnownAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
-		if g.Noise[p] {
+		if g.Map.Noise[p] {
 			r = '♫'
 			fgColor = ColorFgWanderingMonster
-		} else if g.NoiseIllusion[p] {
+		} else if g.Map.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
 		}
@@ -208,7 +208,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 				fgColor = mons.color(g)
 			}
 		}
-		if _, ok := g.MagicalBarriers[p]; ok {
+		if _, ok := g.Map.MagicalBarriers[p]; ok {
 			fgColor = ColorFgMagicPlace
 		}
 	case p == g.Player.P:
@@ -228,7 +228,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			fgColor = ColorFgWanderingMonster
 		}
 		infov := g.Player.Sees(p) || g.Wizard == WizardSeeAll
-		if cld, ok := g.Clouds[p]; ok && infov {
+		if cld, ok := g.Map.Clouds[p]; ok && infov {
 			r = '§'
 			switch cld {
 			case CloudFire:
@@ -243,10 +243,10 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 				r = m.Kind.Letter()
 				fgColor = m.color(g)
 			}
-		} else if g.Noise[p] {
+		} else if g.Map.Noise[p] {
 			r = '♫'
 			fgColor = ColorFgWanderingMonster
-		} else if g.NoiseIllusion[p] {
+		} else if g.Map.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
 		} else if mons := g.lastMonsterKnownAt(p); mons.Exists() {
