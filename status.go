@@ -372,10 +372,10 @@ func (md *model) updateStatusInfo() {
 	case md.mode == modeEnd:
 	default:
 		p := g.Player.P
-		c := g.Map.At(p)
-		if terrain(c) != GroundCell {
-			r, fg := c.Style(g, p)
-			if g.Illuminated(p) && c.IsIlluminable() && fg == ColorFgLOS {
+		t := g.Map.At(p)
+		if t != GroundCell {
+			r, fg := g.TerrainStyle(t, p)
+			if g.Illuminated(p) && IsIlluminable(t) && fg == ColorFgLOS {
 				fg = ColorFgLOSLight
 			}
 			entries = append(entries, ui.MenuEntry{

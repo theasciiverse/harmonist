@@ -27,8 +27,8 @@ func (mg *MapGen) WallCell() gruid.Point {
 		x := mg.rand.IntN(MapWidth)
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
-		c := d.At(p)
-		if terrain(c) == WallCell {
+		t := d.At(p)
+		if t == WallCell {
 			return p
 		}
 	}
@@ -37,14 +37,10 @@ func (mg *MapGen) WallCell() gruid.Point {
 // HasNonWallExploredNeighbor reports whether the given point is at the
 // exploration frontier.
 func (g *Game) HasNonWallExploredNeighbor(p gruid.Point) bool {
-	d := g.Map
 	neighbors := g.cardinalNeighbors(p)
 	for _, q := range neighbors {
-		c := d.At(q)
-		if t, ok := g.TerrainKnowledge[q]; ok {
-			c = t
-		}
-		if !c.IsWall() && explored(c) {
+		kt := g.Map.KnownTerrain.At(q)
+		if IsKnown(kt) && kt != WallCell {
 			return true
 		}
 	}
@@ -71,8 +67,11 @@ func (g *Game) genMap(ml maplayout) {
 	mg.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	mg.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	mg.layout = ml
-	m := &Map{}
-	m.Terrain = rl.NewGrid(MapWidth, MapHeight)
+	m := &Map{
+		Terrain:      rl.NewGrid(MapWidth, MapHeight),
+		KnownTerrain: rl.NewGrid(MapWidth, MapHeight),
+	}
+	m.KnownTerrain.Fill(Unknown)
 	mg.m = m
 	mg.tunnel = make(map[gruid.Point]bool)
 	mg.room = make(map[gruid.Point]bool)
@@ -159,15 +158,15 @@ func (g *Game) genMap(ml maplayout) {
 	mg.playerStart(g, places)
 	mg.clearUnconnected(g)
 	if mg.rand.IntN(10) > 0 {
-		var c Cell
+		var t rl.Cell
 		if mg.rand.IntN(5) > 1 {
-			c = ChasmCell
+			t = ChasmCell
 		} else {
-			c = WaterCell
+			t = WaterCell
 		}
-		mg.genLake(c)
+		mg.genLake(t)
 		if mg.rand.IntN(5) == 0 {
-			mg.genLake(c)
+			mg.genLake(t)
 		}
 	}
 	if g.Depth < MaxDepth {
@@ -183,7 +182,7 @@ func (g *Game) genMap(ml maplayout) {
 	}
 	mg.addSpecialFeatures(g, ml)
 	mg.PR.CCMapAll(newPather(func(p gruid.Point) bool {
-		return valid(p) && g.Map.At(p).IsPassable()
+		return valid(p) && Passable(g.Map.At(p))
 	}))
 	mg.genMonsters(g)
 	mg.putCavernCells()
@@ -361,7 +360,7 @@ func (mg *MapGen) connectRoomsShortestPath(i, j int) bool {
 		if !valid(p) {
 			panic(fmt.Sprintf("gruid.Point %v from %v to %v", p, e1pos, e2pos))
 		}
-		t := terrain(mg.m.At(p))
+		t := mg.m.At(p)
 		if t == WallCell || t == ChasmCell || t == GroundCell || t == FoliageCell {
 			mg.m.Set(p, GroundCell)
 			mg.tunnel[p] = true
@@ -485,17 +484,17 @@ func (mg *MapGen) putWindows(g *Game, n int) {
 // holed wall.
 func (g *Game) holedWallCandidate(p gruid.Point) bool {
 	d := g.Map
-	if !valid(p) || !d.At(p).IsWall() {
+	if !valid(p) || d.At(p) != WallCell {
 		return false
 	}
 	return valid(p.Add(gruid.Point{-1, 0})) && valid(p.Add(gruid.Point{1, 0})) &&
-		d.At(p.Add(gruid.Point{-1, 0})).IsWall() && d.At(p.Add(gruid.Point{1, 0})).IsWall() &&
-		valid(p.Add(gruid.Point{0, -1})) && d.At(p.Add(gruid.Point{0, -1})).IsPassable() &&
-		valid(p.Add(gruid.Point{0, 1})) && d.At(p.Add(gruid.Point{0, 1})).IsPassable() ||
+		d.At(p.Add(gruid.Point{-1, 0})) == WallCell && d.At(p.Add(gruid.Point{1, 0})) == WallCell &&
+		valid(p.Add(gruid.Point{0, -1})) && Passable(d.At(p.Add(gruid.Point{0, -1}))) &&
+		valid(p.Add(gruid.Point{0, 1})) && Passable(d.At(p.Add(gruid.Point{0, 1}))) ||
 		(valid(p.Add(gruid.Point{-1, 0})) && valid(p.Add(gruid.Point{1, 0})) &&
-			d.At(p.Add(gruid.Point{-1, 0})).IsPassable() && d.At(p.Add(gruid.Point{1, 0})).IsPassable() &&
-			valid(p.Add(gruid.Point{0, -1})) && d.At(p.Add(gruid.Point{0, -1})).IsWall() &&
-			valid(p.Add(gruid.Point{0, 1})) && d.At(p.Add(gruid.Point{0, 1})).IsWall())
+			Passable(d.At(p.Add(gruid.Point{-1, 0}))) && Passable(d.At(p.Add(gruid.Point{1, 0}))) &&
+			valid(p.Add(gruid.Point{0, -1})) && d.At(p.Add(gruid.Point{0, -1})) == WallCell &&
+			valid(p.Add(gruid.Point{0, 1})) && d.At(p.Add(gruid.Point{0, 1})) == WallCell)
 }
 
 // genShaedraCell places Shaedra, Marevor, and the monolith.
@@ -539,7 +538,7 @@ func (mg *MapGen) putCavernCells() {
 	it := mg.m.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		if terrain(Cell(it.Cell())) == GroundCell && !mg.room[p] && !mg.tunnel[p] {
+		if it.Cell() == GroundCell && !mg.room[p] && !mg.tunnel[p] {
 			d.Set(p, CavernCell)
 		}
 	}
@@ -548,7 +547,7 @@ func (mg *MapGen) putCavernCells() {
 // clearUnconnected ensures that no unconnected terrain remains.
 func (dg *MapGen) clearUnconnected(g *Game) {
 	d := dg.m
-	sp := newPather(func(p gruid.Point) bool { return d.At(p).IsPlayerPassable() })
+	sp := newPather(func(p gruid.Point) bool { return IsPlayerPassable(d.At(p)) })
 	dg.PR.CCMap(sp, g.Player.P)
 	mg := rl.MapGen{Grid: dg.m.Terrain}
 	mg.KeepCC(dg.PR, g.Player.P, rl.Cell(WallCell))
@@ -764,8 +763,8 @@ loop:
 	}
 loopnb:
 	for _, npos := range neighbors {
-		c := g.Map.At(npos)
-		if c.IsGround() {
+		t := g.Map.At(npos)
+		if IsGround(t) {
 			for _, pl := range r.places {
 				if npos == pl.p {
 					continue loopnb
@@ -804,8 +803,8 @@ func (mg *MapGen) genBanana(g *Game) {
 		x := mg.rand.IntN(MapWidth)
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
-		c := mg.m.At(p)
-		if terrain(c) == GroundCell && !mg.room[p] {
+		t := mg.m.At(p)
+		if t == GroundCell && !mg.room[p] {
 			mg.m.Set(p, BananaCell)
 			g.Objects.Bananas[p] = true
 			break
@@ -843,8 +842,8 @@ func (mg *MapGen) outsideGroundCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		c := mg.m.At(p)
-		if terrain(c) == GroundCell && !mg.room[p] {
+		t := mg.m.At(p)
+		if t == GroundCell && !mg.room[p] {
 			return p
 		}
 	}
@@ -866,11 +865,11 @@ func (mg *MapGen) outsideCavernMiddleCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		c := mg.m.At(p)
-		if terrain(c) == GroundCell && count < 400 || terrain(c) == FoliageCell && count < 350 {
+		t := mg.m.At(p)
+		if t == GroundCell && count < 400 || t == FoliageCell && count < 350 {
 			continue
 		}
-		if (c.IsGround() || terrain(c) == FoliageCell) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
+		if (IsGround(t) || t == FoliageCell) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -883,7 +882,7 @@ func (mg *MapGen) hasTooManyWallNeighbors(p gruid.Point) bool {
 	nbs := mg.neighbors.All(p, valid)
 	count := 8 - len(nbs)
 	for _, q := range nbs {
-		if !m.At(q).IsPassable() {
+		if !Passable(m.At(q)) {
 			count++
 		}
 	}
@@ -982,7 +981,7 @@ func (mg *MapGen) genFakeStairs(g *Game) {
 loop:
 	for i, r := range mg.rooms {
 		for _, pl := range r.places {
-			if terrain(mg.m.At(pl.p)) == StairCell {
+			if mg.m.At(pl.p) == StairCell {
 				continue loop
 			}
 		}
@@ -1085,8 +1084,8 @@ func (mg *MapGen) caveGroundCell() gruid.Point {
 		x := mg.rand.IntN(MapWidth)
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
-		c := mg.m.At(p)
-		if (terrain(c) == GroundCell || terrain(c) == CavernCell || terrain(c) == QueenRockCell) && !mg.room[p] {
+		t := mg.m.At(p)
+		if (t == GroundCell || t == CavernCell || t == QueenRockCell) && !mg.room[p] {
 			return p
 		}
 	}
@@ -1141,7 +1140,7 @@ func (dg *MapGen) runCellularAutomataCave() bool {
 }
 
 // genLake generates a lake using the given terrain for filling.
-func (mg *MapGen) genLake(c Cell) {
+func (mg *MapGen) genLake(fillt rl.Cell) {
 	walls := []gruid.Point{}
 	xshift := 10 + mg.rand.IntN(5)
 	yshift := 5 + mg.rand.IntN(3)
@@ -1151,8 +1150,8 @@ func (mg *MapGen) genLake(c Cell) {
 		if p.X < xshift || p.Y < yshift || p.X > MapWidth-xshift || p.Y > MapHeight-yshift {
 			continue
 		}
-		c := Cell(it.Cell())
-		if terrain(c) == WallCell && !mg.room[p] {
+		t := it.Cell()
+		if t == WallCell && !mg.room[p] {
 			walls = append(walls, p)
 		}
 	}
@@ -1162,7 +1161,7 @@ func (mg *MapGen) genLake(c Cell) {
 	d := mg.m
 	passable := func(p gruid.Point) func(q gruid.Point) bool {
 		return func(q gruid.Point) bool {
-			return valid(q) && terrain(mg.m.At(q)) == WallCell && !mg.room[q] && distance(p, q) < 10+mg.rand.IntN(10)
+			return valid(q) && mg.m.At(q) == WallCell && !mg.room[q] && distance(p, q) < 10+mg.rand.IntN(10)
 		}
 	}
 	for {
@@ -1180,7 +1179,7 @@ func (mg *MapGen) genLake(c Cell) {
 	}
 	sp := newPather(passable(bestpos))
 	for _, p := range mg.PR.CCMap(sp, bestpos) {
-		d.Set(p, c)
+		d.Set(p, fillt)
 	}
 }
 
@@ -1189,8 +1188,8 @@ func (mg *MapGen) genQueenRock() {
 	cavern := []gruid.Point{}
 	for i := range DungeonNCells {
 		p := idxtopos(i)
-		c := mg.m.At(p)
-		if terrain(c) == CavernCell {
+		t := mg.m.At(p)
+		if t == CavernCell {
 			cavern = append(cavern, p)
 		}
 	}
@@ -1200,7 +1199,7 @@ func (mg *MapGen) genQueenRock() {
 	for i := 0; i < 1+mg.rand.IntN(2); i++ {
 		p := cavern[RandInt(len(cavern))]
 		passable := func(q gruid.Point) bool {
-			return valid(q) && terrain(mg.m.At(q)) == CavernCell && distance(q, p) < 15+mg.rand.IntN(5)
+			return valid(q) && mg.m.At(q) == CavernCell && distance(q, p) < 15+mg.rand.IntN(5)
 		}
 		cp := newPather(passable)
 		for _, q := range mg.PR.CCMap(cp, p) {
@@ -1226,7 +1225,7 @@ func (dg *MapGen) foliage(less bool) {
 	it := dg.m.Terrain.Iterator()
 	itgd := gd.Iterator()
 	for it.Next() && itgd.Next() {
-		if terrain(Cell(it.Cell())) == GroundCell && Cell(itgd.Cell()) == FoliageCell {
+		if it.Cell() == GroundCell && itgd.Cell() == FoliageCell {
 			it.SetCell(rl.Cell(FoliageCell))
 		}
 	}
@@ -1315,7 +1314,7 @@ loop:
 			continue loop
 		}
 		for _, p := range block {
-			if terrain(d.At(p)) != GroundCell {
+			if d.At(p) != GroundCell {
 				d.Set(p, GroundCell)
 				cells++
 			}

@@ -10,12 +10,13 @@ import (
 
 // Map represents a map level.
 type Map struct {
-	Terrain rl.Grid
+	Terrain      rl.Grid // terrain
+	KnownTerrain rl.Grid // player's terrain knowledge
 }
 
 // At returns the terrain cell at the given point.
-func (m *Map) At(p gruid.Point) Cell {
-	return Cell(m.Terrain.At(p))
+func (m *Map) At(p gruid.Point) rl.Cell {
+	return m.Terrain.At(p)
 }
 
 // Border reports whether the given point is at map boundaries.
@@ -24,24 +25,34 @@ func (m *Map) Border(p gruid.Point) bool {
 }
 
 // Set updates terrain at given map point.
-func (m *Map) Set(p gruid.Point, c Cell) {
-	oc := m.At(p)
-	m.Terrain.Set(p, rl.Cell(c|oc&Explored))
-}
-
-// SetExplored marks a position as explored.
-func (m *Map) SetExplored(p gruid.Point) {
-	oc := m.At(p)
-	m.Terrain.Set(p, rl.Cell(oc|Explored))
+func (m *Map) Set(p gruid.Point, t rl.Cell) {
+	m.Terrain.Set(p, t)
 }
 
 // HasFreeNeighbor reports whether the given position has a free neighbor.
 func (m *Map) HasFreeNeighbor(nbs *paths.Neighbors, p gruid.Point) bool {
 	nb := nbs.Cardinal(p, valid)
 	for _, q := range nb {
-		if m.At(q).IsPassable() {
+		if Passable(m.At(q)) {
 			return true
 		}
 	}
 	return false
+}
+
+// IsKnown reports whether the terrain is known.
+func IsKnown(t rl.Cell) bool {
+	return t != Unknown && t != UnknownPassable
+}
+
+// Passable reports whether the given position is always passable. In other
+// words, that it's not some kind of obstacle.
+func (m *Map) Passable(p gruid.Point) bool {
+	return Passable(m.Terrain.At(p))
+}
+
+// NoWallAt reports whether the given position is not a (regular) wall.
+func (m *Map) NoWallAt(p gruid.Point) bool {
+	// Cells outside the map are considered as walls, so not walkable.
+	return m.Terrain.At(p) != WallCell
 }

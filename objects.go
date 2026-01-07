@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"sort"
 
 	"codeberg.org/anaseto/gruid"
 )
@@ -257,10 +256,11 @@ func (g *Game) ActivateEarthStone() {
 			draw, cost = false, n.Cost
 		}
 		t := g.Map.At(n.P)
-		if terrain(t) != WallCell {
+		if t != WallCell {
 			continue
 		}
-		if (!explored(t) || g.TerrainKnowledge[n.P] != WallCell) && g.Map.hasInteriorNeighbor(n.P) {
+		kt := g.Map.KnownTerrain.At(n.P)
+		if IsKnown(kt) && kt == WallCell && g.Map.hasInteriorNeighbor(n.P) {
 			g.SeeTerrainAt(n.P)
 			draw = true
 		}
@@ -290,11 +290,11 @@ func (m *Map) hasInteriorNeighbor(p gruid.Point) bool {
 // interiorWallAt reports whether there's an interior wall at the given
 // position (plain wall not connected to any non-wall tile).
 func (m *Map) interiorWallAt(p gruid.Point) bool {
-	if terrain(m.At(p)) != WallCell {
+	if m.At(p) != WallCell {
 		return false
 	}
 	for q := range Neighbors(p) {
-		if terrain(m.At(q)) != WallCell {
+		if m.At(q) != WallCell {
 			return false
 		}
 	}
@@ -410,40 +410,6 @@ func (g *Game) ActivateBarrelStone() {
 	g.PlacePlayerAt(p)
 }
 
-func (g *Game) MagicMapping(maxdist int) error {
-	dp := &mappingPath{g: g}
-	nodes := g.PR.BreadthFirstMap(dp, []gruid.Point{g.Player.P}, maxdist)
-	cdists := make(map[int][]int)
-	for _, n := range nodes {
-		cdists[n.Cost] = append(cdists[n.Cost], idx(n.P))
-	}
-	var dists []int
-	for dist := range cdists {
-		dists = append(dists, dist)
-	}
-	sort.Ints(dists)
-	for _, d := range dists {
-		if maxdist > 0 && d > maxdist {
-			continue
-		}
-		draw := false
-		for _, i := range cdists[d] {
-			p := idxtopos(i)
-			c := g.Map.At(p)
-			if !explored(c) {
-				g.Map.SetExplored(p)
-				g.SeeNotable(c, p)
-				draw = true
-			}
-		}
-		if draw {
-			g.md.MagicMappingAnimation()
-		}
-	}
-	g.Printf("You feel aware of your surroundings..")
-	return nil
-}
-
 func (g *Game) ActivateSensingStone() error {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && !g.Player.Sees(mons.P) {
@@ -553,7 +519,7 @@ const (
 func (st story) Desc(g *Game, p gruid.Point) (desc string) {
 	switch st {
 	case NoStory:
-		desc = GroundCell.Desc(g, p)
+		desc = g.TerrainDesc(GroundCell, p)
 	case StoryShaedra:
 		desc = "Shaedra is the friend you came here to rescue, a human-like creature with claws, a ternian. Many other human-like creatures consider them as savages."
 	case StoryMarevor:

@@ -22,8 +22,8 @@ func (m *Map) FreePassableCell() gruid.Point {
 		x := RandInt(MapWidth)
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
-		c := m.At(p)
-		if c.IsPassable() {
+		t := m.At(p)
+		if Passable(t) {
 			return p
 		}
 	}
@@ -32,13 +32,13 @@ func (m *Map) FreePassableCell() gruid.Point {
 func (m *Map) connex(pr *paths.PathRange) bool {
 	pos := m.FreePassableCell()
 	passable := func(p gruid.Point) bool {
-		return terrain(m.At(p)) != WallCell
+		return m.At(p) != WallCell
 	}
 	cp := newPather(passable)
 	pr.CCMap(cp, pos)
 	it := m.Terrain.Iterator()
 	for it.Next() {
-		if Cell(it.Cell()).IsPassable() && pr.CCMapAt(it.P()) == -1 {
+		if Passable(it.Cell()) && pr.CCMapAt(it.P()) == -1 {
 			return false
 		}
 	}
@@ -49,11 +49,11 @@ func (m *Map) String() string {
 	b := &bytes.Buffer{}
 	it := m.Terrain.Iterator()
 	for i := 0; it.Next(); i++ {
-		c := Cell(it.Cell())
+		t := it.Cell()
 		if i > 0 && i%MapWidth == 0 {
 			fmt.Fprint(b, "\n")
 		}
-		if terrain(c) == WallCell {
+		if t == WallCell {
 			fmt.Fprint(b, "#")
 		} else {
 			fmt.Fprint(b, ".")

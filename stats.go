@@ -2,6 +2,7 @@ package main
 
 import (
 	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/rl"
 )
 
 type stats struct {
@@ -76,12 +77,12 @@ func (g *Game) LevelStats() {
 	exp := 0
 	it := g.Map.Terrain.Iterator()
 	for it.Next() {
-		c := Cell(it.Cell())
-		if c.IsWall() || terrain(c) == ChasmCell {
+		t := it.Cell()
+		if t == WallCell || t == ChasmCell {
 			continue
 		}
 		free++
-		if explored(c) {
+		if IsKnown(g.Map.KnownTerrain.At(it.P())) {
 			exp++
 		}
 	}
@@ -171,8 +172,8 @@ func (ach achievement) Get(g *Game) {
 	}
 }
 
-func (c Cell) ReachNotable() bool {
-	switch terrain(c) {
+func ReachNotable(t rl.Cell) bool {
+	switch t {
 	case TreeCell, TableCell, HoledWallCell, DoorCell, BarrelCell:
 		return true
 	default:
@@ -185,8 +186,8 @@ func (g *Game) Reach(p gruid.Point) {
 		return
 	}
 	g.Stats.AtNotablePos[p] = true
-	c := g.Map.At(p)
-	switch terrain(c) {
+	t := g.Map.At(p)
+	switch t {
 	case TreeCell:
 		g.Stats.ClimbedTree++
 		if g.Stats.ClimbedTree == 12 {

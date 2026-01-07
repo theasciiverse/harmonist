@@ -7,15 +7,9 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-// Cell represents the various kinds of terrains. One bit is reserved for
-// exploration information. NOTE: that method for making explored terrain is a
-// bit awkward and having a separate grid for known terrain like in Shamogu
-// would be better, as it would help tracking mismatches with any out-of-view
-// terrain changes in explored parts, too.
-type Cell rl.Cell
-
+// The following constants represent the various kinds of terrains.
 const (
-	WallCell Cell = iota
+	WallCell rl.Cell = iota
 	GroundCell
 	DoorCell
 	FoliageCell
@@ -42,19 +36,13 @@ const (
 	PotionCell
 	QueenRockCell
 
-	Explored = 0b10000000
+	UnknownPassable // cell is known to be passable (for KnownTerrain field of Map)
+	Unknown         // cell is unknown (for KnownTerrain field of Map)
 )
 
-func terrain(c Cell) Cell {
-	return c &^ Explored
-}
-
-func explored(c Cell) bool {
-	return c&Explored != 0
-}
-
-func (c Cell) IsPassable() bool {
-	switch terrain(c) {
+// Passable reports whether a given terrain type is Passable (for any actor).
+func Passable(t rl.Cell) bool {
+	switch t {
 	case WallCell, DoorCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, StoryCell, ChasmCell, WaterCell:
 		return false
 	default:
@@ -62,17 +50,21 @@ func (c Cell) IsPassable() bool {
 	}
 }
 
-func (c Cell) IsJumpPassable() bool {
-	switch terrain(c) {
+// IsJumpPassable reports whether a given terrain type is passable, including
+// jump-passability.
+func IsJumpPassable(t rl.Cell) bool {
+	switch t {
 	case TableCell, ChasmCell, WaterCell, StoryCell:
 		return true
 	default:
-		return c.IsPassable()
+		return Passable(t)
 	}
 }
 
-func (c Cell) IsNormalPatrolWay() bool {
-	switch terrain(c) {
+// IsNormalPatrolWay reports whether patrols may usually go through that
+// terrain.
+func IsNormalPatrolWay(t rl.Cell) bool {
+	switch t {
 	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell, FakeStairCell:
 		return true
 	default:
@@ -80,35 +72,40 @@ func (c Cell) IsNormalPatrolWay() bool {
 	}
 }
 
-func (c Cell) IsLevitatePassable() bool {
-	switch terrain(c) {
-	case ChasmCell:
+// IsLevitatePassable reports whether the terrain is passable when levitating.
+func IsLevitatePassable(t rl.Cell) bool {
+	switch t {
+	case ChasmCell, WaterCell:
 		return true
 	default:
-		return c.IsPassable()
+		return Passable(t)
 	}
 }
 
-func (c Cell) IsDoorPassable() bool {
-	switch terrain(c) {
+// IsDoorPassable reports whether the terrain is passable or a door.
+func IsDoorPassable(t rl.Cell) bool {
+	switch t {
 	case DoorCell:
 		return true
 	default:
-		return c.IsPassable()
+		return Passable(t)
 	}
 }
 
-func (c Cell) IsSwimPassable() bool {
-	switch terrain(c) {
+// IsSwimPassable reports whether the terrain is passable or water.
+func IsSwimPassable(t rl.Cell) bool {
+	switch t {
 	case WaterCell:
 		return true
 	default:
-		return c.IsPassable()
+		return Passable(t)
 	}
 }
 
-func (c Cell) IsJumpPropulsion() bool {
-	switch terrain(c) {
+// IsJumpPropulsion reports whether the terrain may be used as jumping
+// propulsion.
+func IsJumpPropulsion(t rl.Cell) bool {
+	switch t {
 	case WallCell, WindowCell:
 		return true
 	default:
@@ -116,8 +113,9 @@ func (c Cell) IsJumpPropulsion() bool {
 	}
 }
 
-func (c Cell) IsEnclosing() bool {
-	switch terrain(c) {
+// IsEnclosing reports whether the terrain is closed and prevents jumping.
+func IsEnclosing(t rl.Cell) bool {
+	switch t {
 	case BarrelCell, TableCell, HoledWallCell:
 		return true
 	default:
@@ -125,8 +123,9 @@ func (c Cell) IsEnclosing() bool {
 	}
 }
 
-func (c Cell) AllowsFog() bool {
-	switch terrain(c) {
+// AllowsFog reports whether the terrain may be filled with fog.
+func AllowsFog(t rl.Cell) bool {
+	switch t {
 	case WallCell, HoledWallCell, WindowCell, StoryCell:
 		return false
 	default:
@@ -134,8 +133,9 @@ func (c Cell) AllowsFog() bool {
 	}
 }
 
-func (c Cell) CoversPlayer() bool {
-	switch terrain(c) {
+// CoversPlayer reports whether the terrain covers for the player (drawn on top).
+func CoversPlayer(t rl.Cell) bool {
+	switch t {
 	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell:
 		return true
 	default:
@@ -143,8 +143,10 @@ func (c Cell) CoversPlayer() bool {
 	}
 }
 
-func (c Cell) IsPlayerPassable() bool {
-	switch terrain(c) {
+// IsPlayerPassable reports whether the terrain is always passable by the
+// player.
+func IsPlayerPassable(t rl.Cell) bool {
+	switch t {
 	case WallCell, BarrierCell, WindowCell, ChasmCell:
 		return false
 	default:
@@ -152,8 +154,9 @@ func (c Cell) IsPlayerPassable() bool {
 	}
 }
 
-func (c Cell) IsDiggable() bool {
-	switch terrain(c) {
+// IsDiggable reports whether the terrain is some kind of diggable wall.
+func IsDiggable(t rl.Cell) bool {
+	switch t {
 	case WallCell, WindowCell, HoledWallCell:
 		return true
 	default:
@@ -161,8 +164,9 @@ func (c Cell) IsDiggable() bool {
 	}
 }
 
-func (c Cell) BlocksRange() bool {
-	switch terrain(c) {
+// BlocksRange reports whether the t errain blocks ranged attacks.
+func BlocksRange(t rl.Cell) bool {
+	switch t {
 	case WallCell, TreeCell, BarrierCell, WindowCell, StoryCell:
 		return true
 	default:
@@ -170,8 +174,9 @@ func (c Cell) BlocksRange() bool {
 	}
 }
 
-func (c Cell) Hides() bool {
-	switch terrain(c) {
+// Hides reports whether the terrain provides hiding for the player if behind.
+func Hides(t rl.Cell) bool {
+	switch t {
 	case WallCell, BarrelCell, TableCell, TreeCell, WindowCell, StoryCell:
 		return true
 	default:
@@ -179,16 +184,19 @@ func (c Cell) Hides() bool {
 	}
 }
 
-func (c Cell) IsIlluminable() bool {
-	switch terrain(c) {
+// IsIlluminable reports whether the terrain is illuminable.
+func IsIlluminable(t rl.Cell) bool {
+	switch t {
 	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell, ChasmCell, RubbleCell:
 		return false
 	}
 	return true
 }
 
-func (c Cell) IsDestructible() bool {
-	switch terrain(c) {
+// IsDestructible reports whether the terrain is destructible (diggable or
+// flammable).
+func IsDestructible(t rl.Cell) bool {
+	switch t {
 	case WallCell, BarrelCell, DoorCell, TableCell, TreeCell, HoledWallCell, WindowCell:
 		return true
 	default:
@@ -196,17 +204,9 @@ func (c Cell) IsDestructible() bool {
 	}
 }
 
-func (c Cell) IsWall() bool {
-	switch terrain(c) {
-	case WallCell:
-		return true
-	default:
-		return false
-	}
-}
-
-func (c Cell) Flammable() bool {
-	switch terrain(c) {
+// Flammable reports whether the terrain is flammable.
+func Flammable(t rl.Cell) bool {
+	switch t {
 	case FoliageCell, DoorCell, BarrelCell, TableCell, TreeCell:
 		return true
 	default:
@@ -214,8 +214,9 @@ func (c Cell) Flammable() bool {
 	}
 }
 
-func (c Cell) IsGround() bool {
-	switch terrain(c) {
+// IsGround reports whether the terrain is some kind of ground cell.
+func IsGround(t rl.Cell) bool {
+	switch t {
 	case GroundCell, CavernCell, BananaCell, PotionCell, QueenRockCell:
 		return true
 	default:
@@ -223,8 +224,9 @@ func (c Cell) IsGround() bool {
 	}
 }
 
-func (c Cell) IsNotable() bool {
-	switch terrain(c) {
+// IsNotable reports whether the terrain is notable (for log purposes).
+func IsNotable(t rl.Cell) bool {
+	switch t {
 	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell,
 		ScrollCell, ItemCell, FakeStairCell, PotionCell:
 		return true
@@ -233,8 +235,10 @@ func (c Cell) IsNotable() bool {
 	}
 }
 
-func (c Cell) ShortString(g *Game, p gruid.Point) (desc string) {
-	switch terrain(c) {
+// TerrainName returns the name of the terrain assuming it's at the given
+// positon.
+func (g *Game) TerrainName(t rl.Cell, p gruid.Point) (desc string) {
+	switch t {
 	case WallCell:
 		desc = "wall"
 	case GroundCell:
@@ -295,12 +299,18 @@ func (c Cell) ShortString(g *Game, p gruid.Point) (desc string) {
 		desc = g.Objects.Potions[p].String()
 	case QueenRockCell:
 		desc = "queen rock"
+	case UnknownPassable:
+		desc = "passable terrain"
+	default:
+		desc = "unknown terrain"
 	}
 	return desc
 }
 
-func (c Cell) ShortDesc(g *Game, p gruid.Point) (desc string) {
-	switch terrain(c) {
+// TerrainShortDesc returns the naming in a sentence of the terrain assuming
+// it's at the given positon.
+func (g *Game) TerrainShortDesc(t rl.Cell, p gruid.Point) (desc string) {
+	switch t {
 	case WallCell:
 		desc = "a wall"
 	case GroundCell:
@@ -361,12 +371,18 @@ func (c Cell) ShortDesc(g *Game, p gruid.Point) (desc string) {
 		desc = g.Objects.Potions[p].ShortDesc(g)
 	case QueenRockCell:
 		desc = "queen rock"
+	case UnknownPassable:
+		desc = "unknown passable terrain"
+	default:
+		desc = "unknown terrain"
 	}
 	return desc
 }
 
-func (c Cell) Desc(g *Game, p gruid.Point) (desc string) {
-	switch terrain(c) {
+// TerrainShortDesc returns the description of the terrain assuming it's at the
+// given positon.
+func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
+	switch t {
 	case WallCell:
 		desc = "A wall is an obstructing pile of rocks."
 	case GroundCell:
@@ -427,30 +443,34 @@ func (c Cell) Desc(g *Game, p gruid.Point) (desc string) {
 		desc = g.Objects.Potions[p].Desc(g)
 	case QueenRockCell:
 		desc = "Queen rock amplifies sounds. Even though you are usually very silent, monsters may hear your footsteps when walking on those rocks."
+	case UnknownPassable:
+		desc = "You heard some monster noise around there in the past."
+	case Unknown:
+		desc = "You do not known what is in there."
 	}
 	var autodesc string
-	if !c.IsPlayerPassable() {
+	if !IsPlayerPassable(t) {
 		autodesc += " It is impassable."
 	}
-	if c.Flammable() {
+	if Flammable(t) {
 		autodesc += " It is flammable."
 	}
-	if c.IsLevitatePassable() && !c.IsPassable() {
+	if IsLevitatePassable(t) && !Passable(t) {
 		autodesc += " It can be traversed with levitation."
 	}
-	if c.IsDiggable() && !c.IsPassable() {
+	if IsDiggable(t) && !Passable(t) {
 		autodesc += " It is diggable by oric destructive magic."
 	}
-	if c.IsSwimPassable() && !c.IsPassable() {
+	if IsSwimPassable(t) && !Passable(t) {
 		autodesc += " It is possible to traverse by swimming."
 	}
-	if c.BlocksRange() {
+	if BlocksRange(t) {
 		autodesc += " It blocks ranged attacks from foes."
 	}
-	if c.Hides() {
+	if Hides(t) {
 		autodesc += " You can hide just behind it."
 	}
-	if c.IsJumpPropulsion() {
+	if IsJumpPropulsion(t) {
 		autodesc += " You can use it to propel yourself with a jump."
 	}
 	if autodesc != "" {
@@ -459,8 +479,10 @@ func (c Cell) Desc(g *Game, p gruid.Point) (desc string) {
 	return desc
 }
 
-func (c Cell) Style(g *Game, p gruid.Point) (r rune, fg gruid.Color) {
-	switch terrain(c) {
+// TerrainStyle returns the styling information of the terrain assuming it's at
+// the given positon.
+func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
+	switch t {
 	case WallCell:
 		r, fg = '#', ColorFgLOS
 	case GroundCell:
@@ -520,6 +542,10 @@ func (c Cell) Style(g *Game, p gruid.Point) (r rune, fg gruid.Color) {
 		r, fg = g.Objects.Potions[p].Style(g)
 	case QueenRockCell:
 		r, fg = '‗', ColorFgLOS
+	case UnknownPassable:
+		r, fg = '♫', ColorFgLOS
+	case Unknown:
+		r, fg = ' ', ColorFgLOS
 	}
 	return r, fg
 }

@@ -37,7 +37,7 @@ func (dp *dungeonPath) Neighbors(p gruid.Point) []gruid.Point {
 }
 
 func (dp *dungeonPath) Cost(from, to gruid.Point) int {
-	if terrain(dp.dungeon.At(to)) == WallCell {
+	if dp.dungeon.At(to) == WallCell {
 		if dp.wcost > 0 {
 			return dp.wcost
 		}
@@ -74,7 +74,7 @@ type mappingPath struct {
 
 func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
 	d := dp.g.Map
-	if terrain(d.At(p)) == WallCell {
+	if d.At(p) == WallCell {
 		return nil
 	}
 	return dp.nbs.Cardinal(p, valid)
@@ -102,13 +102,13 @@ func (tp *tunnelPath) Cost(from, to gruid.Point) int {
 		return 50
 	}
 	cost := 1
-	c := tp.dg.m.At(from)
+	t := tp.dg.m.At(from)
 	if tp.dg.room[from] {
 		cost += 7
-	} else if !tp.dg.tunnel[from] && terrain(c) != GroundCell {
+	} else if !tp.dg.tunnel[from] && t != GroundCell {
 		cost++
 	}
-	if c.IsPassable() {
+	if Passable(t) {
 		return cost
 	}
 	wc := countWalls(tp.dg.m.Terrain, from, 1, true)
@@ -139,15 +139,16 @@ func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
 }
 
 func (g *Game) ppPassable(p gruid.Point) bool {
-	d := g.Map
-	t, okT := g.TerrainKnowledge[p]
-	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
+	if cld, ok := g.Clouds[p]; ok && cld == CloudFire && g.Player.Sees(p) {
 		return false
 	}
-	return valid(p) && (explored(d.At(p)) || g.Wizard == WizardSeeAll) && (d.At(p).IsPlayerPassable() && !okT ||
-		okT && t.IsPlayerPassable() ||
-		g.Player.HasStatus(StatusLevitation) && (t == BarrierCell || t == ChasmCell) ||
-		g.Player.HasStatus(StatusDig) && (d.At(p).IsDiggable() && !okT || (okT && t.IsDiggable())))
+	kt := g.Map.KnownTerrain.At(p)
+	if g.Wizard == WizardSeeAll {
+		kt = g.Map.Terrain.At(p)
+	}
+	return valid(p) && IsKnown(kt) && (IsPlayerPassable(kt) ||
+		g.Player.HasStatus(StatusLevitation) && (kt == BarrierCell || kt == ChasmCell) ||
+		g.Player.HasStatus(StatusDig) && IsDiggable(kt))
 }
 
 type jumpPath struct {
@@ -180,7 +181,7 @@ type noisePath struct {
 func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
 	d := fp.g.Map
 	keep := func(q gruid.Point) bool {
-		return valid(q) && terrain(d.At(q)) != WallCell
+		return valid(q) && d.At(q) != WallCell
 	}
 	return fp.nbs.Cardinal(p, keep)
 }
@@ -195,18 +196,17 @@ type autoexplorePath struct {
 }
 
 func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
-	d := ap.g.Map
+	d := ap.g.Map.KnownTerrain
 	keep := func(q gruid.Point) bool {
-		t, okT := ap.g.TerrainKnowledge[q]
-		if cld, ok := ap.g.Clouds[q]; ok && cld == CloudFire && (!okT || t != FoliageCell && t != DoorCell) {
+		kt := d.At(q)
+		if cld, ok := ap.g.Clouds[q]; ok && cld == CloudFire {
 			// XXX little info leak
 			return false
 		}
 		if !valid(q) {
 			return false
 		}
-		c := d.At(q)
-		return c.IsPlayerPassable() && (!okT && !c.IsWall() || !t.IsWall())
+		return IsPlayerPassable(kt) && kt != WallCell
 	}
 	nbs := ap.nbs.Cardinal(p, keep)
 	return nbs
@@ -239,8 +239,8 @@ func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
 		return false
 	}
 	g := mp.g
-	c := g.Map.At(p)
-	return m.CanPass(g, p) || c.IsDestructible()
+	t := g.Map.At(p)
+	return m.CanPass(g, p) || IsDestructible(t)
 }
 
 func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
@@ -248,8 +248,8 @@ func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
 	if !m.CanPass(mp.g, p) {
 		return false
 	}
-	c := mp.g.Map.At(p)
-	return c.IsNormalPatrolWay()
+	t := mp.g.Map.At(p)
+	return IsNormalPatrolWay(t)
 }
 
 func (mp *monPath) CanPass(p gruid.Point) bool {
@@ -270,8 +270,8 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 	g := mp.g
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
-		c := g.Map.At(to)
-		if mp.monster.Kind == MonsEarthDragon && c.IsDestructible() && !mp.monster.Status(MonsConfused) {
+		t := g.Map.At(to)
+		if mp.monster.Kind == MonsEarthDragon && IsDestructible(t) && !mp.monster.Status(MonsConfused) {
 			return 5
 		}
 		if to == g.Player.P && mp.monster.Kind.Peaceful() {
@@ -282,7 +282,7 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 				return 4
 			}
 		}
-		if mp.monster.Kind.Patrolling() && mp.monster.State != Hunting && !c.IsNormalPatrolWay() {
+		if mp.monster.Kind.Patrolling() && mp.monster.State != Hunting && !IsNormalPatrolWay(t) {
 			return 4
 		}
 		return 1

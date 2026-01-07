@@ -34,13 +34,12 @@ type Game struct {
 	Highlight          map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
 	Objects            Objects
 	Clouds             map[gruid.Point]Cloud
-	MagicalBarriers    map[gruid.Point]Cell
+	MagicalBarriers    map[gruid.Point]rl.Cell // original terrain (under the barrier)
 	GeneratedLore      map[int]bool
 	GeneratedMagaras   []magaraKind
 	GeneratedCloaks    []item
 	GeneratedAmulets   []item
 	GenPlan            [MaxDepth + 1]genFlavour
-	TerrainKnowledge   map[gruid.Point]Cell
 	Noise              map[gruid.Point]bool
 	NoiseIllusion      map[gruid.Point]bool
 	LastMonsterKnownAt map[gruid.Point]int
@@ -129,8 +128,8 @@ func (g *Game) FreePassableCell() gruid.Point {
 		x := RandInt(MapWidth)
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
-		c := d.At(p)
-		if !c.IsPassable() {
+		t := d.At(p)
+		if !Passable(t) {
 			continue
 		}
 		if g.Player != nil && g.Player.P == p {
@@ -387,8 +386,7 @@ func (g *Game) InitFirstLevel() {
 func (g *Game) InitLevelStructures() {
 	g.MonstersPosCache = make([]int, DungeonNCells)
 	g.Noise = map[gruid.Point]bool{}
-	g.TerrainKnowledge = map[gruid.Point]Cell{}
-	g.MagicalBarriers = map[gruid.Point]Cell{}
+	g.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.LastMonsterKnownAt = map[gruid.Point]int{}
 	g.Objects.Magaras = map[gruid.Point]magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
@@ -566,8 +564,8 @@ func (g *Game) Descend(style descendstyle) bool {
 			AchStealthMaster.Get(g)
 		}
 	}
-	c := g.Map.At(g.Player.P)
-	if terrain(c) == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
+	t := g.Map.At(g.Player.P)
+	if t == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
 		g.StoryPrint("Escaped!")
 		g.ExploredLevels = g.Depth
 		g.Depth = -1
@@ -688,6 +686,7 @@ type msgAuto int
 func (g *Game) EndTurn() {
 	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
 	for {
+		pp := g.Player.P
 		if g.Died() {
 			return
 		}
@@ -708,6 +707,10 @@ func (g *Game) EndTurn() {
 			ev.Handle(g)
 		default:
 			log.Printf("bad event: %v", ev)
+		}
+		if g.Player.P != pp {
+			g.ComputeLOS()
+			pp = g.Player.P
 		}
 	}
 }

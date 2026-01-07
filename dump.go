@@ -288,11 +288,11 @@ func (g *Game) DumpStory() string {
 
 func (g *Game) DumpDungeon() string {
 	buf := bytes.Buffer{}
-	it := g.Map.Terrain.Iterator()
+	it := g.Map.KnownTerrain.Iterator()
 	i := 0
 	for it.Next() {
 		p := it.P()
-		c := Cell(it.Cell())
+		kt := it.Cell()
 		if i%MapWidth == 0 {
 			if i == 0 {
 				buf.WriteRune('│')
@@ -300,7 +300,7 @@ func (g *Game) DumpDungeon() string {
 				buf.WriteString("│\n│")
 			}
 		}
-		if !explored(c) {
+		if !IsKnown(kt) {
 			buf.WriteRune(' ')
 			if i == DungeonNCells-1 {
 				buf.WriteString("│\n")
@@ -310,7 +310,7 @@ func (g *Game) DumpDungeon() string {
 		}
 		var r rune
 		// XXX this can be simplified
-		switch terrain(c) {
+		switch kt {
 		case WallCell:
 			r = '#'
 		default:
@@ -318,7 +318,7 @@ func (g *Game) DumpDungeon() string {
 			case p == g.Player.P:
 				r = '@'
 			default:
-				r, _ = c.Style(g, p)
+				r, _ = g.TerrainStyle(kt, p)
 				if _, ok := g.Clouds[p]; ok && g.Player.LOS[p] {
 					r = '§'
 				}

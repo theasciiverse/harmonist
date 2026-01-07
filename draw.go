@@ -144,7 +144,11 @@ func (md *model) drawMap(gd gruid.Grid) {
 
 func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.Color) {
 	g := md.g
-	c := g.Map.At(p)
+	t := g.Map.At(p)
+	kt := g.Map.KnownTerrain.At(p)
+	if g.Wizard == WizardSeeAll || g.Wizard == WizardMap {
+		kt = t
+	}
 	if g.Wizard == WizardMap {
 		fgColor, bgColor = ColorFgLOS, ColorBgLOS
 		if len(g.nonWallNeighbors(p)) == 0 {
@@ -152,11 +156,11 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			bgColor = ColorBgDark
 			return
 		}
-		r, fgColor = c.Style(g, p)
+		r, fgColor = g.TerrainStyle(kt, p)
 		return
 	}
 	fgColor, bgColor = ColorFg, ColorBg
-	if !explored(c) && (g.Wizard == WizardNone || g.Wizard == WizardNormal) {
+	if !IsKnown(kt) && (g.Wizard == WizardNone || g.Wizard == WizardNormal) {
 		r = ' '
 		bgColor = ColorBgDark
 		if g.HasNonWallExploredNeighbor(p) {
@@ -176,7 +180,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		return
 	}
 	if g.Wizard == WizardSeeAll {
-		if terrain(c) == WallCell {
+		if t == WallCell {
 			if len(g.nonWallNeighbors(p)) == 0 {
 				r = ' '
 				return
@@ -190,13 +194,10 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		fgColor = ColorFgDark
 		bgColor = ColorBgDark
 	}
-	if trkn, okTrkn := g.TerrainKnowledge[p]; okTrkn && g.Wizard != WizardSeeAll {
-		c = trkn | c&Explored
-	}
 	var fgTerrain gruid.Color
 	switch {
-	case c.CoversPlayer():
-		r, fgTerrain = c.Style(g, p)
+	case CoversPlayer(kt):
+		r, fgTerrain = g.TerrainStyle(kt, p)
 		if p == g.Player.P {
 			fgColor = ColorFgPlayer
 		} else if fgTerrain != ColorFgLOS {
@@ -215,7 +216,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		fgColor = ColorFgPlayer
 	default:
 		// XXX: maybe some wrong knowledge issues
-		r, fgTerrain = c.Style(g, p)
+		r, fgTerrain = g.TerrainStyle(kt, p)
 		if fgTerrain != ColorFgLOS {
 			fgColor = fgTerrain
 		}
@@ -251,7 +252,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if mons := g.lastMonsterKnownAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
-		if g.Player.Sees(p) && fgColor == ColorFgLOS && g.Illuminated(p) && c.IsIlluminable() {
+		if g.Player.Sees(p) && fgColor == ColorFgLOS && g.Illuminated(p) && IsIlluminable(t) {
 			fgColor = ColorFgLOSLight
 		}
 	}

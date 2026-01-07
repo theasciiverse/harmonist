@@ -32,13 +32,13 @@ func (g *Game) AllExplored() bool {
 	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		c := Cell(it.Cell())
-		if c.IsWall() {
+		t := it.Cell()
+		if t == WallCell {
 			if len(np.Neighbors(p)) == 0 {
 				continue
 			}
 		}
-		if !explored(c) {
+		if !IsKnown(g.Map.KnownTerrain.At(p)) {
 			return false
 		}
 	}
@@ -51,13 +51,13 @@ func (g *Game) AutoexploreSources() []gruid.Point {
 	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		c := Cell(it.Cell())
-		if c.IsWall() {
+		t := it.Cell()
+		if t == WallCell {
 			if len(np.Neighbors(p)) == 0 {
 				continue
 			}
 		}
-		if !explored(c) || g.Player.Bananas < MaxBananas && g.Objects.Bananas[p] {
+		if !IsKnown(g.Map.KnownTerrain.At(p)) || g.Player.Bananas < MaxBananas && g.Objects.Bananas[p] {
 			// TODO: add more sources (potions, magaras) in some cases.
 			g.autosources = append(g.autosources, p)
 		}

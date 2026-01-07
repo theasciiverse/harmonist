@@ -41,7 +41,7 @@ func (ev *playerEvent) Handle(g *Game) {
 		g.ComputeLOS()
 		g.md.Story()
 	case AbyssFall:
-		if terrain(g.Map.At(g.Player.P)) == ChasmCell {
+		if g.Map.At(g.Player.P) == ChasmCell {
 			g.FallAbyss(DescendFall)
 		}
 	}
@@ -74,7 +74,7 @@ func (sev *statusEvent) Handle(g *Game) {
 		g.md.StatusEndAnimation()
 		switch st {
 		case StatusLevitation:
-			if terrain(g.Map.At(g.Player.P)) == ChasmCell {
+			if g.Map.At(g.Player.P) == ChasmCell {
 				g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 			}
 		case StatusLignification:
@@ -148,21 +148,9 @@ func (cev *posEvent) Handle(g *Game) {
 		delete(g.Clouds, cev.P)
 		g.ComputeLOS()
 	case ObstructionEnd:
-		t := g.MagicalBarriers[cev.P]
-		if terrain(g.Map.At(cev.P)) == BarrierCell {
-			_, ok := g.TerrainKnowledge[cev.P]
-			if !ok {
-				g.UpdateKnowledge(cev.P, BarrierCell)
-			}
+		if t, ok := g.MagicalBarriers[cev.P]; ok {
+			g.Map.Set(cev.P, t)
 		}
-		if g.Player.Sees(cev.P) {
-			delete(g.MagicalBarriers, cev.P)
-			delete(g.TerrainKnowledge, cev.P)
-		}
-		if terrain(g.Map.At(cev.P)) != BarrierCell {
-			break
-		}
-		g.Map.Set(cev.P, t)
 	case ObstructionProgression:
 		p := g.FreePassableCell()
 		g.MagicalBarrierAt(p)
@@ -211,15 +199,14 @@ func (cev *posEvent) Handle(g *Game) {
 		it := g.Map.Terrain.Iterator()
 		for it.Next() {
 			p := it.P()
-			c := Cell(it.Cell())
-			if !c.IsDiggable() || !g.Map.HasFreeNeighbor(&g.nbs, p) {
+			t := it.Cell()
+			if !IsDiggable(t) || !g.Map.HasFreeNeighbor(&g.nbs, p) {
 				continue
 			}
 			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
 			g.Map.Set(p, RubbleCell)
-			g.UpdateKnowledge(p, terrain(c))
 			g.Fog(p, 1)
 		}
 	case DelayedHarmonicNoiseEvent:
@@ -253,10 +240,9 @@ func (g *Game) OricExplosion(at gruid.Point) {
 	g.MakeNoise(OricExplosionNoise, at)
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, 7)
 	fogs := []gruid.Point{}
-	terrains := []Cell{}
 	for _, n := range nodes {
-		c := g.Map.At(n.P)
-		if !c.IsDiggable() {
+		t := g.Map.At(n.P)
+		if !IsDiggable(t) {
 			continue
 		}
 		g.Map.Set(n.P, RubbleCell)
@@ -265,15 +251,14 @@ func (g *Game) OricExplosion(at gruid.Point) {
 			g.md.WallExplosionAnimation(n.P)
 		}
 		fogs = append(fogs, n.P)
-		terrains = append(terrains, terrain(c))
+		if IsKnown(g.Map.KnownTerrain.At(n.P)) {
+			g.Map.KnownTerrain.Set(n.P, RubbleCell)
+		}
 	}
 	for _, p := range fogs {
 		g.Fog(p, 1)
 	}
 	g.ComputeLOS()
-	for i, p := range fogs {
-		g.UpdateKnowledge(p, terrains[i])
-	}
 }
 
 func (g *Game) NightFog(at gruid.Point, radius int) {
@@ -317,12 +302,12 @@ func (g *Game) Burn(p gruid.Point) {
 	if _, ok := g.Clouds[p]; ok {
 		return
 	}
-	c := g.Map.At(p)
-	if !c.Flammable() {
+	t := g.Map.At(p)
+	if !Flammable(t) {
 		return
 	}
 	g.Stats.Burns++
-	switch terrain(c) {
+	switch t {
 	case DoorCell:
 		g.Print("The door vanishes in magical flames.")
 	case TableCell:
@@ -335,9 +320,7 @@ func (g *Game) Burn(p gruid.Point) {
 	}
 	g.Map.Set(p, GroundCell)
 	g.Clouds[p] = CloudFire
-	if !g.Player.Sees(p) {
-		g.UpdateKnowledge(p, terrain(c))
-	} else {
+	if g.Player.Sees(p) {
 		g.ComputeLOS()
 	}
 	g.PushEventD(&posEvent{P: p, Action: FireProgression}, DurationCloudProgression)

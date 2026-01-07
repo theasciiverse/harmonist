@@ -610,8 +610,8 @@ func (mg *MapGen) insideCell(g *Game) gruid.Point {
 		if distance(p, g.Player.P) < DefaultLOSRange {
 			continue
 		}
-		c := mg.m.At(p)
-		if mg.room[p] && (terrain(c) == FoliageCell || terrain(c) == GroundCell) {
+		t := mg.m.At(p)
+		if mg.room[p] && (t == FoliageCell || t == GroundCell) {
 			return p
 		}
 	}
@@ -645,11 +645,11 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		c := mg.m.At(p)
-		if terrain(c) == GroundCell && count < 400 {
+		t := mg.m.At(p)
+		if t == GroundCell && count < 400 {
 			continue
 		}
-		if c.IsGround() && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
+		if IsGround(t) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -709,8 +709,8 @@ func (mg *MapGen) outsideCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		c := mg.m.At(p)
-		if !mg.room[p] && (terrain(c) == FoliageCell || terrain(c) == GroundCell) {
+		t := mg.m.At(p)
+		if !mg.room[p] && (t == FoliageCell || t == GroundCell) {
 			return p
 		}
 	}
@@ -741,8 +741,8 @@ func (mg *MapGen) foliageCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		c := mg.m.At(p)
-		if terrain(c) == FoliageCell {
+		t := mg.m.At(p)
+		if t == FoliageCell {
 			return p
 		}
 	}
@@ -760,8 +760,8 @@ func (g *Game) freeCellForMonster() gruid.Point {
 		x := RandInt(MapWidth)
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
-		c := d.At(p)
-		if !c.IsPassable() {
+		t := d.At(p)
+		if !Passable(t) {
 			continue
 		}
 		if g.Player != nil && distance(g.Player.P, p) < 8 {
@@ -795,7 +795,7 @@ func (g *Game) freeCellForBandMonster(p gruid.Point) gruid.Point {
 			continue
 		}
 		mons := g.MonsterAt(p)
-		if mons.Exists() || !g.Map.At(p).IsPassable() {
+		if mons.Exists() || !Passable(g.Map.At(p)) {
 			continue
 		}
 		return p

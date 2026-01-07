@@ -197,7 +197,7 @@ func (g *Game) MonsterCount() (count int) {
 }
 
 func (g *Game) Rest() error {
-	if terrain(g.Map.At(g.Player.P)) != BarrelCell {
+	if g.Map.At(g.Player.P) != BarrelCell {
 		return fmt.Errorf("This place is not safe for sleeping.")
 	}
 	if cld, ok := g.Clouds[g.Player.P]; ok && cld == CloudFire {
@@ -266,11 +266,11 @@ const MaxBananas = 4
 
 func (g *Game) CollectGround() {
 	p := g.Player.P
-	c := g.Map.At(p)
-	if c.IsNotable() {
+	t := g.Map.At(p)
+	if IsNotable(t) {
 		g.autoexploreMapRebuild = true
 	switchcell:
-		switch terrain(c) {
+		switch t {
 		case BarrelCell:
 			// TODO: move here message
 		case BananaCell:
@@ -308,12 +308,12 @@ func (g *Game) CollectGround() {
 		case PotionCell:
 			g.DrinkPotion(p)
 		default:
-			g.Printf("You are standing over %s.", c.ShortDesc(g, p))
+			g.Printf("You are standing over %s.", g.TerrainShortDesc(t, p))
 		}
-	} else if terrain(c) == DoorCell {
+	} else if t == DoorCell {
 		g.Print("You stand at the door.")
 	}
-	if terrain(c).ReachNotable() {
+	if ReachNotable(t) {
 		g.Reach(p)
 	}
 }
@@ -361,17 +361,17 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 	if !valid(p) {
 		return again, errors.New("You cannot move there.")
 	}
-	c := g.Map.At(p)
+	t := g.Map.At(p)
 	switch {
-	case terrain(c) == BarrierCell && !g.Player.HasStatus(StatusLevitation):
+	case t == BarrierCell && !g.Player.HasStatus(StatusLevitation):
 		return again, errors.New("You cannot move into a magical barrier.")
-	case terrain(c) == WindowCell && !g.Player.HasStatus(StatusDig):
+	case t == WindowCell && !g.Player.HasStatus(StatusDig):
 		return again, errors.New("You cannot pass through the closed window.")
-	case terrain(c) == BarrelCell && g.MonsterLOS[g.Player.P]:
+	case t == BarrelCell && g.MonsterLOS[g.Player.P]:
 		return again, errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(p)
-	if c.IsJumpPropulsion() && !g.Player.HasStatus(StatusDig) {
+	if IsJumpPropulsion(t) && !g.Player.HasStatus(StatusDig) {
 		err := g.WallJump(p)
 		if err != nil {
 			return again, err
@@ -380,20 +380,20 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		if g.Player.HasStatus(StatusLignification) {
 			return again, errors.New("You cannot move while lignified.")
 		}
-		if terrain(c) == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
+		if t == ChasmCell && !g.Player.HasStatus(StatusLevitation) {
 			again = true
 			return again, g.AbyssJump()
 		}
-		if terrain(c) == BarrelCell {
+		if t == BarrelCell {
 			g.Print("You hide yourself inside the barrel.")
-		} else if terrain(c) == TableCell {
+		} else if t == TableCell {
 			g.Print("You hide yourself under the table.")
-		} else if terrain(c) == TreeCell {
+		} else if t == TreeCell {
 			g.Print("You climb to the top.")
-		} else if terrain(c) == HoledWallCell {
+		} else if t == HoledWallCell {
 			g.Print("You crawl under the wall.")
 		}
-		if c.IsDiggable() && terrain(c) != HoledWallCell {
+		if IsDiggable(t) && t != HoledWallCell {
 			g.Map.Set(p, RubbleCell)
 			g.MakeNoise(WallNoise, p)
 			g.Print(g.CrackSound())
@@ -412,7 +412,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		}
 		if g.Player.Inventory.Body == CloakSmoke {
 			_, ok := g.Clouds[g.Player.P]
-			if !ok && g.Map.At(g.Player.P).AllowsFog() {
+			if !ok && AllowsFog(g.Map.At(g.Player.P)) {
 				g.Clouds[g.Player.P] = CloudFog
 				g.PushEventD(&posEvent{P: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
@@ -440,7 +440,7 @@ func (g *Game) SwiftFog() {
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
 		_, ok := g.Clouds[n.P]
-		if !ok && g.Map.At(n.P).AllowsFog() {
+		if !ok && AllowsFog(g.Map.At(n.P)) {
 			g.Clouds[n.P] = CloudFog
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
@@ -471,7 +471,7 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 		m.MoveTo(g, ppos)
 		m.Swapped = true
 	}
-	if terrain(g.Map.At(g.Player.P)) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
+	if g.Map.At(g.Player.P) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
 		g.MakeNoise(QueenRockFootstepNoise, g.Player.P)
 		g.Print("Tap-tap.")
 	}
@@ -525,31 +525,21 @@ func (g *Game) PutFakeStatus(st status, duration int) bool {
 	return true
 }
 
-func (g *Game) UpdateKnowledge(p gruid.Point, c Cell) {
-	if g.Player.Sees(p) {
-		return
-	}
-	_, ok := g.TerrainKnowledge[p]
-	if !ok {
-		g.TerrainKnowledge[p] = c
-	}
-}
-
 func (g *Game) PlayerCanPass(p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
-	c := g.Map.At(p)
-	return c.IsPlayerPassable() ||
-		g.Player.HasStatus(StatusLevitation) && (terrain(c) == BarrierCell || c.IsLevitatePassable()) ||
-		g.Player.HasStatus(StatusDig) && c.IsDiggable()
+	t := g.Map.At(p)
+	return IsPlayerPassable(t) ||
+		g.Player.HasStatus(StatusLevitation) && (t == BarrierCell || IsLevitatePassable(t)) ||
+		g.Player.HasStatus(StatusDig) && IsDiggable(t)
 }
 
 func (g *Game) PlayerCanJumpPass(p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
-	c := g.Map.At(p)
-	return c.IsJumpPassable() ||
-		g.Player.HasStatus(StatusLevitation) && terrain(c) == BarrierCell
+	t := g.Map.At(p)
+	return IsJumpPassable(t) ||
+		g.Player.HasStatus(StatusLevitation) && t == BarrierCell
 }

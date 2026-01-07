@@ -531,14 +531,6 @@ func (md *model) PushAnimation(path []gruid.Point) {
 	md.anims.Frame(AnimDurMediumLong)
 }
 
-func (md *model) MagicMappingAnimation() {
-	if DisableAnimations {
-		return
-	}
-	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
-}
-
 func (md *model) AbyssFallAnimation() {
 	if DisableAnimations {
 		return

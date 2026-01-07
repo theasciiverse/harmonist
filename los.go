@@ -49,8 +49,8 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		return distance(to, from)
 	}
 	// from terrain specific costs
-	c := terrain(Cell(g.Map.Terrain.AtU(from)))
-	if c == WallCell {
+	t := g.Map.Terrain.AtU(from)
+	if t == WallCell {
 		return wallcost
 	}
 	if _, ok := g.Clouds[from]; ok {
@@ -61,7 +61,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	if opaque {
 		return wallcost
 	}
-	switch c {
+	switch t {
 	case DoorCell:
 		if from != src {
 			mons := g.MonsterAt(from)
@@ -72,7 +72,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	case FoliageCell, HoledWallCell:
 		switch rs {
 		case TreePlayerRay:
-			if c == FoliageCell {
+			if t == FoliageCell {
 				break
 			}
 			fallthrough
@@ -87,7 +87,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		}
 		return cost
 	}
-	if rs == TreePlayerRay && c == WindowCell && distance(src, from) >= DefaultLOSRange {
+	if rs == TreePlayerRay && t == WindowCell && distance(src, from) >= DefaultLOSRange {
 		return wallcost - distance(src, from) - 1
 	}
 	return distance(to, from)
@@ -136,7 +136,7 @@ func (g *Game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
 		if ok {
 			continue
 		}
-		switch terrain(Cell(g.Map.Terrain.AtU(p))) {
+		switch g.Map.Terrain.AtU(p) {
 		case WindowCell:
 			hard = false
 		case WallCell, HoledWallCell:
@@ -184,7 +184,7 @@ func (g *Game) Illuminated(p gruid.Point) bool {
 }
 
 func (g *Game) blocksSSCLOS(p gruid.Point) bool {
-	return terrain(g.Map.At(p)) != WallCell
+	return g.Map.At(p) != WallCell
 }
 
 func (g *Game) ComputeLOS() {
@@ -195,7 +195,7 @@ func (g *Game) ComputeLOS() {
 	c := g.Map.At(g.Player.P)
 	rs := NormalPlayerRay
 	maxDepth := DefaultLOSRange
-	if terrain(c) == TreeCell {
+	if c == TreeCell {
 		rs = TreePlayerRay
 		maxDepth = TreeRange
 	}
@@ -214,11 +214,11 @@ func (g *Game) ComputeLOS() {
 		}
 		if n.Cost <= DefaultLOSRange {
 			g.Player.LOS[n.P] = true
-		} else if terrain(c) == TreeCell && g.Illuminated(n.P) && n.Cost <= TreeRange {
-			if terrain(g.Map.At(n.P)) == WallCell {
+		} else if c == TreeCell && g.Illuminated(n.P) && n.Cost <= TreeRange {
+			if g.Map.At(n.P) == WallCell {
 				// this is just an approximation, but ok in practice
 				nb := nbs.All(n.P, func(npos gruid.Point) bool {
-					if !valid(npos) || !g.Illuminated(npos) || g.Map.At(npos).IsWall() {
+					if !valid(npos) || !g.Illuminated(npos) || g.Map.At(npos) == WallCell {
 						return false
 					}
 					cost, ok := g.Player.FOV.At(npos)
@@ -240,7 +240,6 @@ func (g *Game) ComputeLOS() {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
 			mons.ComputeLOS(g) // approximation of what the monster will see for player info purposes
-			mons.UpdateKnowledge(g, mons.P)
 			if mons.Seen {
 				g.StopAuto()
 				continue
@@ -292,17 +291,17 @@ func (m *Monster) ComputeLOS(g *Game) {
 			m.LOS[n.P] = true
 			continue
 		}
-		if n.Cost <= DefaultMonsterLOSRange && terrain(g.Map.At(n.P)) != BarrelCell {
+		if n.Cost <= DefaultMonsterLOSRange && g.Map.At(n.P) != BarrelCell {
 			pnode, ok := g.mfov.From(lt, n.P)
-			if !ok || !g.Map.At(pnode.P).Hides() {
+			if !ok || !Hides(g.Map.At(pnode.P)) {
 				m.LOS[n.P] = true
 			}
 		}
 	}
 }
 
-func (g *Game) SeeNotable(c Cell, p gruid.Point) {
-	switch terrain(c) {
+func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
+	switch t {
 	case MagaraCell:
 		mag := g.Objects.Magaras[p]
 		dp := &mappingPath{g: g}
@@ -375,45 +374,44 @@ func (g *Game) SeePosition(p gruid.Point) {
 
 // SeeTerrainAt reveals terrain at position p to the player.
 func (g *Game) SeeTerrainAt(p gruid.Point) {
-	c := g.Map.At(p)
-	t, okT := g.TerrainKnowledge[p]
-	if !explored(c) {
+	t := g.Map.Terrain.At(p)
+	kt := g.Map.KnownTerrain.At(p)
+	switch kt {
+	case Unknown, UnknownPassable:
 		see := "see"
 		if !g.Player.Sees(p) {
 			see = "sense"
 		}
-		if c.IsNotable() {
-			g.PrintfStyled("You %s %s.", logNotable, see, c.ShortDesc(g, p))
+		if IsNotable(t) {
+			g.PrintfStyled("You %s %s.", logNotable, see, g.TerrainShortDesc(t, p))
 			g.StopAuto()
+			g.SeeNotable(t, p)
 		}
-		g.Map.SetExplored(p)
-		g.SeeNotable(c, p)
-		g.autoexploreMapRebuild = true
-	} else {
+	default:
 		// XXX this can be improved to handle more terrain types changes
-		if okT && t == WallCell && terrain(c) != WallCell {
+		if t == WallCell && kt != WallCell {
 			g.Printf("There is no longer a wall there.")
 			g.StopAuto()
 			g.autoexploreMapRebuild = true
-		}
-		if cld, ok := g.Clouds[p]; ok && cld == CloudFire && okT && (t == FoliageCell || t == DoorCell) {
+		} else if cld, ok := g.Clouds[p]; ok && cld == CloudFire && t != kt && Flammable(kt) {
 			g.Printf("There are flames there.")
 			g.StopAuto()
 			g.autoexploreMapRebuild = true
 		}
 	}
-	if okT {
-		delete(g.TerrainKnowledge, p)
-		if c.IsPlayerPassable() {
-			delete(g.MagicalBarriers, p)
-		}
+	if kt != t {
+		g.autoexploreMapRebuild = true
+		g.Map.KnownTerrain.Set(p, t)
+	}
+	if t != BarrierCell {
+		delete(g.MagicalBarriers, p)
 	}
 }
 
 func (g *Game) Ray(p gruid.Point) []gruid.Point {
-	c := g.Map.At(g.Player.P)
+	t := g.Map.At(g.Player.P)
 	rs := NormalPlayerRay
-	if terrain(c) == TreeCell {
+	if t == TreeCell {
 		rs = TreePlayerRay
 	}
 	lt := &lighter{rs: rs, g: g}
@@ -443,7 +441,7 @@ func (g *Game) ComputeNoise() {
 		}
 		mons := g.MonsterAt(n.P)
 		if mons.Exists() && mons.State != Resting && mons.State != Watching &&
-			(RandInt(rmax) > 0 || terrain(g.Map.At(mons.P)) == QueenRockCell) {
+			(RandInt(rmax) > 0 || g.Map.At(mons.P) == QueenRockCell) {
 			switch mons.Kind {
 			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
 				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
@@ -515,11 +513,11 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 	if m.State == Resting && distance(m.P, p) > 1 {
 		return false
 	}
-	c := g.Map.At(p)
-	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !c.IsIlluminable()) && distance(m.P, p) > darkRange {
+	t := g.Map.At(p)
+	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !IsIlluminable(t)) && distance(m.P, p) > darkRange {
 		return false
 	}
-	if terrain(c) == TableCell && distance(m.P, p) > tableRange {
+	if t == TableCell && distance(m.P, p) > tableRange {
 		return false
 	}
 	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(p) && distance(m.P, p) > 1 {
@@ -552,7 +550,7 @@ func (g *Game) ComputeMonsterLOS() {
 		g.Player.Statuses[StatusUnhidden] = 0
 		g.Player.Statuses[StatusHidden] = 1
 	}
-	if g.Illuminated(g.Player.P) && g.Map.At(g.Player.P).IsIlluminable() {
+	if g.Illuminated(g.Player.P) && IsIlluminable(g.Map.At(g.Player.P)) {
 		g.Player.Statuses[StatusLight] = 1
 	} else {
 		g.Player.Statuses[StatusLight] = 0
@@ -564,11 +562,12 @@ func (g *Game) ComputeLights() {
 		g.LightFOV = rl.NewFOV(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	}
 	sources := []gruid.Point{}
+	pt := g.Map.At(g.Player.P)
 	for lpos, on := range g.Objects.Lights {
 		if !on {
 			continue
 		}
-		if distance(lpos, g.Player.P) > DefaultLOSRange+LightRange && terrain(g.Map.At(g.Player.P)) != TreeCell {
+		if distance(lpos, g.Player.P) > DefaultLOSRange+LightRange && pt != TreeCell {
 			continue
 		}
 		sources = append(sources, lpos)
@@ -577,7 +576,7 @@ func (g *Game) ComputeLights() {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
-		if distance(mons.P, g.Player.P) > DefaultLOSRange+LightRange && terrain(g.Map.At(g.Player.P)) != TreeCell {
+		if distance(mons.P, g.Player.P) > DefaultLOSRange+LightRange && pt != TreeCell {
 			continue
 		}
 		sources = append(sources, mons.P)

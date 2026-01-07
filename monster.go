@@ -524,12 +524,12 @@ func (m *Monster) CanPass(g *Game, p gruid.Point) bool {
 	if !valid(p) {
 		return false
 	}
-	c := g.Map.At(p)
-	return c.IsPassable() ||
-		c.IsDoorPassable() && m.Kind.CanOpenDoors() ||
-		c.IsLevitatePassable() && m.Kind.CanFly() ||
-		c.IsSwimPassable() && (m.Kind.CanSwim() || m.Kind.CanFly()) ||
-		terrain(c) == HoledWallCell && m.Kind.Size() == MonsSmall
+	t := g.Map.At(p)
+	return Passable(t) ||
+		IsDoorPassable(t) && m.Kind.CanOpenDoors() ||
+		IsLevitatePassable(t) && m.Kind.CanFly() ||
+		IsSwimPassable(t) && (m.Kind.CanSwim() || m.Kind.CanFly()) ||
+		t == HoledWallCell && m.Kind.Size() == MonsSmall
 }
 
 func (m *Monster) StartWatching() {
@@ -619,18 +619,18 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 		}
 		g.StopAuto()
 	}
-	recomputeLOS := g.Player.Sees(m.P) && terrain(g.Map.At(m.P)) == DoorCell ||
-		g.Player.Sees(p) && terrain(g.Map.At(p)) == DoorCell
+	recomputeLOS := g.Player.Sees(m.P) && g.Map.At(m.P) == DoorCell ||
+		g.Player.Sees(p) && g.Map.At(p) == DoorCell
 	m.PlaceAt(g, p)
 	if recomputeLOS {
 		g.ComputeLOS()
 	}
-	c := g.Map.At(p)
-	if terrain(c) == ChasmCell && !m.Kind.CanFly() || terrain(c) == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
+	t := g.Map.At(p)
+	if t == ChasmCell && !m.Kind.CanFly() || t == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
 		m.Dead = true
 		if g.Player.Sees(m.P) {
 			g.HandleKill(m)
-			switch terrain(c) {
+			switch t {
 			case ChasmCell:
 				g.Printf("%s falls into the abyss.", m.Kind.Definite(true))
 			case WaterCell:
@@ -738,8 +738,8 @@ func (m *Monster) Explode(g *Game) {
 	g.md.ExplosionAnimation(FireExplosion, m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
 	for _, p := range append(neighbors, m.P) {
-		c := g.Map.At(p)
-		if c.Flammable() {
+		t := g.Map.At(p)
+		if Flammable(t) {
 			g.Burn(p)
 		}
 		mons := g.MonsterAt(p)
@@ -750,17 +750,16 @@ func (m *Monster) Explode(g *Game) {
 			}
 		} else if g.Player.P == p {
 			m.InflictDamage(g, 1, 1)
-		} else if c.IsDestructible() && RandInt(3) > 0 {
-			if c.IsDiggable() {
+		} else if IsDestructible(t) && RandInt(3) > 0 {
+			if IsDiggable(t) {
 				g.Map.Set(p, RubbleCell)
 			} else {
 				g.Map.Set(p, GroundCell)
 			}
-			if terrain(c) == BarrelCell {
+			if t == BarrelCell {
 				delete(g.Objects.Barrels, p)
 			}
 			g.Stats.Digs++
-			g.UpdateKnowledge(p, terrain(c))
 			if g.Player.Sees(p) {
 				g.md.WallExplosionAnimation(p)
 			}
@@ -768,6 +767,7 @@ func (m *Monster) Explode(g *Game) {
 			g.Fog(p, 1)
 		}
 	}
+	g.ComputeLOS()
 }
 
 func (m *Monster) NaturalAwake(g *Game) {
@@ -789,8 +789,8 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 		if !valid(nbpos) {
 			continue
 		}
-		c := g.Map.At(nbpos)
-		if c.IsPassable() {
+		t := g.Map.At(nbpos)
+		if Passable(t) {
 			fnb = append(fnb, nbpos)
 		}
 	}
@@ -946,8 +946,6 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 				g.Objects.Lights[m.P] = true
 				if g.Player.Sees(m.P) {
 					g.Printf("%s makes a new fire.", m.Kind.Definite(true))
-				} else {
-					g.UpdateKnowledge(m.P, ExtinguishedLightCell)
 				}
 				return true
 			} else if !on && m.SeesLight(g, p) {
@@ -1001,7 +999,6 @@ func (m *Monster) HandleWatching(g *Game) {
 }
 
 func (m *Monster) ComputePath(g *Game) {
-
 	if !(len(m.Path) > 0 && m.Path[len(m.Path)-1] == m.Target && m.Path[0] == m.P) {
 		m.Path = m.APath(g, m.P, m.Target)
 		if len(m.Path) == 0 && !m.Status(MonsConfused) {
@@ -1075,7 +1072,7 @@ func (m *Monster) HandleMove(g *Game) bool {
 	if mons.Exists() && len(mons.Path) >= 2 {
 		monstarget = mons.Path[1]
 	}
-	c := g.Map.At(target)
+	t := g.Map.At(target)
 	switch {
 	case m.Peaceful(g) && target == g.Player.P:
 		switch m.Kind {
@@ -1085,20 +1082,19 @@ func (m *Monster) HandleMove(g *Game) bool {
 			m.Path = m.APath(g, m.P, m.Target)
 		}
 	case !mons.Exists():
-		if m.Kind == MonsEarthDragon && c.IsDestructible() {
+		if m.Kind == MonsEarthDragon && IsDestructible(t) {
 			g.Map.Set(target, RubbleCell)
-			if terrain(c) == BarrelCell {
+			if t == BarrelCell {
 				delete(g.Objects.Barrels, target)
 			}
 			g.Stats.Digs++
-			g.UpdateKnowledge(target, terrain(c))
 			g.MakeNoise(WallNoise, m.P)
 			g.Fog(m.P, 1)
 			if distance(g.Player.P, target) < 12 {
 				// XXX use dijkstra distance ?
-				if c.IsWall() {
+				if t == WallCell {
 					g.Printf("%s You hear an earth-splitting noise.", g.CrackSound())
-				} else if terrain(c) == BarrelCell || terrain(c) == DoorCell || terrain(c) == TableCell {
+				} else if t == BarrelCell || t == DoorCell || t == TableCell {
 					g.Printf("%s You hear an wood-splitting noise.", g.CrackSound())
 				}
 				g.StopAuto()
@@ -1181,12 +1177,12 @@ func (m *Monster) handleTurn(g *Game) {
 	if m.HandleMonsSpecifics(g) {
 		return
 	}
-	if distance(mpos, ppos) == 1 && terrain(g.Map.At(ppos)) != BarrelCell && !m.Peaceful(g) {
+	if distance(mpos, ppos) == 1 && g.Map.At(ppos) != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
 			return
 		}
-		if terrain(g.Map.At(ppos)) == TreeCell && !m.Kind.CanAttackOnTree() {
+		if g.Map.At(ppos) == TreeCell && !m.Kind.CanAttackOnTree() {
 			g.Printf("%s watches you from below.", m.Kind.Definite(true))
 			return
 		}
@@ -1214,19 +1210,17 @@ func (m *Monster) InvertFoliage(g *Game) {
 		return
 	}
 	invert := false
-	c := g.Map.At(m.P)
-	if terrain(c) == CavernCell {
+	t := g.Map.At(m.P)
+	if t == CavernCell {
 		g.Map.Set(m.P, FoliageCell)
 		invert = true
-	} else if terrain(c) == FoliageCell {
+	} else if t == FoliageCell {
 		g.Map.Set(m.P, CavernCell)
 		invert = true
 	}
 	if invert {
 		if g.Player.Sees(m.P) {
 			g.ComputeLOS()
-		} else {
-			g.UpdateKnowledge(m.P, terrain(c))
 		}
 	}
 }
@@ -1353,15 +1347,15 @@ func (m *Monster) HitSideEffects(g *Game) {
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
 		}
-		c := g.Map.At(g.Player.P)
-		if !(c.IsPassable() || c.IsSwimPassable() || c.IsDoorPassable() || c.IsLevitatePassable()) {
+		t := g.Map.At(g.Player.P)
+		if !(Passable(t) || IsSwimPassable(t) || IsDoorPassable(t) || IsLevitatePassable(t)) {
 			break
 		}
 		g.PlacePlayerAt(m.P)
 		g.PrintStyled("The flying milfid makes you swap positions.", logNotable)
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
-		if terrain(g.Map.At(g.Player.P)) == ChasmCell {
+		if g.Map.At(g.Player.P) == ChasmCell {
 			g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 		}
 	case MonsTinyHarpy:
@@ -1395,7 +1389,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 		i++
 		q = q.Add(dir)
 		path = append(path, q)
-		if !valid(q) || g.Map.At(q).BlocksRange() {
+		if !valid(q) || BlocksRange(g.Map.At(q)) {
 			path = path[:len(path)-1]
 			break
 		}
@@ -1413,7 +1407,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 		return
 	}
 	g.Stats.TimesPushed++
-	c := g.Map.At(p)
+	t := g.Map.At(p)
 	var cs string
 	if m.Kind == MonsEarthDragon {
 		cs = " inadvertently"
@@ -1425,7 +1419,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 	g.PlacePlayerAt(p)
 	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
-	if terrain(c) == ChasmCell {
+	if t == ChasmCell {
 		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 	}
 }
@@ -1479,8 +1473,8 @@ func (m *Monster) RangeBlocked(g *Game) bool {
 		return true
 	}
 	for _, p := range ray[1:] {
-		c := g.Map.At(p)
-		if c.BlocksRange() {
+		t := g.Map.At(p)
+		if BlocksRange(t) {
 			return true
 		}
 		mons := g.MonsterAt(p)
@@ -1532,9 +1526,9 @@ func (m *Monster) CreateBarrier(g *Game) bool {
 	candidates := g.BarrierCandidates(g.Player.P, dir)
 	done := false
 	for _, p := range candidates {
-		c := g.Map.At(p)
+		t := g.Map.At(p)
 		mons := g.MonsterAt(p)
-		if mons.Exists() || c.IsWall() {
+		if mons.Exists() || !IsLevitatePassable(t) {
 			continue
 		}
 		g.MagicalBarrierAt(p)
@@ -1646,7 +1640,7 @@ func (m *Monster) NixeAttraction(g *Game) bool {
 		return false
 	}
 	ray := g.Ray(m.P)
-	if len(ray) <= 1 || !g.Map.At(ray[1]).IsPlayerPassable() {
+	if len(ray) <= 1 || !IsPlayerPassable(g.Map.At(ray[1])) {
 		return false
 	}
 	g.MakeNoise(MagicCastNoise, m.P)

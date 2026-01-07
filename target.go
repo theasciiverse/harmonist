@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/rl"
 	"codeberg.org/anaseto/gruid/ui"
 )
 
@@ -86,7 +87,7 @@ type posInfo struct {
 	Sees    bool
 	Player  bool
 	Monster *Monster
-	Cell    Cell
+	Cell    rl.Cell
 	Cloud   string
 	Lighted bool
 }
@@ -117,7 +118,7 @@ func (md *model) drawPosInfo() {
 
 	features := []string{}
 	if !info.Unknown {
-		features = append(features, info.Cell.ShortString(g, info.P))
+		features = append(features, g.TerrainName(info.Cell, info.P))
 		if info.Cloud != "" && info.Sees {
 			features = append(features, info.Cloud)
 		}
@@ -144,7 +145,7 @@ func (md *model) drawPosInfo() {
 	if info.Unknown {
 		desc = "You do not know what is in there."
 	} else {
-		desc = info.Cell.Desc(g, info.P)
+		desc = g.TerrainDesc(info.Cell, info.P)
 	}
 
 	if info.Player {
@@ -259,12 +260,12 @@ func (md *model) updatePosInfo() {
 	case g.Wizard == WizardMap:
 		pi.Cell = g.Map.At(p)
 		pi.Sees = true
-		if g.Illuminated(p) && pi.Cell.IsIlluminable() {
+		if g.Illuminated(p) && IsIlluminable(pi.Cell) {
 			pi.Lighted = true
 		}
 		md.targ.ex.info = pi
 		return
-	case !explored(g.Map.At(p)) && g.Wizard != WizardSeeAll:
+	case !IsKnown(g.Map.KnownTerrain.At(p)) && g.Wizard != WizardSeeAll:
 		pi.Unknown = true
 		if g.Noise[p] || g.NoiseIllusion[p] {
 			pi.Noise = true
@@ -280,9 +281,9 @@ func (md *model) updatePosInfo() {
 	}
 	infov := g.Player.Sees(p) || g.Wizard == WizardSeeAll
 	pi.Sees = infov
-	c := g.Map.At(p)
-	if t, ok := g.TerrainKnowledge[p]; ok && g.Wizard != WizardSeeAll {
-		c = t | c&Explored
+	t := g.Map.KnownTerrain.At(p)
+	if g.Wizard == WizardSeeAll {
+		t = g.Map.At(p)
 	}
 	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
@@ -292,8 +293,8 @@ func (md *model) updatePosInfo() {
 	if cld, ok := g.Clouds[p]; ok && infov {
 		pi.Cloud = cld.String()
 	}
-	pi.Cell = c
-	if g.Illuminated(p) && c.IsIlluminable() && infov {
+	pi.Cell = t
+	if infov && g.Illuminated(p) && IsIlluminable(t) {
 		pi.Lighted = true
 	}
 	if g.Noise[p] || g.NoiseIllusion[p] {
@@ -317,19 +318,22 @@ func (g *Game) computePathHighlight(p gruid.Point) {
 func (md *model) target() error {
 	g := md.g
 	p := md.targ.ex.p
-	c := g.Map.At(p)
-	expl := explored(c) || g.Wizard == WizardSeeAll
+	t := g.Map.KnownTerrain.At(p)
+	if g.Wizard == WizardSeeAll {
+		t = g.Map.At(p)
+	}
+	expl := IsKnown(t)
 	if !expl {
 		return errors.New("You do not know this place.")
 	}
-	if terrain(c) == WallCell && !g.Player.HasStatus(StatusDig) {
+	if t == WallCell && !g.Player.HasStatus(StatusDig) {
 		return errors.New("You cannot travel into a wall.")
 	}
 	path := g.PlayerPath(g.Player.P, p)
 	if len(path) == 0 {
 		return errors.New("There is no safe path to this place.")
 	}
-	if expl && terrain(c) != WallCell {
+	if expl && t != WallCell {
 		g.autoTarget = p
 		return nil
 	}
@@ -422,11 +426,13 @@ func (md *model) nextStair(data *examination) {
 
 func (g *Game) getStairs() []gruid.Point {
 	stairs := []gruid.Point{}
-	it := g.Map.Terrain.Iterator()
-	seeStairs := g.Wizard == WizardSeeAll || g.Wizard == WizardMap
+	it := g.Map.KnownTerrain.Iterator()
+	if g.Wizard == WizardSeeAll || g.Wizard == WizardMap {
+		it = g.Map.Terrain.Iterator()
+	}
 	for it.Next() {
-		c := Cell(it.Cell())
-		if (terrain(c) != StairCell && terrain(c) != FakeStairCell) || !explored(c) && !seeStairs {
+		t := it.Cell()
+		if t != StairCell && t != FakeStairCell {
 			continue
 		}
 		stairs = append(stairs, it.P())
@@ -456,7 +462,7 @@ func (md *model) nextObject(np gruid.Point, data *examination) {
 		if nobject > len(data.objects)-1 {
 			nobject = 0
 		}
-		if explored(g.Map.At(p)) || seeObjects {
+		if IsKnown(g.Map.KnownTerrain.At(p)) || seeObjects {
 			np = p
 			break
 		}
