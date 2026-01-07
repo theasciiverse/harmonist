@@ -867,7 +867,7 @@ func (mg *MapGen) outsideCavernMiddleCell(g *Game) gruid.Point {
 		if t == GroundCell && count < 400 || t == FoliageCell && count < 350 {
 			continue
 		}
-		if (IsGround(t) || t == FoliageCell) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
+		if IsGround(t) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
 		}
 	}

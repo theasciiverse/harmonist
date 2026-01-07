@@ -786,10 +786,7 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if t == GroundCell && count < 400 {
-			continue
-		}
-		if IsGround(t) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
+		if (t == GroundCell || t == CavernCell) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
 		}
 	}

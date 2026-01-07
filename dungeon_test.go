@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"math/rand/v2"
 	"testing"
 
 	"codeberg.org/anaseto/gruid"
@@ -65,7 +64,7 @@ func (m *Map) String() string {
 func TestAutomataCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &Game{}
-		g.initrand()
+		g.Init()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenMapWithLayout(AutomataCave)
@@ -78,7 +77,7 @@ func TestAutomataCave(t *testing.T) {
 func TestRandomWalkCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &Game{}
-		g.initrand()
+		g.Init()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenMapWithLayout(RandomWalkCave)
@@ -91,7 +90,7 @@ func TestRandomWalkCave(t *testing.T) {
 func TestRandomWalkTreeCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &Game{}
-		g.initrand()
+		g.Init()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenMapWithLayout(RandomWalkTreeCave)
@@ -104,7 +103,7 @@ func TestRandomWalkTreeCave(t *testing.T) {
 func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &Game{}
-		g.initrand()
+		g.Init()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenMapWithLayout(RandomSmallWalkCaveUrbanised)
@@ -114,16 +113,10 @@ func TestRandomSmallWalkCaveUrbanised(t *testing.T) {
 	}
 }
 
-func (g *Game) initrand() {
-	if g.rand == nil {
-		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
-	}
-}
-
 func TestNaturalCave(t *testing.T) {
 	for i := 0; i < Rounds; i++ {
 		g := &Game{}
-		g.initrand()
+		g.Init()
 		g.InitFirstLevel()
 		g.InitLevelStructures()
 		g.GenMapWithLayout(NaturalCave)

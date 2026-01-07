@@ -4,6 +4,8 @@ This release is a polish release with various UI improvements, most of them
 inspired from Shamogu.
 
 * Update to latest gruid version and require Go 1.24 or later.
+* In native builds, rename game statistic's dump file to `dump.txt`
+  so that it's clearer that the file is text, unlike the other ones.
 * Change color of out-of-view monster memory to light grey unless the monster
   was resting, to make it clearer that it's out of view (inspired from a
   similar change in Shamogu).
@@ -22,10 +24,14 @@ inspired from Shamogu.
   and end of game summary pager windows.
 * Some tile drawings have been improved, including some improvements from
   Shamogu, like a more visible `?` sign on the exploration frontier.
+
+Fixes:
+
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
-* In native builds, rename game statistic's dump file to `dump.txt`
-  so that it's clearer that the file is text, unlike the other ones.
+* Prevent satowalga plants to ever be generated on top of a banana (that made
+  swapping the only way to get a banana, which was kind of fun, but it was a
+  bit confusing).
 
 # v0.6.0 2025-03-05
 

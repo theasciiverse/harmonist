@@ -10,11 +10,12 @@ func init() {
 }
 
 func TestInitLevel(t *testing.T) {
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		md := &model{}
 		g := &Game{md: md}
 		md.g = g
-		for depth := 0; depth < MaxDepth; depth++ {
+		g.Init()
+		for range MaxDepth {
 			g.InitLevel()
 			if g.Player.P == invalidPos {
 				t.Errorf("Player starting cell is not valid")
@@ -81,24 +82,27 @@ func TestInitLevel(t *testing.T) {
 
 func BenchmarkLOS(b *testing.B) {
 	g := &Game{}
+	g.Init()
 	g.InitLevel()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		g.ComputeLOS()
 	}
 }
 
 func BenchmarkLights(b *testing.B) {
 	g := &Game{}
+	g.Init()
 	g.InitLevel()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		g.ComputeLights()
 	}
 }
 
 func BenchmarkInitLevel(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		g := &Game{}
-		for depth := 0; depth < MaxDepth; depth++ {
+		g.Init()
+		for range MaxDepth {
 			g.InitLevel()
 			g.Map.Depth++
 		}
@@ -109,8 +113,9 @@ func BenchmarkEndTurn(b *testing.B) {
 	md := &model{}
 	g := &Game{md: md}
 	md.g = g
+	g.Init()
 	g.InitLevel()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		g.EndTurn()
 		if g.Player.HP == 0 {
 			g.Player.HP = 10
@@ -135,8 +140,9 @@ func BenchmarkEndTurnPlayer(b *testing.B) {
 	md := &model{}
 	g := &Game{md: md}
 	md.g = g
+	g.Init()
 	g.InitLevel()
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		g.EndTurn()
 		g.PlayerBump(randomPlayerNeighbor(g.Player.P)) // wait if impossible
 		if g.Player.HP == 0 {

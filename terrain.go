@@ -214,10 +214,11 @@ func Flammable(t rl.Cell) bool {
 	}
 }
 
-// IsGround reports whether the terrain is some kind of ground cell.
+// IsGround reports whether the terrain is some kind of ground cell
+// (with no special features).
 func IsGround(t rl.Cell) bool {
 	switch t {
-	case GroundCell, CavernCell, BananaCell, PotionCell, QueenRockCell:
+	case GroundCell, CavernCell, QueenRockCell:
 		return true
 	default:
 		return false
