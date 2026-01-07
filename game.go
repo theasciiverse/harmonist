@@ -193,7 +193,7 @@ func (g *Game) InitPlayer() {
 	g.Player.LOS = map[gruid.Point]bool{}
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
-	g.Player.Magaras = []magara{
+	g.Player.Magaras = []Magara{
 		{},
 		{},
 		{},
@@ -388,7 +388,7 @@ func (g *Game) InitLevelStructures() {
 	g.Noise = map[gruid.Point]bool{}
 	g.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.LastMonsterKnownAt = map[gruid.Point]int{}
-	g.Objects.Magaras = map[gruid.Point]magara{}
+	g.Objects.Magaras = map[gruid.Point]Magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
 	g.Objects.Items = map[gruid.Point]item{}
 	g.Objects.Scrolls = map[gruid.Point]scroll{}

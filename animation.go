@@ -610,13 +610,13 @@ func (md *model) FreeingShaedra() {
 }
 
 func (g *Game) RescuedShaedra() {
-	g.Player.Magaras = append(g.Player.Magaras, magara{})
+	g.Player.Magaras = append(g.Player.Magaras, Magara{})
 	g.Player.Inventory.Misc = NoItem
 	g.PrintStyled("You equip the new magara in the artifact’s old place.", logSpecial)
 	if RandInt(2) == 0 {
-		g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
+		g.Player.Magaras[len(g.Player.Magaras)-1] = Magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
 	} else {
-		g.Player.Magaras[len(g.Player.Magaras)-1] = magara{Kind: DelayedOricExplosionMagara, Charges: DelayedOricExplosionMagara.DefaultCharges()}
+		g.Player.Magaras[len(g.Player.Magaras)-1] = Magara{Kind: DelayedOricExplosionMagara, Charges: DelayedOricExplosionMagara.DefaultCharges()}
 	}
 	AchRescuedShaedra.Get(g)
 }

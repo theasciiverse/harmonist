@@ -14,7 +14,7 @@ type Player struct {
 	HPbonus int
 	MP      int
 	Bananas int
-	Magaras []magara
+	Magaras []Magara
 	Dir     gruid.Point
 	//Aptitudes map[aptitude]bool
 	Statuses  map[status]int

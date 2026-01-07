@@ -3,11 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"slices"
 
 	"codeberg.org/anaseto/gruid"
 )
 
-type magara struct {
+// Magara represents a magara.
+type Magara struct {
 	Kind    magaraKind
 	Charges int
 }
@@ -41,7 +43,9 @@ const (
 	//BarrierMagara
 )
 
-func (mag magara) Harmonic() bool {
+// Harmonist reports whether the magara is of harmonic nature (for achievement
+// purposes).
+func (mag Magara) Harmonic() bool {
 	switch mag.Kind {
 	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara,
 		SleepingMagara, ParalysisMagara, TransparencyMagara, DisguiseMagara,
@@ -52,7 +56,9 @@ func (mag magara) Harmonic() bool {
 	}
 }
 
-func (mag magara) Oric() bool {
+// Oric reports whether the magara is of oric nature (for achievement
+// purposes).
+func (mag Magara) Oric() bool {
 	switch mag.Kind {
 	case BlinkMagara, DigMagara, TeleportMagara, LevitationMagara,
 		TeleportOtherMagara, SwappingMagara, ObstructionMagara,
@@ -63,6 +69,7 @@ func (mag magara) Oric() bool {
 	}
 }
 
+// DefaultCharges returns the default number of charges for a magara kind.
 func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
@@ -76,7 +83,8 @@ func (m magaraKind) DefaultCharges() int {
 	}
 }
 
-func (g *Game) RandomStartingMagara() magara {
+// RandomStartingMagara returns a random starting magara.
+func (g *Game) RandomStartingMagara() Magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
@@ -94,10 +102,11 @@ loop:
 		}
 		break
 	}
-	return magara{Kind: mag, Charges: mag.DefaultCharges()}
+	return Magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
-func (g *Game) RandomMagara() magara {
+// RandomMagara returns a random magara that hasn't been generated yet.
+func (g *Game) RandomMagara() Magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
@@ -108,16 +117,15 @@ func (g *Game) RandomMagara() magara {
 loop:
 	for {
 		mag = mags[RandInt(len(mags))]
-		for _, m := range g.GeneratedMagaras {
-			if m == mag {
-				continue loop
-			}
+		if slices.Contains(g.GeneratedMagaras, mag) {
+			continue loop
 		}
 		break
 	}
-	return magara{Kind: mag, Charges: mag.DefaultCharges()}
+	return Magara{Kind: mag, Charges: mag.DefaultCharges()}
 }
 
+// EquipMagara equips the the magara on the ground on the given slot index.
 func (g *Game) EquipMagara(i int) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.P]
@@ -128,11 +136,12 @@ func (g *Game) EquipMagara(i int) (err error) {
 	return nil
 }
 
-func (g *Game) UseMagara(n int) (err error) {
+// UseMagara uses the given magara by slot index.
+func (g *Game) UseMagara(i int) (err error) {
 	if g.Player.HasStatus(StatusConfusion) {
 		return errors.New("You cannot use magaras while confused.")
 	}
-	mag := g.Player.Magaras[n]
+	mag := g.Player.Magaras[i]
 	if mag.Kind == NoMagara {
 		return errors.New("You cannot evoke an empty slot!")
 	}
@@ -195,8 +204,8 @@ func (g *Game) UseMagara(n int) (err error) {
 	g.Stats.UsedMagaras[mag.Kind]++
 	g.Stats.DMagaraUses[g.Depth]++
 	g.Player.MP -= mag.MPCost(g)
-	g.Player.Magaras[n].Charges--
-	g.StoryPrintf("Evoked %s (MP: %d, Charges: %d)", mag, g.Player.MP, g.Player.Magaras[n].Charges)
+	g.Player.Magaras[i].Charges--
+	g.StoryPrintf("Evoked %s (MP: %d, Charges: %d)", mag, g.Player.MP, g.Player.Magaras[i].Charges)
 	if mag.Harmonic() {
 		g.Stats.HarmonicMagUse++
 		if g.Stats.HarmonicMagUse == 6 {
@@ -241,7 +250,7 @@ func (g *Game) UseMagara(n int) (err error) {
 	return nil
 }
 
-func (mag magara) String() (desc string) {
+func (mag Magara) String() (desc string) {
 	switch mag.Kind {
 	case NoMagara:
 		desc = "empty slot"
@@ -293,14 +302,17 @@ func (mag magara) String() (desc string) {
 	return desc
 }
 
-func (mag magara) ShortDesc() string {
+// ShortDesc returns a short description of the magara for use in the evocation
+// menu.
+func (mag Magara) ShortDesc() string {
 	if mag.Kind == NoMagara {
 		return mag.String()
 	}
 	return fmt.Sprintf("%s (%d)", mag.String(), mag.Charges)
 }
 
-func (mag magara) Desc(g *Game) (desc string) {
+// Desc provides a long description for the magara.
+func (mag Magara) Desc(g *Game) (desc string) {
 	switch mag.Kind {
 	case NoMagara:
 		return "You do not have a magara equipped on this slot yet."
@@ -388,7 +400,8 @@ func (mag magara) Desc(g *Game) (desc string) {
 	return fmt.Sprintf("The %s %s", mag, desc)
 }
 
-func (mag magara) MPCost(g *Game) int {
+// MPCost returns the MP cost of the magara (usually 1).
+func (mag Magara) MPCost(g *Game) int {
 	if mag.Kind == NoMagara || mag.Kind == EnergyMagara {
 		return 0
 	}
@@ -404,6 +417,7 @@ func (g *Game) EvokeBlink() error {
 	return nil
 }
 
+// Blink makes the player blink away.
 func (g *Game) Blink() bool {
 	if g.Player.HasStatus(StatusLignification) {
 		return false
@@ -425,6 +439,7 @@ func (g *Game) Blink() bool {
 	return true
 }
 
+// BlinkPos returns a suitable blinking position (for monster or player).
 func (g *Game) BlinkPos(mpassable bool) gruid.Point {
 	losPos := []gruid.Point{}
 	for p, b := range g.Player.LOS {
@@ -470,21 +485,6 @@ func (g *Game) EvokeDig() error {
 	g.Print("You feel like an earth dragon.")
 	g.md.PlayerGoodEffectAnimation()
 	return nil
-}
-
-func (g *Game) MonstersInLOS() []*Monster {
-	ms := []*Monster{}
-	for _, mons := range g.Monsters {
-		if mons.Exists() && g.Player.Sees(mons.P) {
-			ms = append(ms, mons)
-		}
-	}
-	// shuffle before, because the order could be unnaturally predicted
-	for i := 0; i < len(ms); i++ {
-		j := i + RandInt(len(ms)-i)
-		ms[i], ms[j] = ms[j], ms[i]
-	}
-	return ms
 }
 
 func (g *Game) MonstersInCardinalLOS() []*Monster {
@@ -583,17 +583,33 @@ func (g *Game) EvokeSwapping() error {
 		// only intelligent monsters understand swapping
 		mons.Search = mons.P
 	}
-	g.SwapWithMonster(mons)
+	g.swapWithMonster(mons)
 	return nil
 }
 
-func (g *Game) SwapWithMonster(mons *Monster) {
+func (g *Game) swapWithMonster(mons *Monster) {
 	g.Printf("You swap positions with the %s.", mons.Kind)
 	g.md.SwappingAnimation(mons.P, g.Player.P)
 	g.PlacePlayerAt(mons.P)
 	if g.Map.At(g.Player.P) == ChasmCell {
 		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
 	}
+}
+
+// MonstersInLOS returns a slice with all visible monsters.
+func (g *Game) MonstersInLOS() []*Monster {
+	ms := []*Monster{}
+	for _, mons := range g.Monsters {
+		if mons.Exists() && g.Player.Sees(mons.P) {
+			ms = append(ms, mons)
+		}
+	}
+	// shuffle before, because the order could be unnaturally predicted
+	for i := 0; i < len(ms); i++ {
+		j := i + RandInt(len(ms)-i)
+		ms[i], ms[j] = ms[j], ms[i]
+	}
+	return ms
 }
 
 // Cloud represents a cloud kind.
@@ -624,6 +640,7 @@ func (g *Game) EvokeFog() error {
 	return nil
 }
 
+// Fog generates fog around the given position.
 func (g *Game) Fog(at gruid.Point, radius int) {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)

@@ -10,7 +10,7 @@ import (
 type Objects struct {
 	Stairs     map[gruid.Point]stair
 	Stones     map[gruid.Point]stone
-	Magaras    map[gruid.Point]magara // TODO simplify? (there's never more than one)
+	Magaras    map[gruid.Point]Magara // TODO simplify? (there's never more than one)
 	Barrels    map[gruid.Point]bool
 	Bananas    map[gruid.Point]bool
 	Lights     map[gruid.Point]bool // true: on, false: off
