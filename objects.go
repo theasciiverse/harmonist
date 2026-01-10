@@ -164,13 +164,13 @@ func (stn stone) Desc(g *Game) (text string) {
 	case EarthStone:
 		text = "It produces an oric explosion that destroys nearby walls. It reveals interior walls."
 	case QueenStone:
-		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters."
+		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters. It reveals any doors on the map."
 	case NightStone:
-		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight."
+		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight. It reveals any lights on the map."
 	case TeleportStone:
-		text = "Activating this magical stone will teleport away monsters in sight."
+		text = "Activating this magical stone will teleport away monsters in sight. It reveals any magaras on the map."
 	case TreeStone:
-		text = "Activating this magical stone will lignify monsters in sight."
+		text = "Activating this magical stone will lignify monsters in sight. It reveals any trees on the map."
 	case SensingStone:
 		text = "Activating this magical stone shows you the current position of monsters."
 	case SealStone:
@@ -231,15 +231,15 @@ func (g *Game) ActivateStone() (err error) {
 	case QueenStone:
 		g.ActivateQueenStone()
 	case NightStone:
-		err = g.ActivateNightStone()
+		g.ActivateNightStone()
 	case TeleportStone:
-		err = g.ActivateTeleportStone()
+		g.ActivateTeleportStone()
 	case TreeStone:
-		err = g.ActivateTreeStone()
+		g.ActivateTreeStone()
 	case SensingStone:
-		err = g.ActivateSensingStone()
+		g.ActivateSensingStone()
 	case SealStone:
-		err = g.ActivateSealStone()
+		g.ActivateSealStone()
 	}
 	if err != nil {
 		return err
@@ -334,9 +334,14 @@ func (g *Game) ActivateQueenStone() {
 			m.Search = m.P
 		}
 	}
+	for p, t := range g.Map.Terrain.All() {
+		if t == DoorCell {
+			g.SeeTerrainAt(p)
+		}
+	}
 }
 
-func (g *Game) ActivateNightStone() error {
+func (g *Game) ActivateNightStone() {
 	targets := []*Monster{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.P) {
@@ -346,9 +351,6 @@ func (g *Game) ActivateNightStone() error {
 			targets = append(targets, mons)
 		}
 	}
-	if len(targets) == 0 {
-		return errors.New("There are no suitable monsters in sight.")
-	}
 	g.Print("The stone releases hypnotic harmonies.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.P)
 	for _, mons := range targets {
@@ -357,20 +359,18 @@ func (g *Game) ActivateNightStone() error {
 		mons.Dir = ZP
 		mons.ExhaustTime(g, 4+RandInt(2))
 	}
-	return nil
+	for p := range g.Objects.Lights {
+		g.SeeTerrainAt(p)
+	}
 }
 
-// XXX: unused now.
-func (g *Game) ActivateTreeStone() error {
+func (g *Game) ActivateTreeStone() {
 	targets := []*Monster{}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.P) || mons.Kind.ResistsLignification() {
 			continue
 		}
 		targets = append(targets, mons)
-	}
-	if len(targets) == 0 {
-		return errors.New("There are no suitable monsters in sight.")
 	}
 	g.Print("The stone releases magical spores.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.P)
@@ -380,14 +380,15 @@ func (g *Game) ActivateTreeStone() error {
 			mons.Search = mons.P
 		}
 	}
-	return nil
+	for p, t := range g.Map.Terrain.All() {
+		if t == TreeCell {
+			g.SeeTerrainAt(p)
+		}
+	}
 }
 
-func (g *Game) ActivateTeleportStone() error {
+func (g *Game) ActivateTeleportStone() {
 	targets := g.MonstersInLOS()
-	if len(targets) == 0 {
-		return errors.New("There are no suitable monsters in sight.")
-	}
 	g.Print("The stone releases oric teleport energies.")
 	for _, mons := range targets {
 		if mons.Search == invalidPos && mons.Kind.CanOpenDoors() {
@@ -400,7 +401,9 @@ func (g *Game) ActivateTeleportStone() error {
 			break
 		}
 	}
-	return nil
+	for p := range g.Objects.Magaras {
+		g.SeeTerrainAt(p)
+	}
 }
 
 func (g *Game) ActivateBarrelStone() {
@@ -427,11 +430,11 @@ func (g *Game) ActivateSensingStone() error {
 	return nil
 }
 
-func (g *Game) ActivateSealStone() error {
+func (g *Game) ActivateSealStone() {
 	if g.Map.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
 		g.Print("You feel oric energies dissipating.")
-		return nil
+		return
 	}
 	for p, st := range g.Objects.Stairs {
 		// Actually there is at most only one such stair.
@@ -441,7 +444,6 @@ func (g *Game) ActivateSealStone() error {
 		}
 	}
 	g.Print("You feel oric energies dissipating.")
-	return nil
 }
 
 type scroll int

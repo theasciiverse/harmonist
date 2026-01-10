@@ -1045,7 +1045,7 @@ func (mg *MapGen) genStones(g *Game) {
 	if g.rand.IntN(3) > 0 {
 		outside++
 	}
-	if mg.rand.IntN(2) == 0 {
+	if mg.rand.IntN(1+2*g.Map.Depth) >= 2 {
 		nstones++
 		if g.rand.IntN(3) == 0 {
 			outside++
