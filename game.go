@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.6"
+var Version string = "v0.7.0-dev.7"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -496,7 +496,9 @@ func (g *Game) InitLevel() {
 	if !Testing { // disable when testing
 		g.md.updateStatusInfo()
 	}
-	g.md.CancelExamine()
+	if g.Map.Depth > 1 {
+		g.md.CancelExamine()
+	}
 }
 
 // CleanEvents clears events between map levels.

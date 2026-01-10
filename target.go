@@ -38,8 +38,10 @@ func (md *model) SetCursor(p gruid.Point) {
 func (md *model) CancelExamine() {
 	md.g.highlight = nil
 	md.g.MonsterTargLOS = nil
-	*md.targ.ex = examination{}
-	md.HideCursor()
+	if md.targ.ex != nil {
+		*md.targ.ex = examination{}
+		md.HideCursor()
+	}
 	md.targ.kbTargeting = false
 }
 
