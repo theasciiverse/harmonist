@@ -496,6 +496,7 @@ func (g *Game) InitLevel() {
 	if !Testing { // disable when testing
 		g.md.updateStatusInfo()
 	}
+	g.md.CancelExamine()
 }
 
 // CleanEvents clears events between map levels.
