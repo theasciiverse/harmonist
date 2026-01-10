@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand/v2"
+	"slices"
 	"sort"
 
 	"codeberg.org/anaseto/gruid"
@@ -1039,20 +1040,35 @@ func (mg *MapGen) genTree(g *Game) {
 
 // genStones places magical stones.
 func (mg *MapGen) genStones(g *Game) {
-	nstones := 2
+	nstones := 2 // number of stones
+	outside := 0 // number of stones outside vaults
+	if g.rand.IntN(3) > 0 {
+		outside++
+	}
 	if mg.rand.IntN(2) == 0 {
 		nstones++
+		if g.rand.IntN(3) == 0 {
+			outside++
+		}
 	}
 	if g.Params.Stones[g.Map.Depth] {
 		nstones++
+		if g.rand.IntN(3) == 0 {
+			outside++
+		}
 	}
-	outsideStone := mg.rand.IntN(2) == 0
+	inStones := []stone{}
+	outStones := []stone{}
 	for i := range nstones {
 		p := invalidPos
 		var st stone
-		if i == 0 && outsideStone {
+		if i < outside {
 			// The map contains a magical stone outside from a
 			// vault.
+			p = mg.caveGroundCell()
+			st = mg.randomOutStone(outStones)
+			outStones = append(outStones, st)
+		} else {
 			count := 0
 			for p == invalidPos {
 				count++
@@ -1062,10 +1078,8 @@ func (mg *MapGen) genStones(g *Game) {
 				}
 				p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceStatic)
 			}
-			st = mg.randomInStone(g)
-		} else {
-			p = mg.caveGroundCell()
-			st = mg.randomOutStone()
+			st = mg.randomInStone(inStones)
+			inStones = append(inStones, st)
 		}
 		g.Objects.Stones[p] = st
 		g.Map.Set(p, StoneCell)
@@ -1089,33 +1103,38 @@ func (mg *MapGen) caveGroundCell() gruid.Point {
 	}
 }
 
-func (mg *MapGen) randomInStone(g *Game) stone {
-	instones := []stone{
-		BarrelStone,
-		QueenStone,
-		TeleportStone,
-		SensingStone,
-	}
-	if mg.rand.IntN(2) == 0 {
-		// fog stone less often inside
-		instones = append(instones, EarthStone)
-	}
-	return instones[RandInt(len(instones))]
-}
-
-func (mg *MapGen) randomOutStone() stone {
+func (mg *MapGen) randomInStone(sts []stone) stone {
 	instones := []stone{
 		BarrelStone,
 		EarthStone,
 		QueenStone,
-		NightStone,
+		SensingStone,
 		TeleportStone,
 	}
-	if mg.rand.IntN(2) == 0 {
-		// sensing stone less often outside
-		instones = append(instones, SensingStone)
+	for {
+		st := instones[RandInt(len(instones))]
+		if !slices.Contains(sts, st) {
+			return st
+		}
 	}
-	return instones[mg.rand.IntN(len(instones))]
+}
+
+func (mg *MapGen) randomOutStone(sts []stone) stone {
+	instones := []stone{
+		BarrelStone,
+		EarthStone,
+		QueenStone,
+		SensingStone,
+		TeleportStone,
+		NightStone,
+		TreeStone,
+	}
+	for {
+		st := instones[mg.rand.IntN(len(instones))]
+		if !slices.Contains(sts, st) {
+			return st
+		}
+	}
 }
 
 func (mg *MapGen) genCellularAutomataCaveMap() {

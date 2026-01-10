@@ -125,6 +125,7 @@ const (
 	QueenStone
 	NightStone
 	TeleportStone
+	TreeStone
 	SensingStone
 	// special
 	SealStone
@@ -144,6 +145,8 @@ func (stn stone) String() (text string) {
 		text = "night stone"
 	case TeleportStone:
 		text = "teleport stone"
+	case TreeStone:
+		text = "tree stone"
 	case SensingStone:
 		text = "sensing stone"
 	case SealStone:
@@ -166,6 +169,8 @@ func (stn stone) Desc(g *Game) (text string) {
 		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight."
 	case TeleportStone:
 		text = "Activating this magical stone will teleport away monsters in sight."
+	case TreeStone:
+		text = "Activating this magical stone will lignify monsters in sight."
 	case SensingStone:
 		text = "Activating this magical stone shows you the current position of monsters."
 	case SealStone:
@@ -188,13 +193,17 @@ func (stn stone) Style(g *Game) (r rune, fg gruid.Color) {
 	case SensingStone:
 		fg = ColorMagenta
 	case EarthStone:
-		fg = ColorGreen
+		fg = ColorRed
+	case QueenStone:
+		fg = ColorOrange
 	case NightStone:
 		fg = ColorViolet
 	case BarrelStone:
 		fg = ColorYellow
 	case TeleportStone:
 		fg = ColorCyan
+	case TreeStone:
+		fg = ColorGreen
 	}
 	return r, fg
 }
@@ -225,6 +234,8 @@ func (g *Game) ActivateStone() (err error) {
 		err = g.ActivateNightStone()
 	case TeleportStone:
 		err = g.ActivateTeleportStone()
+	case TreeStone:
+		err = g.ActivateTreeStone()
 	case SensingStone:
 		err = g.ActivateSensingStone()
 	case SealStone:
@@ -305,7 +316,8 @@ func (g *Game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.P)
 	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, QueenStoneDistance)
-	targets := []*Monster{}
+	g.Print("The stone releases confusing sounds.")
+	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.P)
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -317,11 +329,6 @@ func (g *Game) ActivateQueenStone() {
 		if c > QueenStoneDistance {
 			continue
 		}
-		targets = append(targets, m)
-	}
-	g.Print("The stone releases confusing sounds.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.P)
-	for _, m := range targets {
 		m.EnterConfusion(g)
 		if m.Search == invalidPos {
 			m.Search = m.P
