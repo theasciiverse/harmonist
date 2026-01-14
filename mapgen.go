@@ -1057,8 +1057,7 @@ func (mg *MapGen) genStones(g *Game) {
 			outside++
 		}
 	}
-	inStones := []stone{}
-	outStones := []stone{}
+	genStones := []stone{}
 	for i := range nstones {
 		p := invalidPos
 		var st stone
@@ -1066,8 +1065,8 @@ func (mg *MapGen) genStones(g *Game) {
 			// The map contains a magical stone outside from a
 			// vault.
 			p = mg.caveGroundCell()
-			st = mg.randomOutStone(outStones)
-			outStones = append(outStones, st)
+			st = mg.randomOutStone(genStones)
+			genStones = append(genStones, st)
 		} else {
 			count := 0
 			for p == invalidPos {
@@ -1078,8 +1077,8 @@ func (mg *MapGen) genStones(g *Game) {
 				}
 				p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceStatic)
 			}
-			st = mg.randomInStone(inStones)
-			inStones = append(inStones, st)
+			st = mg.randomInStone(genStones)
+			genStones = append(genStones, st)
 		}
 		g.Objects.Stones[p] = st
 		g.Map.Set(p, StoneCell)

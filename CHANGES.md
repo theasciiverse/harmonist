@@ -3,6 +3,21 @@
 This release is a polish release with various UI improvements, most of them
 inspired from Shamogu.
 
+Improved and reworked content:
+
+* Magical stones have been reworked to have a strategical aspect in addition to
+  the tactical one, like menhirs in Shamogu. The mapping stone is gone and the
+  fog stone was replaced by a new earth stone, which destroys nearby walls
+  (producing dust) and reveals interior walls. The other stones are still the
+  same but now provide some kind of partial information about the map, in
+  addition to their usual tactical effect (revealing barrels for barrel stone,
+  lights for night stone, doors for queenstone, magaras for teleport stone,
+  stairs for sealing stone, trees and partially foliage for tree stone). To
+  compensate for the extra strategic buff, there are somewhat less stones on
+  the maps than before.
+
+UI, graphics, QoL:
+
 * Update to latest gruid version and require Go 1.24 or later.
 * In native builds, rename game statistic's dump file to `dump.txt`
   so that it's clearer that the file is text, unlike the other ones.
