@@ -928,7 +928,7 @@ Jumping off a wall is a useful escape tactic that can make you avoid harm even i
 
 Monsters don’t look behind diagonally, so performing lateral evasion tactics in the open is a simple way to escape an adjacent monster’s field of view by getting into one of its blind corners.
 
-Watch out for @Mfootstep noise@N: while going through dense foliage, it can be very helpful to avoid unwanted encounters.
+Watch out for footstep noise: while going through dense foliage or waiting in some hidden place, it can be very helpful to avoid unwanted encounters.
 `)
 	md.helpTopic("Tips (Help)", s)
 }
