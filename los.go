@@ -422,45 +422,48 @@ func (g *Game) ComputeNoise() {
 	rg := DefaultLOSRange
 	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, rg)
 	count := 0
-	for k := range g.Map.Noise {
-		delete(g.Map.Noise, k)
+	for _, mons := range g.Monsters {
+		if mons != nil {
+			mons.Noise = false
+		}
 	}
 	rmax := 2
-	if g.Player.Inventory.Body == CloakHear {
-		rmax += 2
-	}
+	goodhearing := g.Player.Inventory.Body == CloakHear
 	for _, n := range nodes {
 		if g.Player.Sees(n.P) {
 			continue
 		}
 		mons := g.MonsterAt(n.P)
 		if mons.Exists() && mons.State != Resting && mons.State != Watching &&
-			(RandInt(rmax) > 0 || g.Map.At(mons.P) == QueenRockCell) {
+			(RandInt(rmax) > 0 || goodhearing || g.Map.At(mons.P) == QueenRockCell) {
 			switch mons.Kind {
-			case MonsMirrorSpecter, MonsSatowalgaPlant, MonsButterfly:
-				if mons.Kind == MonsMirrorSpecter && g.Player.Inventory.Body == CloakHear {
-					g.Map.Noise[n.P] = true
+			case MonsSatowalgaPlant, MonsButterfly:
+				// Satowalga plants and kerejats don't make any
+				// noise.
+			case MonsMirrorSpecter:
+				if mons.Kind == MonsMirrorSpecter && goodhearing {
+					mons.Noise = true
 					g.Print("You hear an imperceptible air movement.")
 					count++
 				}
 			case MonsWingedMilfid, MonsTinyHarpy:
-				g.Map.Noise[n.P] = true
+				mons.Noise = true
 				g.Print("You hear the flapping of wings.")
 				count++
 			case MonsEarthDragon, MonsTreeMushroom, MonsYack:
-				g.Map.Noise[n.P] = true
+				mons.Noise = true
 				g.Print("You hear heavy footsteps.")
 				count++
 			case MonsWorm, MonsAcidMound:
-				g.Map.Noise[n.P] = true
+				mons.Noise = true
 				g.Print("You hear a creep noise.")
 				count++
 			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
-				g.Map.Noise[n.P] = true
+				mons.Noise = true
 				g.Print("You hear light footsteps.")
 				count++
 			default:
-				g.Map.Noise[n.P] = true
+				mons.Noise = true
 				g.Print("You hear footsteps.")
 				count++
 			}

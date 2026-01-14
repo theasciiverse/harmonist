@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.7"
+var Version string = "v0.7.0-dev.8"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -389,7 +389,6 @@ func putRandomLevels(m map[int]bool, n int) {
 
 // InitLevelStructures (re-)initializes various level-specific structures.
 func (g *Game) InitLevelStructures() {
-	g.Map.Noise = map[gruid.Point]bool{}
 	g.Map.NoiseIllusion = map[gruid.Point]bool{}
 	g.Map.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.Map.Clouds = map[gruid.Point]Cloud{}

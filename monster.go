@@ -247,6 +247,7 @@ func (mk monsterKind) Size() monsize {
 	return MonsData[mk].size
 }
 
+// monsize represents the possible monster sizes.
 type monsize int
 
 const (
@@ -329,29 +330,31 @@ var MonsDesc = []string{
 
 // Monster represents a monster's state and characteristics.
 type Monster struct {
-	Kind           monsterKind // monster kind
-	Band           int         // index of band it belongs
-	Index          int         // index in g.Monsters
-	Dir            gruid.Point // direction (for monster fov)
-	Dead           bool
-	State          Mindstate
-	Statuses       [NMonsStatus]int
-	P              gruid.Point
-	LastKnownPos   gruid.Point
-	Target         gruid.Point
-	Path           []gruid.Point // cache
-	FireReady      bool
-	Seen           bool
-	LOS            map[gruid.Point]bool
-	LastKnownState Mindstate
-	Swapped        bool
-	Watching       int
-	Left           bool
-	Search         gruid.Point
-	Alerted        bool
-	Waiting        int
+	Kind           monsterKind          // monster kind
+	Band           int                  // index of band it belongs
+	Index          int                  // index in g.Monsters
+	Dir            gruid.Point          // direction (for monster fov)
+	Dead           bool                 // whether the monster is dead (abyss or water swap)
+	State          Mindstate            // mindstate
+	Statuses       [NMonsStatus]int     // monster statuses
+	P              gruid.Point          // current position
+	LastKnownPos   gruid.Point          // known position (for the player)
+	Target         gruid.Point          // target destination for pathfinding
+	Path           []gruid.Point        // cache
+	FireReady      bool                 // ready to fire (a javelin, for example)
+	Seen           bool                 // already seen by the player
+	Noise          bool                 // made footstep noise on last turn
+	LOS            map[gruid.Point]bool // field of view of the monster
+	LastKnownState Mindstate            // last known mindstate (for out-of-view resting)
+	Swapped        bool                 // just swapped by another monster
+	Watching       int                  // turns watching
+	Left           bool                 // turned left
+	Search         gruid.Point          // position to search around
+	Alerted        bool                 // monster is alert
+	Waiting        int                  // turns waiting
 }
 
+// Initialize monster.
 func (m *Monster) Init() {
 	m.P = invalidPos
 	m.LOS = make(map[gruid.Point]bool)

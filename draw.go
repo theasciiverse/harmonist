@@ -170,9 +170,9 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		if mons := g.KnownMonsterAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
-		if g.Map.Noise[p] {
+		if mons := g.MonsterAt(p); mons.Exists() && mons.Noise {
 			r = '♫'
-			fgColor = ColorFgWanderingMonster
+			fgColor = mons.noiseColor()
 		} else if g.Map.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
@@ -243,9 +243,9 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 				r = m.Kind.Letter()
 				fgColor = m.color(g)
 			}
-		} else if g.Map.Noise[p] {
+		} else if mons := g.MonsterAt(p); mons.Exists() && mons.Noise {
 			r = '♫'
-			fgColor = ColorFgWanderingMonster
+			fgColor = mons.noiseColor()
 		} else if g.Map.NoiseIllusion[p] {
 			r = '♪'
 			fgColor = ColorFgMagicPlace
@@ -257,6 +257,28 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		}
 	}
 	return
+}
+
+func (m *Monster) noiseColor() gruid.Color {
+	switch m.Kind {
+	case MonsSatowalgaPlant, MonsButterfly:
+		// Satowalga plants and kerejats don't make any
+		// noise, so shouldn't happen.
+		return ColorForeground
+	case MonsMirrorSpecter:
+		return ColorYellow
+	case MonsWingedMilfid, MonsTinyHarpy:
+		return ColorCyan
+	case MonsEarthDragon, MonsTreeMushroom, MonsYack:
+		return ColorMagenta
+	case MonsWorm, MonsAcidMound:
+		return ColorGreen
+	case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
+		return ColorOrange
+	default:
+		return ColorRed
+	}
+
 }
 
 func (m *Monster) StyleKnowledge() (r rune, fg gruid.Color) {
