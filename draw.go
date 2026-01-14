@@ -75,7 +75,7 @@ func (md *model) Draw() gruid.Grid {
 				md.equipLabel.Box = &ui.Box{Title: ui.Textf("%s (ground)", it.String())}
 				md.equipLabel.Draw(md.gd.Slice(gruid.NewRange(0, gd.Size().Y, UIWidth/2, UIHeight-1)))
 			}
-		case modeGameMenu, modeSettings:
+		case modeGameMenu, modeHelpMenu, modeSettings:
 			md.gd.Copy(md.menu.Draw())
 		case modeKeys, modeKeysChange:
 			gd := md.keysMenu.Draw()

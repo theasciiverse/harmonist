@@ -42,7 +42,11 @@ const (
 	ActionInventory
 	ActionLogs
 	ActionDump
-	ActionHelp
+	ActionHelpMenu
+	ActionHelpKeybindings
+	ActionHelpBasics
+	ActionHelpStatuses
+	ActionHelpTips
 	ActionSave
 	ActionQuit
 	ActionWizard
@@ -145,8 +149,16 @@ func (k Action) String() (text string) {
 		text = "Save and quit"
 	case ActionQuit:
 		text = "Quit (without saving)"
-	case ActionHelp:
-		text = "Help (default keybindings)"
+	case ActionHelpMenu:
+		text = "Help Menu"
+	case ActionHelpKeybindings:
+		text = "Keybindings (default values)"
+	case ActionHelpBasics:
+		text = "Basics"
+	case ActionHelpStatuses:
+		text = "Statuses"
+	case ActionHelpTips:
+		text = "Tips"
 	case ActionSettings:
 		text = "Configure settings"
 	case ActionWizard:
@@ -328,12 +340,24 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		} else {
 			md.KeyboardExamine()
 		}
-	case ActionHelp:
+	case ActionHelpMenu:
 		again = true
-		md.KeysHelp()
+		md.openHelp()
 	case ActionMenu:
 		again = true
 		md.openMenu()
+	case ActionHelpKeybindings:
+		again = true
+		md.KeysHelp()
+	case ActionHelpBasics:
+		again = true
+		md.helpBasics()
+	case ActionHelpStatuses:
+		again = true
+		md.helpStatuses()
+	case ActionHelpTips:
+		again = true
+		md.helpTips()
 	case ActionLogs:
 		again = true
 		if len(md.logs) > 0 {
@@ -589,7 +613,7 @@ func (md *model) openKeyBindings() {
 // menuActions represents main game menu action.
 var menuActions = []Action{
 	ActionLogs,
-	ActionHelp,
+	ActionHelpMenu,
 	ActionDump,
 	ActionSettings,
 	ActionSave,
@@ -695,6 +719,33 @@ func (md *model) equipMagaraMenu() {
 	md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
 }
 
+// helpActions represents main game menu action.
+var helpActions = []Action{
+	ActionHelpKeybindings,
+	ActionHelpBasics,
+	ActionHelpStatuses,
+	ActionHelpTips,
+}
+
+var helpKeys = []rune{'?', 'b', 's', 't'}
+
+func (md *model) openHelp() {
+	entries := []ui.MenuEntry{}
+	for i, it := range helpActions {
+		r := helpKeys[i]
+		entries = append(entries, ui.MenuEntry{
+			Text: ui.Textf("%c - %s", r, it),
+			Keys: []gruid.Key{gruid.Key(r)},
+		})
+	}
+	altBgEntries(entries)
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Help Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetEntries(entries)
+	md.menu.SetActiveInvokable(0)
+	md.mode = modeMenu
+	md.menuMode = modeHelpMenu
+}
+
 func (md *model) KeysHelp() {
 	entries := []string{
 		"Basic Game Actions", "",
@@ -744,6 +795,142 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 	}
 	md.pager.SetLines(lines)
 	md.pager.SetCursor(gruid.Point{0, 0})
+}
+
+// Markups contains the styling markup-characters we use for StyledText.
+var Markups = map[rune]gruid.Style{
+	'B': {Fg: ColorBlue},
+	'C': {Fg: ColorCyan},
+	'G': {Fg: ColorGreen},
+	'M': {Fg: ColorMagenta},
+	'O': {Fg: ColorOrange},
+	'R': {Fg: ColorRed},
+	'V': {Fg: ColorViolet}, // unused
+	'Y': {Fg: ColorYellow},
+	'b': {Fg: ColorBlue, Attrs: AttrInMap},
+	'c': {Fg: ColorCyan, Attrs: AttrInMap},
+	'g': {Fg: ColorGreen, Attrs: AttrInMap},
+	'm': {Fg: ColorMagenta, Attrs: AttrInMap},
+	'o': {Fg: ColorOrange, Attrs: AttrInMap},
+	'r': {Fg: ColorRed, Attrs: AttrInMap},
+	'v': {Fg: ColorViolet, Attrs: AttrInMap}, // unused
+	'y': {Fg: ColorYellow, Attrs: AttrInMap},
+}
+
+// helpTopic opens the pager with the given title and text content.
+func (md *model) helpTopic(title, content string) {
+	text := ui.Text(content).WithMarkups(Markups).Format(78)
+	stts := text.Lines()
+	md.pager.SetLines(stts)
+	md.pager.SetCursor(gruid.Point{0, 0})
+	md.mode = modePager
+	md.pagerMode = modeHelpKeys
+	md.mode = modePager
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+}
+
+func (md *model) helpBasics() {
+	s := strings.TrimSpace(`
+@YTURN-BASED SYSTEM@N
+
+Harmonist is a turn-based game. Each actor acts once per turn: the player acts first, then the monsters do. Monsters act one after another in a non-predictable order, but except during some animations, you’ll only see the final state and often feel they acted all at once.
+
+@YFIELD OF VIEW@N
+
+In Harmonist, the player and the monsters do not share the same field of view.
+
+The player’s field of view is multi-directional and has longer range.
+
+All monsters, except for spiders, have a directional conic field of view: they only look in a given direction. The game shows that area using @Oorange@N color. If you examine a specific monster, only its field of view will be shown.
+
+In both cases, visibility range is impacted by lighting: lighted @Yyellow@N tiles are visible from a greater range. Lighting may come from static campfires as well as kerejats: be careful when stepping into lighted terrain! Note that in various kinds of terrains, like when hiding under a table or at the top of a tree, the player can avoid the lighting.
+
+@YSTEALTH@N
+
+Monsters will notice the player if you enter their field of view. In such cases, monsters start hunting you. If they lose sight of you, they will give up after searching around for a bit.
+
+Beware that, while most monsters can only hurt you when adjacent, some monsters have special ranged attacks.
+
+@YNOISE@N
+
+Some effects produce noise that can be heard by monsters, from more or less far away depending on the noise’s nature. Things like nadre explosions are heard from quite far away, for example.
+
+Harmonist also shows visually the sound made by moving monsters out of view: @Rfootsteps@N, @Olight footsteps@N, @Gcreep noise@N, @Cflapping of wings@N, and @Mheavy footsteps@N. Note that monsters cannot hear your footsteps or, at the very least, they don’t care about such small noises!
+`)
+	md.helpTopic("Basics (Help)", s)
+}
+
+func (md *model) helpStatuses() {
+	var sb strings.Builder
+	sb.WriteString(`@YCOLORS@N
+
+In the status bar and descriptions, positive status effects are shown as @BBlue@N and negative ones are @RRed@N, while statuses that are neither are shown as @YYellow@N.
+
+On the map, monster color may change depending on active status effects.  By default, status-free wandering monsters are @OOrange@N and hunting monsters are @RRed@N. Peaceful monsters are @BBlue@N and sleeping ones are @VViolet@N. @YYellow@N indicates lignification, @GGreen@N confusion, @CCyan@N paralysis.`)
+	sb.WriteString("\n\n")
+	sb.WriteString(`@YPLAYER STATUSES@N`)
+	sb.WriteString("\n\n")
+	for _, st := range playerStatuses {
+		color := 'Y'
+		switch {
+		case st.Good():
+			color = 'B'
+		case st.Bad():
+			color = 'R'
+		}
+		fmt.Fprintf(&sb, "@%c%s@N (@%c%s@N). ", color, st.String(), color, st.Short())
+		sb.WriteString(st.Desc())
+		sb.WriteString("\n\n")
+	}
+	sb.WriteString(`@YMONSTER STATUSES@N`)
+	sb.WriteString("\n\n")
+	sb.WriteString(`Monster statuses are less varied than player ones in Harmonist. Most happen as the result as using some magaras.
+
+@YLignified@N monsters cannot move, but may attack you if adjacent, while @Cparalysed@N monsters cannot act at all, and @Gconfused@N monsters can move as usual but cannot attack you. Some monsters may become @Yexhausted@N or @Ysatiated@N after performing some special techniques and need to wait before performing them again.`)
+	sb.WriteString("\n\n")
+	md.helpTopic("Statuses (Help)", sb.String())
+}
+
+var playerStatuses = []status{
+	StatusConfusion,
+	StatusDelay,
+	StatusDig,
+	StatusDisguised,
+	StatusDispersal,
+	StatusExhausted,
+	StatusFlames,
+	StatusHidden,
+	StatusIlluminated,
+	StatusLevitation,
+	StatusLight,
+	StatusLignification,
+	StatusShadows,
+	StatusSwift,
+	StatusTransparent,
+	StatusUnhidden,
+}
+
+func (md *model) helpTips() {
+	s := strings.TrimSpace(`
+@YGENERAL TIPS@N
+
+Harmonist is a @Mturn-based@N game: take your time when in perilous situations!
+
+Always check your magaras to see if there’s one that can help in your situation. The sooner is often the better!
+
+@YSTEALTH TIPS@N
+
+Try to take advantage of the various different kinds of terrains, like foliage, tables, trees, holes in the walls, or barrels.
+
+Magical stones can be useful for facilitating escape or incapacitating monsters in various ways, but they are also interesting for their map-revealing effects, so you might sometimes want to use some of them even if there are no monsters around. It may help exploration.
+
+Jumping off a wall is a useful escape tactic that can make you avoid harm even if cornered in a dead-end. However, it’s of course usually better to avoid dead-ends if you can! In the worst case, you can jump over a monster, too, though that will give the monster time to hit you once.
+
+Monsters don’t look behind diagonally, so performing lateral evasion tactics in the open is a simple way to escape an adjacent monster’s field of view by getting into one of its blind corners.
+
+Watch out for @Mfootstep noise@N: while going through dense foliage, it can be very helpful to avoid unwanted encounters.
+`)
+	md.helpTopic("Tips (Help)", s)
 }
 
 // checkShaedra checks whether we already rescued Shaedra or not, to prevent

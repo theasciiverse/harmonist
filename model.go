@@ -73,6 +73,7 @@ const (
 	modeKeys
 	modeKeysChange
 	modeGameMenu
+	modeHelpMenu
 	modeEvocation
 	modeEquip
 	modeWizard
@@ -141,7 +142,7 @@ func (md *model) initKeys() {
 		"M":                 ActionMenu,
 		gruid.KeySpace:      ActionMenu,
 		"#":                 ActionDump,
-		"?":                 ActionHelp,
+		"?":                 ActionHelpMenu,
 		"-":                 ActionPreviousMonster,
 		"+":                 ActionNextMonster,
 		">":                 ActionNextStairs,
@@ -817,14 +818,21 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				break
 			}
 			return md.EndTurn()
-		case modeGameMenu:
+		case modeGameMenu, modeHelpMenu:
 			if act != ui.MenuInvoke {
 				break
 			}
-			_, eff, err := md.DoAction(menuActions[md.menu.ActiveInvokable()])
+			var actions []Action
+			switch md.menuMode {
+			case modeGameMenu:
+				actions = menuActions
+			case modeHelpMenu:
+				actions = helpActions
+			}
+			_, eff, err := md.DoAction(actions[md.menu.ActiveInvokable()])
 			if err != nil {
 				// should not happen
-				log.Printf("game menu: %v", err)
+				log.Printf("menu: %v", err)
 			}
 			return eff
 		case modeSettings:

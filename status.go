@@ -117,13 +117,13 @@ func (st status) String() string {
 func (st status) Desc() string {
 	switch st {
 	case StatusExhausted:
-		return "Forbids some actions, such as jumping."
+		return "Forbids jumping off walls or over monsters."
 	case StatusSwift:
-		return "Allows for moving several times in a row."
+		return "Allows moving for free without spending a turn."
 	case StatusLignification:
-		return "Disallows movement."
+		return "Forbids movement but gives extra temporary health."
 	case StatusConfusion:
-		return "Disallows magara use."
+		return "Forbids magara use."
 	case StatusFlames:
 		return "Surrounded by slowing magical flames."
 	case StatusHidden:
@@ -131,7 +131,7 @@ func (st status) Desc() string {
 	case StatusUnhidden:
 		return "Some monsters can see you."
 	case StatusDig:
-		return "Allows to walk into walls."
+		return "Allows walking into walls."
 	case StatusLight:
 		return "You are in a lighted cell."
 	case StatusLevitation:
@@ -145,7 +145,7 @@ func (st status) Desc() string {
 	case StatusDisguised:
 		return "Most monsters will ignore you, except those with good sense of smell."
 	case StatusDelay:
-		return "Time remaining before the trigger."
+		return "Time remaining before the explosion."
 	case StatusDispersal:
 		return "Monsters that attempt to hit you will blink away."
 	default:
