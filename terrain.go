@@ -405,7 +405,7 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case LightCell:
 		desc = "A campfire illuminates surrounding cells. Creatures can spot you in illuminated cells from a greater range."
 	case ExtinguishedLightCell:
-		desc = "An extinguished campfire can be lighted again by some creatures."
+		desc = "An extinguished campfire can be lighted again by guards."
 	case TableCell:
 		desc = "You can hide under the table so that only adjacent creatures can see you. Most creatures cannot walk across the table."
 	case TreeCell:

@@ -252,7 +252,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if mons := g.KnownMonsterAt(p); mons.Exists() {
 			r, fgColor = mons.StyleKnowledge()
 		}
-		if g.Player.Sees(p) && fgColor == ColorFgLOS && g.Illuminated(p) && IsIlluminable(t) {
+		if g.Player.Sees(p) && fgColor == ColorFgLOS && g.Illuminated(p) && IsIlluminable(t) && t != StoneCell {
 			fgColor = ColorFgLOSLight
 		}
 	}

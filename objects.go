@@ -158,7 +158,7 @@ func (stn stone) String() (text string) {
 func (stn stone) Desc(g *Game) (text string) {
 	switch stn {
 	case InertStone:
-		text = "This magical stone has been depleted of magical energies."
+		text = "This magical stone has been depleted of magical energies but still emits a slight glow."
 	case BarrelStone:
 		text = "Activating this magical stone will teleport you away to a random barrel in the same level. It reveals any other barrels on the map."
 	case EarthStone:
@@ -187,7 +187,7 @@ func (stn stone) Style(g *Game) (r rune, fg gruid.Color) {
 	r = '∩'
 	switch stn {
 	case InertStone:
-		fg = ColorForeground
+		fg = ColorForegroundEmph
 	case SealStone:
 		fg = ColorBlue
 	case SensingStone:

@@ -843,7 +843,7 @@ The player’s field of view is multi-directional and has longer range.
 
 All monsters, except for spiders, have a directional conic field of view: they only look in a given direction. The game shows that area using @Oorange@N color. If you examine a specific monster, only its field of view will be shown.
 
-In both cases, visibility range is impacted by lighting: lighted @Yyellow@N tiles are visible from a greater range. Lighting may come from static campfires as well as kerejats: be careful when stepping into lighted terrain! Note that in various kinds of terrains, like when hiding under a table or at the top of a tree, the player can avoid the lighting.
+In both cases, visibility range is impacted by lighting: lighted @Yyellow@N tiles are visible from a greater range. Lighting may come from static campfires as well as kerejats: be careful when stepping into lighted terrain! Note that in various kinds of terrains, like when hiding under a table or at the top of a tree, the player can avoid the lighting. Also, tiles with a magical stone are always illuminated.
 
 @YSTEALTH@N
 

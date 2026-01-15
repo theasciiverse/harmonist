@@ -174,7 +174,7 @@ const TreeRange = 50
 
 func (g *Game) Illuminated(p gruid.Point) bool {
 	c, ok := g.LightFOV.At(p)
-	return ok && c <= LightRange
+	return ok && c <= LightRange || g.Map.Terrain.At(p) == StoneCell
 }
 
 func (g *Game) blocksSSCLOS(p gruid.Point) bool {

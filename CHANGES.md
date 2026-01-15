@@ -15,6 +15,12 @@ Improved and reworked content:
   stairs for sealing stone, trees and partially foliage for tree stone). To
   compensate for the extra strategic buff, there are somewhat less stones on
   the maps than before.
+* The tile where a magical stone is present is now always lighted, due to
+  magical stones producing a very small light. This change mostly intends to
+  make stone coloring independent from lighting and not require the player to
+  manually examine the stone to see if the tile is lighted. It's a quite
+  thematic and minor change that may help further make magical stones more
+  interesting and different from other kinds of items.
 
 UI, graphics, QoL:
 
