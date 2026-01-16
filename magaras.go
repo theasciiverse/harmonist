@@ -323,7 +323,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case TeleportMagara:
 		desc = "creates an oric energy disturbance, making you teleport far away on the same level."
 	case SwiftnessMagara:
-		desc = "makes you able to move several times in a row for free."
+		desc = fmt.Sprintf("makes you able to move %d times in a row for free.", DurationSwiftness)
 	case LevitationMagara:
 		desc = "makes you levitate with oric energies, allowing you to move over chasms, as well as through oric barriers."
 	case FireMagara:
