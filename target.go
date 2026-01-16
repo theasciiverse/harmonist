@@ -91,6 +91,7 @@ type posInfo struct {
 	Cell    rl.Cell
 	Cloud   string
 	Lighted bool
+	MLOS    bool
 }
 
 func (md *model) drawPosInfo() {
@@ -106,10 +107,10 @@ func (md *model) drawPosInfo() {
 	formatBox := func(title, s string, fg gruid.Color) {
 		md.description.Content = stt.WithText(s).Format(MapWidth/2 - 3)
 		if md.description.Content.Size().Y+2 > MapHeight {
-			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg)),
+			md.description.Box = &ui.Box{Title: stt.WithText(title).WithStyle(gruid.Style{Fg: fg}),
 				Footer: ui.NewStyledText("scroll/page down for more...", gruid.Style{Fg: ColorMagenta})}
 		} else {
-			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
+			md.description.Box = &ui.Box{Title: stt.WithText(title).WithStyle(gruid.Style{Fg: fg})}
 		}
 		y += md.description.Draw(md.gd.Slice(gruid.NewRange(0, y, MapWidth/2-1, 2+MapHeight).Add(p))).Size().Y
 	}
@@ -117,17 +118,17 @@ func (md *model) drawPosInfo() {
 	features := []string{}
 	if info.Unknown {
 		features = append(features, "unknown terrain")
-		features = append(features, "unexplored")
 	} else {
 		features = append(features, g.TerrainName(info.Cell, info.P))
 		if info.Cloud != "" && info.Sees {
 			features = append(features, info.Cloud)
 		}
-		if info.Lighted && info.Sees {
-			features = append(features, "lighted")
-		}
 		if !info.Sees {
 			features = append(features, "seen")
+		} else if info.MLOS {
+			features = append(features, "@Ounhidden@N")
+		} else if info.Lighted {
+			features = append(features, "@Ylighted@N")
 		}
 	}
 	t := features[0]
@@ -167,7 +168,7 @@ func (md *model) drawPosInfo() {
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, dirString(mons.Dir))
 	if !info.Sees {
-		title = fmt.Sprintf("%s (seen)", mons.Kind)
+		title = fmt.Sprint(mons.Kind)
 	}
 	var mfg gruid.Color
 	if g.Player.Sees(mons.P) || g.Wizard == WizardSeeAll {
@@ -188,6 +189,9 @@ func (md *model) drawPosInfo() {
 	if !mons.Seen && g.Wizard != WizardSeeAll {
 		formatBox("unknown monster", "You sensed a monster there.", mfg)
 	} else {
+		if !mons.Peaceful(g) && mons.State != Resting && info.MLOS {
+			mdesc = append(mdesc, "@OCan see you from there!@N")
+		}
 		formatBox(title, strings.Join(mdesc, "\n"), mfg)
 	}
 	noiseBox()
@@ -286,6 +290,9 @@ func (md *model) updatePosInfo() {
 	}
 	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
+		if infov && g.MonsterLOS[p] {
+			pi.MLOS = true
+		}
 	} else if mons := g.KnownMonsterAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
 		pi.Monster = mons
 	}
