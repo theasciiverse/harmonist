@@ -33,12 +33,14 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	// no terrain cost on origin
 	if src == from {
 		// specific diagonal costs
-		opaque, hard := g.DiagonalOpaque(from, to)
-		if opaque {
+		vis := g.DiagonalOpaque(from, to)
+		switch vis {
+		case Opaque:
 			return wallcost
-		}
-		if rs != TreePlayerRay && hard {
-			return wallcost - 1
+		case Fuzzy:
+			if rs != TreePlayerRay {
+				return wallcost - 1
+			}
 		}
 		return distance(to, from)
 	}
@@ -51,8 +53,8 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		return wallcost
 	}
 	// specific diagonal costs
-	opaque, hard := g.DiagonalOpaque(from, to)
-	if opaque {
+	vis := g.DiagonalOpaque(from, to)
+	if vis == Opaque {
 		return wallcost
 	}
 	switch t {
@@ -74,7 +76,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 			return wallcost + distance(to, from) - 3
 		}
 	}
-	if rs != TreePlayerRay && hard {
+	if rs != TreePlayerRay && vis == Fuzzy {
 		cost := wallcost - distance(from, src) - 1
 		if cost < 1 {
 			cost = 1
@@ -100,7 +102,15 @@ func (lt *lighter) MaxCost(src gruid.Point) int {
 	}
 }
 
-func (g *Game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
+type visibility uint32
+
+const (
+	Opaque visibility = 0b00
+	Fuzzy  visibility = 0b01
+	Clear  visibility = 0b11
+)
+
+func (g *Game) DiagonalOpaque(from, to gruid.Point) visibility {
 	// The state uses cardinal movement only, so two diagonal walls should,
 	// for example, block line of sight. This is in contrast with the main
 	// mechanics of the line of sight algorithm, which for gameplay reasons
@@ -121,10 +131,9 @@ func (g *Game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
 		ps[0] = from.Shift(1, 0)
 		ps[1] = from.Shift(0, 1)
 	default:
-		return false, false
+		return Clear
 	}
-	opaque = true
-	hard = true
+	vis := Opaque
 	for _, p := range ps {
 		_, ok := g.Map.Clouds[p]
 		if ok {
@@ -132,15 +141,15 @@ func (g *Game) DiagonalOpaque(from, to gruid.Point) (opaque, hard bool) {
 		}
 		switch g.Map.Terrain.AtU(p) {
 		case WindowCell:
-			hard = false
+			vis |= Fuzzy
 		case WallCell, HoledWallCell:
 		case FoliageCell:
-			opaque = false
+			vis |= Fuzzy
 		default:
-			return false, false
+			return Clear
 		}
 	}
-	return opaque, hard
+	return vis
 }
 
 type raystyle int
