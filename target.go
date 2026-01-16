@@ -290,7 +290,7 @@ func (md *model) updatePosInfo() {
 	}
 	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
-		if infov && g.MonsterLOS[p] {
+		if infov && mons.Sees(g, g.Player.P) {
 			pi.MLOS = true
 		}
 	} else if mons := g.KnownMonsterAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
