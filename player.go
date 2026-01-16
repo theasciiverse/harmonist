@@ -10,27 +10,24 @@ import (
 
 // Player represents the player.
 type Player struct {
-	HP      int
-	HPbonus int
-	MP      int
-	Bananas int
-	Magaras []Magara
-	Dir     gruid.Point
-	//Aptitudes map[aptitude]bool
-	Statuses  map[status]int
-	Expire    map[status]int
-	P         gruid.Point
-	Target    gruid.Point
-	LOS       map[gruid.Point]bool
-	FOV       *rl.FOV
-	Inventory Inventory
+	HP        int                  // current HP
+	HPbonus   int                  // temporary HP bonus (lignification)
+	MP        int                  // current MP
+	Bananas   int                  // number of carried bananas
+	Magaras   []Magara             // equipped magaras
+	Statuses  map[status]int       // active status effect durations
+	Expire    map[status]int       // turn of expiration for active status effects
+	P         gruid.Point          // current position
+	LOS       map[gruid.Point]bool // actual field of view (accounting for darkness)
+	FOV       *rl.FOV              // field of view (full range)
+	Inventory Inventory            // inventory (cloak, amulet, artifact)
 }
 
 // Inventory represents the inventory.
 type Inventory struct {
-	Body item
-	Neck item
-	Misc item
+	Body item // cloak
+	Neck item // amulet
+	Misc item // artifact
 }
 
 // DefaultHealth represents the starting max HP.
@@ -463,7 +460,6 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 	if p == g.Player.P {
 		return
 	}
-	g.Player.Dir = dirnorm(g.Player.P, p)
 	m := g.MonsterAt(p)
 	ppos := g.Player.P
 	g.Player.P = p
