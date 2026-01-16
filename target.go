@@ -37,7 +37,7 @@ func (md *model) SetCursor(p gruid.Point) {
 // CancelExamine cancels current targeting.
 func (md *model) CancelExamine() {
 	md.g.highlight = nil
-	md.g.MonsterTargLOS = nil
+	md.g.MonsterTargFOV = nil
 	if md.targ.ex != nil {
 		*md.targ.ex = examination{}
 		md.HideCursor()
@@ -63,7 +63,7 @@ func (md *model) examine(p gruid.Point) {
 	if m.Exists() && (md.g.Player.Sees(p) || md.g.Wizard == WizardSeeAll) {
 		md.g.ComputeMonsterCone(m)
 	} else {
-		md.g.MonsterTargLOS = nil
+		md.g.MonsterTargFOV = nil
 	}
 	md.updatePosInfo()
 	md.targ.ex.scroll = false
@@ -91,7 +91,7 @@ type posInfo struct {
 	Cell    rl.Cell
 	Cloud   string
 	Lighted bool
-	MLOS    bool
+	MFOV    bool
 }
 
 func (md *model) drawPosInfo() {
@@ -125,7 +125,7 @@ func (md *model) drawPosInfo() {
 		}
 		if !info.Sees {
 			features = append(features, "seen")
-		} else if info.MLOS {
+		} else if info.MFOV {
 			features = append(features, "@Ounhidden@N")
 		} else if info.Lighted {
 			features = append(features, "@Ylighted@N")
@@ -189,7 +189,7 @@ func (md *model) drawPosInfo() {
 	if !mons.Seen && g.Wizard != WizardSeeAll {
 		formatBox("unknown monster", "You sensed a monster there.", mfg)
 	} else {
-		if !mons.Peaceful(g) && mons.State != Resting && info.MLOS {
+		if !mons.Peaceful(g) && mons.State != Resting && info.MFOV {
 			mdesc = append(mdesc, "@OCan see you from there!@N")
 		}
 		formatBox(title, strings.Join(mdesc, "\n"), mfg)
@@ -291,7 +291,7 @@ func (md *model) updatePosInfo() {
 	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
 		if infov && mons.Sees(g, g.Player.P) {
-			pi.MLOS = true
+			pi.MFOV = true
 		}
 	} else if mons := g.KnownMonsterAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
 		pi.Monster = mons

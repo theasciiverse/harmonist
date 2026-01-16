@@ -62,11 +62,10 @@ const (
 	ActionNextStairs
 
 	ActionSetKeys
-	ActionInvertLOS
+	ActionInvertTheme
 	ActionToggleTiles
 	ActionToggleShowNumbers
 
-	ActionWizardInfo
 	ActionWizardToggleMode
 )
 
@@ -167,14 +166,12 @@ func (k Action) String() (text string) {
 		text = "Action Menu"
 	case ActionSetKeys:
 		text = "Change key bindings"
-	case ActionInvertLOS:
+	case ActionInvertTheme:
 		text = "Toggle dark/light theme"
 	case ActionToggleTiles:
 		text = "Toggle tiles/ASCII display"
 	case ActionToggleShowNumbers:
 		text = "Toggle hearts/numbers"
-	case ActionWizardInfo:
-		text = "Info"
 	case ActionWizardToggleMode:
 		text = "toggle normal/map/all wizard mode"
 	}
@@ -428,7 +425,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 	case ActionSetKeys:
 		again = true
 		md.openKeyBindings()
-	case ActionInvertLOS:
+	case ActionInvertTheme:
 		again = true
 		GameConfig.DarkColors = !GameConfig.DarkColors
 		err := SaveConfig()
@@ -456,9 +453,6 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 		md.updateStatusInfo()
 		md.mode = modeNormal
-	case ActionWizardInfo:
-		again = true
-		md.wizardInfo()
 	case ActionWizardToggleMode:
 		switch g.Wizard {
 		case WizardNormal:
@@ -476,15 +470,6 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		again = true
 	}
 	return again, eff, err
-}
-
-func (md *model) wizardInfo() {
-	md.mode = modeSmallPager
-	st := gruid.Style{}
-	md.smallPager.SetBox(&ui.Box{Title: ui.Text("Wizard Info").WithStyle(st.WithFg(ColorCyan))})
-	stts := []ui.StyledText{}
-	stts = append(stts, ui.Textf("Monsters: %d \n", len(md.g.Monsters)))
-	md.smallPager.SetLines(stts)
 }
 
 // readScroll perfroms scroll reading.
@@ -543,7 +528,7 @@ func altBgEntries(entries []ui.MenuEntry) {
 // settingsActions represents the various configuration actions.
 var settingsActions = []Action{
 	ActionSetKeys,
-	ActionInvertLOS,
+	ActionInvertTheme,
 	ActionToggleShowNumbers,
 }
 

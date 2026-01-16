@@ -83,7 +83,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		}
 		return cost
 	}
-	if rs == TreePlayerRay && t == WindowCell && distance(src, from) >= DefaultLOSRange {
+	if rs == TreePlayerRay && t == WindowCell && distance(src, from) >= DefaultFOVRange {
 		return wallcost - distance(src, from) - 1
 	}
 	return distance(to, from)
@@ -94,11 +94,11 @@ func (lt *lighter) MaxCost(src gruid.Point) int {
 	case TreePlayerRay:
 		return TreeRange + 1
 	case MonsterRay:
-		return DefaultMonsterLOSRange + 1
+		return DefaultMonsterFOVRange + 1
 	case LightRay:
 		return LightRange
 	default:
-		return DefaultLOSRange + 1
+		return DefaultFOVRange + 1
 	}
 }
 
@@ -163,8 +163,8 @@ const (
 
 const LightRange = 6
 
-const DefaultLOSRange = 12
-const DefaultMonsterLOSRange = 12
+const DefaultFOVRange = 12
+const DefaultMonsterFOVRange = 12
 
 func (g *Game) StopAuto() {
 	if g.autoexploring && !g.autoHalt {
@@ -186,18 +186,18 @@ func (g *Game) Illuminated(p gruid.Point) bool {
 	return ok && c <= LightRange || g.Map.Terrain.At(p) == StoneCell
 }
 
-func (g *Game) blocksSSCLOS(p gruid.Point) bool {
+func (g *Game) blocksSSCFOV(p gruid.Point) bool {
 	return g.Map.At(p) != WallCell
 }
 
-func (g *Game) ComputeLOS() {
+func (g *Game) ComputeFOV() {
 	g.ComputeLights()
-	for k := range g.Player.LOS {
-		delete(g.Player.LOS, k)
+	for k := range g.Player.AFOV {
+		delete(g.Player.AFOV, k)
 	}
 	c := g.Map.At(g.Player.P)
 	rs := NormalPlayerRay
-	maxDepth := DefaultLOSRange
+	maxDepth := DefaultFOVRange
 	if c == TreeCell {
 		rs = TreePlayerRay
 		maxDepth = TreeRange
@@ -208,15 +208,15 @@ func (g *Game) ComputeLOS() {
 	nbs := paths.Neighbors{}
 	g.Player.FOV.SSCVisionMap(
 		g.Player.P, maxDepth,
-		g.blocksSSCLOS,
+		g.blocksSSCFOV,
 		false,
 	)
 	for _, n := range lnodes {
 		if !g.Player.FOV.Visible(n.P) {
 			continue
 		}
-		if n.Cost <= DefaultLOSRange {
-			g.Player.LOS[n.P] = true
+		if n.Cost <= DefaultFOVRange {
+			g.Player.AFOV[n.P] = true
 		} else if c == TreeCell && g.Illuminated(n.P) && n.Cost <= TreeRange {
 			if g.Map.At(n.P) == WallCell {
 				// this is just an approximation, but ok in practice
@@ -232,17 +232,17 @@ func (g *Game) ComputeLOS() {
 					continue
 				}
 			}
-			g.Player.LOS[n.P] = true
+			g.Player.AFOV[n.P] = true
 		}
 	}
-	for p := range g.Player.LOS {
+	for p := range g.Player.AFOV {
 		if g.Player.Sees(p) {
 			g.SeePosition(p)
 		}
 	}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
-			mons.ComputeLOS(g) // approximation of what the monster will see for player info purposes
+			mons.ComputeFOV(g) // approximation of what the monster will see for player info purposes
 			mons.UpdateKnowledge(g, mons.P)
 			if mons.Seen {
 				g.StopAuto()
@@ -274,25 +274,25 @@ func visionRange(p gruid.Point, radius int) gruid.Range {
 
 func (g *Game) mfovSetCenter(p gruid.Point) {
 	if g.mfov == nil {
-		g.mfov = rl.NewFOV(visionRange(p, DefaultMonsterLOSRange))
+		g.mfov = rl.NewFOV(visionRange(p, DefaultMonsterFOVRange))
 	} else {
-		g.mfov.SetRange(visionRange(p, DefaultMonsterLOSRange))
+		g.mfov.SetRange(visionRange(p, DefaultMonsterFOVRange))
 	}
 }
 
-func (m *Monster) ComputeLOS(g *Game) {
+func (m *Monster) ComputeFOV(g *Game) {
 	if m.Kind.Peaceful() {
 		return
 	}
-	for k := range m.LOS {
-		delete(m.LOS, k)
+	for k := range m.FOV {
+		delete(m.FOV, k)
 	}
 	g.mfovSetCenter(m.P)
 	lt := &lighter{rs: MonsterRay, g: g}
 	lnodes := g.mfov.VisionMap(lt, m.P)
 	g.mfov.SSCVisionMap(
-		m.P, DefaultMonsterLOSRange,
-		g.blocksSSCLOS,
+		m.P, DefaultMonsterFOVRange,
+		g.blocksSSCFOV,
 		false,
 	)
 	for _, n := range lnodes {
@@ -300,13 +300,13 @@ func (m *Monster) ComputeLOS(g *Game) {
 			continue
 		}
 		if n.P == m.P {
-			m.LOS[n.P] = true
+			m.FOV[n.P] = true
 			continue
 		}
-		if n.Cost <= DefaultMonsterLOSRange && g.Map.At(n.P) != BarrelCell {
+		if n.Cost <= DefaultMonsterFOVRange && g.Map.At(n.P) != BarrelCell {
 			pnode, ok := g.mfov.From(lt, n.P)
 			if !ok || !Hides(g.Map.At(pnode.P)) {
-				m.LOS[n.P] = true
+				m.FOV[n.P] = true
 			}
 		}
 	}
@@ -437,7 +437,7 @@ func (g *Game) Ray(p gruid.Point) []gruid.Point {
 
 func (g *Game) ComputeNoise() {
 	dij := &noisePath{g: g}
-	rg := DefaultLOSRange
+	rg := DefaultFOVRange
 	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, rg)
 	count := 0
 	for _, mons := range g.Monsters {
@@ -505,7 +505,7 @@ func monsterNoise(mk monsterKind) string {
 }
 
 func (pl *Player) Sees(p gruid.Point) bool {
-	return pl.LOS[p]
+	return pl.AFOV[p]
 }
 
 func (m *Monster) SeesPlayer(g *Game) bool {
@@ -513,7 +513,7 @@ func (m *Monster) SeesPlayer(g *Game) bool {
 }
 
 func (m *Monster) SeesLight(g *Game, p gruid.Point) bool {
-	if !(m.LOS[p] && inViewCone(m.Dir, m.P, p)) {
+	if !(m.FOV[p] && inViewCone(m.Dir, m.P, p)) {
 		return false
 	}
 	if m.State == Resting && distance(m.P, p) > 1 {
@@ -525,7 +525,7 @@ func (m *Monster) SeesLight(g *Game, p gruid.Point) bool {
 func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
-		darkRange = DefaultMonsterLOSRange
+		darkRange = DefaultMonsterFOVRange
 	}
 	if g.Player.Inventory.Body == CloakShadows {
 		darkRange--
@@ -534,7 +534,7 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 		darkRange = 1
 	}
 	const tableRange = 1
-	if !(m.LOS[p] && (inViewCone(m.Dir, m.P, p) || m.Kind == MonsSpider)) {
+	if !(m.FOV[p] && (inViewCone(m.Dir, m.P, p) || m.Kind == MonsSpider)) {
 		return false
 	}
 	if m.State == Resting && distance(m.P, p) > 1 {
@@ -553,24 +553,24 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 	return true
 }
 
-func (g *Game) ComputeMonsterLOS() {
-	for k := range g.MonsterLOS {
-		delete(g.MonsterLOS, k)
+func (g *Game) ComputeMonsterFOV() {
+	for k := range g.MonsterFOV {
+		delete(g.MonsterFOV, k)
 	}
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.P) {
 			continue
 		}
-		for p := range g.Player.LOS {
+		for p := range g.Player.AFOV {
 			if !g.Player.Sees(p) {
 				continue
 			}
 			if mons.Sees(g, p) {
-				g.MonsterLOS[p] = true
+				g.MonsterFOV[p] = true
 			}
 		}
 	}
-	if g.MonsterLOS[g.Player.P] {
+	if g.MonsterFOV[g.Player.P] {
 		g.Player.Statuses[StatusUnhidden] = 1
 		g.Player.Statuses[StatusHidden] = 0
 	} else {
@@ -594,7 +594,7 @@ func (g *Game) ComputeLights() {
 		if !on {
 			continue
 		}
-		if distance(lpos, g.Player.P) > DefaultLOSRange+LightRange && pt != TreeCell {
+		if distance(lpos, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {
 			continue
 		}
 		sources = append(sources, lpos)
@@ -603,7 +603,7 @@ func (g *Game) ComputeLights() {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
-		if distance(mons.P, g.Player.P) > DefaultLOSRange+LightRange && pt != TreeCell {
+		if distance(mons.P, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {
 			continue
 		}
 		sources = append(sources, mons.P)
@@ -613,13 +613,13 @@ func (g *Game) ComputeLights() {
 }
 
 func (g *Game) ComputeMonsterCone(m *Monster) {
-	g.MonsterTargLOS = make(map[gruid.Point]bool)
-	for p := range g.Player.LOS {
+	g.MonsterTargFOV = make(map[gruid.Point]bool)
+	for p := range g.Player.AFOV {
 		if !g.Player.Sees(p) {
 			continue
 		}
 		if m.Sees(g, p) {
-			g.MonsterTargLOS[p] = true
+			g.MonsterTargFOV[p] = true
 		}
 	}
 }

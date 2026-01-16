@@ -272,7 +272,7 @@ func (g *Game) HandleKill(mons *Monster) {
 		AchAssassin.Get(g)
 	}
 	if g.Map.At(mons.P) == DoorCell {
-		g.ComputeLOS()
+		g.ComputeFOV()
 	}
 	g.StoryPrintf("Death of %s", mons.Kind.Indefinite(false))
 }

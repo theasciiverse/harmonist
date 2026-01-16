@@ -747,7 +747,7 @@ func (mg *MapGen) insideCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		if distance(p, g.Player.P) < DefaultLOSRange {
+		if distance(p, g.Player.P) < DefaultFOVRange {
 			continue
 		}
 		t := mg.m.At(p)
@@ -871,7 +871,7 @@ func (mg *MapGen) foliageCell(g *Game) gruid.Point {
 		x := mg.rand.IntN(MapWidth)
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
-		if distance(p, g.Player.P) < DefaultLOSRange {
+		if distance(p, g.Player.P) < DefaultFOVRange {
 			continue
 		}
 		mons := g.MonsterAt(p)

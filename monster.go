@@ -344,7 +344,7 @@ type Monster struct {
 	FireReady      bool                 // ready to fire (a javelin, for example)
 	Seen           bool                 // already seen by the player
 	Noise          bool                 // made footstep noise on last turn
-	LOS            map[gruid.Point]bool // field of view of the monster
+	FOV            map[gruid.Point]bool // field of view of the monster
 	LastKnownState Mindstate            // last known mindstate (for out-of-view resting)
 	Swapped        bool                 // just swapped by another monster
 	Watching       int                  // turns watching
@@ -357,7 +357,7 @@ type Monster struct {
 // Initialize monster.
 func (m *Monster) Init() {
 	m.P = invalidPos
-	m.LOS = make(map[gruid.Point]bool)
+	m.FOV = make(map[gruid.Point]bool)
 	m.LastKnownPos = invalidPos
 	m.Search = invalidPos
 	if RandInt(2) == 0 {
@@ -470,11 +470,11 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 		}
 		g.StopAuto()
 	}
-	recomputeLOS := g.Player.Sees(m.P) && g.Map.At(m.P) == DoorCell ||
+	recomputeFOV := g.Player.Sees(m.P) && g.Map.At(m.P) == DoorCell ||
 		g.Player.Sees(p) && g.Map.At(p) == DoorCell
 	m.PlaceAt(g, p)
-	if recomputeLOS {
-		g.ComputeLOS()
+	if recomputeFOV {
+		g.ComputeFOV()
 	}
 	t := g.Map.At(p)
 	if t == ChasmCell && !m.Kind.CanFly() || t == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
@@ -618,7 +618,7 @@ func (m *Monster) Explode(g *Game) {
 			g.Fog(p, 1)
 		}
 	}
-	g.ComputeLOS()
+	g.ComputeFOV()
 }
 
 func (m *Monster) NaturalAwake(g *Game) {
@@ -776,8 +776,8 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 			break
 		}
 		for p, on := range g.Objects.Lights {
-			if !on && distance(p, m.P) <= DefaultMonsterLOSRange {
-				m.ComputeLOS(g)
+			if !on && distance(p, m.P) <= DefaultMonsterFOVRange {
+				m.ComputeFOV(g)
 				break
 			}
 		}
@@ -1061,7 +1061,7 @@ func (m *Monster) InvertFoliage(g *Game) {
 	}
 	if invert {
 		if g.Player.Sees(m.P) {
-			g.ComputeLOS()
+			g.ComputeFOV()
 		}
 	}
 }
@@ -1612,7 +1612,7 @@ func (m *Monster) GatherBand(g *Game) {
 	}
 }
 
-func (g *Game) MonsterInLOS() *Monster {
+func (g *Game) MonsterInFOV() *Monster {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
 			return mons

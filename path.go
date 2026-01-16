@@ -300,8 +300,8 @@ func (mp *monPath) Estimation(from, to gruid.Point) int {
 func (m *Monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
 	mp := &monPath{g: g, monster: m}
 	var path []gruid.Point
-	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterLOSRange &&
-		distance(from, to) > DefaultLOSRange && m.Kind != MonsEarthDragon {
+	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterFOVRange &&
+		distance(from, to) > DefaultFOVRange && m.Kind != MonsEarthDragon {
 		if mp.monster.Kind.Patrolling() {
 			path = g.PR.JPSPath(m.Path, from, to, mp.CanPatrolPass, false)
 		} else {

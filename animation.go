@@ -223,7 +223,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.P)
+	md.FOVWavesAnimation(DefaultFOVRange, WaveMagicNoise, md.g.Player.P)
 	colors := []gruid.Color{ColorViolet, ColorCyan}
 	for i := range 2 {
 		for _, p := range noises {
@@ -257,7 +257,7 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 		}
 		for _, q := range nb {
 			fg := colors[RandInt(2)]
-			if !g.Player.LOS[q] {
+			if !g.Player.AFOV[q] {
 				continue
 			}
 			md.ExplosionDrawAt(q, fg)
@@ -286,7 +286,7 @@ func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int
 	return dists, cdists
 }
 
-func (md *model) LOSWavesAnimation(r int, ws wavestyle, center gruid.Point) {
+func (md *model) FOVWavesAnimation(r int, ws wavestyle, center gruid.Point) {
 	dists, cdists := md.g.Waves(r, ws, center)
 	for _, d := range dists {
 		wave := cdists[d]

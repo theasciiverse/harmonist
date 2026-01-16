@@ -18,7 +18,7 @@ type Player struct {
 	Statuses  map[status]int       // active status effect durations
 	Expire    map[status]int       // turn of expiration for active status effects
 	P         gruid.Point          // current position
-	LOS       map[gruid.Point]bool // actual field of view (accounting for darkness)
+	AFOV      map[gruid.Point]bool // actual field of view (accounting for darkness)
 	FOV       *rl.FOV              // field of view (full range)
 	Inventory Inventory            // inventory (cloak, amulet, artifact)
 }
@@ -60,7 +60,7 @@ func (pl *Player) HasStatus(st status) bool {
 }
 
 func (g *Game) AutoToDir() bool {
-	if g.MonsterInLOS() == nil {
+	if g.MonsterInFOV() == nil {
 		p := g.Player.P.Add(g.autoDir)
 		nbs := g.dirNeighbors(p, g.autoDir)
 		blocked := g.dirBlocked(p, g.autoDir)
@@ -119,7 +119,7 @@ func (g *Game) dirBlocked(p, dir gruid.Point) bool {
 }
 
 func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
-	if g.MonsterInLOS() != nil {
+	if g.MonsterInFOV() != nil {
 		g.autoDir = ZP
 		return again, errors.New("You cannot travel while there are monsters in view.")
 	}
@@ -155,7 +155,7 @@ func (g *Game) MoveToTarget() bool {
 		return false
 	}
 	path := g.PlayerPath(g.Player.P, g.autoTarget)
-	if g.MonsterInLOS() != nil {
+	if g.MonsterInFOV() != nil {
 		g.autoTarget = invalidPos
 	}
 	if len(path) < 1 {
@@ -364,7 +364,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		return again, errors.New("You cannot move into a magical barrier.")
 	case t == WindowCell && !g.Player.HasStatus(StatusDig):
 		return again, errors.New("You cannot pass through the closed window.")
-	case t == BarrelCell && g.MonsterLOS[g.Player.P]:
+	case t == BarrelCell && g.MonsterFOV[g.Player.P]:
 		return again, errors.New("You cannot enter a barrel while seen.")
 	}
 	mons := g.MonsterAt(p)
@@ -443,7 +443,7 @@ func (g *Game) SwiftFog() {
 		}
 	}
 	g.PutStatus(StatusSwift, DurationShortSwiftness)
-	g.ComputeLOS()
+	g.ComputeFOV()
 	g.Log("You feel an energy burst and smoke comes out from you.")
 }
 
@@ -454,7 +454,7 @@ func (g *Game) Confusion() {
 }
 
 // PlacePlayerAt moves the player to a given position, swapping positions with
-// a monster if necessary, and handles LOS and monsters awareness update,
+// a monster if necessary, and handles FOV and monsters awareness update,
 // ground collecting, and footsteps noise.
 func (g *Game) PlacePlayerAt(p gruid.Point) {
 	if p == g.Player.P {
@@ -472,7 +472,7 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 		g.Log("Tap-tap.")
 	}
 	g.CollectGround()
-	g.ComputeLOS()
+	g.ComputeFOV()
 	g.MakeMonstersAware()
 }
 

@@ -442,7 +442,7 @@ func (g *Game) Blink() bool {
 // BlinkPos returns a suitable blinking position (for monster or player).
 func (g *Game) BlinkPos(mpassable bool) gruid.Point {
 	losPos := []gruid.Point{}
-	for p, b := range g.Player.LOS {
+	for p, b := range g.Player.AFOV {
 		// XXX: skip if not seen by monster?
 		if !b {
 			continue
@@ -487,7 +487,7 @@ func (g *Game) EvokeDig() error {
 	return nil
 }
 
-func (g *Game) MonstersInCardinalLOS() []*Monster {
+func (g *Game) MonstersInCardinalFOV() []*Monster {
 	ms := []*Monster{}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) && (mons.P.X == g.Player.P.X || mons.P.Y == g.Player.P.Y) {
@@ -503,7 +503,7 @@ func (g *Game) MonstersInCardinalLOS() []*Monster {
 }
 
 func (g *Game) EvokeTeleportOther() error {
-	ms := g.MonstersInCardinalLOS()
+	ms := g.MonstersInCardinalFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
 	}
@@ -564,7 +564,7 @@ func (g *Game) EvokeSwapping() error {
 	case BarrelCell, TableCell, HoledWallCell:
 		return errors.New("You cannot use this magara in a cramped place.")
 	}
-	ms := g.MonstersInLOS()
+	ms := g.MonstersInFOV()
 	var mons *Monster
 	best := 0
 	for _, m := range ms {
@@ -596,8 +596,8 @@ func (g *Game) swapWithMonster(mons *Monster) {
 	}
 }
 
-// MonstersInLOS returns a slice with all visible monsters.
-func (g *Game) MonstersInLOS() []*Monster {
+// MonstersInFOV returns a slice with all visible monsters.
+func (g *Game) MonstersInFOV() []*Monster {
 	ms := []*Monster{}
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
@@ -651,7 +651,7 @@ func (g *Game) Fog(at gruid.Point, radius int) {
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
-	g.ComputeLOS()
+	g.ComputeFOV()
 }
 
 func (g *Game) EvokeShadows() error {
@@ -667,7 +667,7 @@ func (g *Game) EvokeShadows() error {
 }
 
 func (g *Game) EvokeParalysis() error {
-	ms := g.MonstersInLOS()
+	ms := g.MonstersInFOV()
 	count := 0
 	for _, mons := range ms {
 		if mons.PutStatus(g, MonsParalysed, DurationParalysisMonster) {
@@ -681,18 +681,18 @@ func (g *Game) EvokeParalysis() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Log("Whoosh! A slowing luminous wave emerges.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveSlowing, g.Player.P)
 	return nil
 }
 
 func (g *Game) EvokeSleeping() error {
-	ms := g.MonstersInCardinalLOS()
+	ms := g.MonstersInCardinalFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
 	}
 	ma := min(3, len(ms))
 	targets := []gruid.Point{}
-	// XXX: maybe use noise distance instead of LOS?
+	// XXX: maybe use noise distance instead of FOV?
 	for i := range ma {
 		mons := ms[i]
 		if mons.State != Resting {
@@ -719,7 +719,7 @@ func (g *Game) EvokeSleeping() error {
 }
 
 func (g *Game) EvokeLignification() error {
-	ms := g.MonstersInLOS()
+	ms := g.MonstersInFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
 	}
@@ -759,7 +759,7 @@ func (g *Game) EvokeNoise() error {
 			continue
 		}
 		c := g.PR.BreadthFirstMapAt(mons.P)
-		if c > DefaultLOSRange {
+		if c > DefaultFOVRange {
 			continue
 		}
 		if mons.SeesPlayer(g) {
@@ -800,7 +800,7 @@ func (g *Game) EvokeNoise() error {
 }
 
 func (g *Game) EvokeConfusion() error {
-	ms := g.MonstersInLOS()
+	ms := g.MonstersInFOV()
 	count := 0
 	for _, mons := range ms {
 		if mons.EnterConfusion(g) {
@@ -814,7 +814,7 @@ func (g *Game) EvokeConfusion() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Log("Whoosh! A confusing luminous wave emerges.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveConfusion, g.Player.P)
 	return nil
 }
 
@@ -875,7 +875,7 @@ func (g *Game) MagicalBarrierAt(p gruid.Point) {
 	delete(g.Map.Clouds, p)
 	g.Map.MagicalBarriers[p] = t
 	g.PushEvent(&posEvent{P: p, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
-	g.ComputeLOS()
+	g.ComputeFOV()
 }
 
 func (g *Game) EvokeEnergyMagara() error {

@@ -245,8 +245,8 @@ func (md *model) init() gruid.Effect {
 	}
 
 	md.g.ComputeNoise()
-	md.g.ComputeLOS()
-	md.g.ComputeMonsterLOS()
+	md.g.ComputeFOV()
+	md.g.ComputeMonsterFOV()
 	md.updateStatusInfo()
 	md.targ.ex = &examination{}
 	md.CancelExamine()
@@ -689,8 +689,8 @@ func (md *model) EndTurn() gruid.Effect {
 
 func (md *model) updateMapInfo() {
 	md.g.ComputeNoise()
-	md.g.ComputeLOS()
-	md.g.ComputeMonsterLOS()
+	md.g.ComputeFOV()
+	md.g.ComputeMonsterFOV()
 	if md.g.highlight != nil {
 		md.examine(md.targ.ex.p)
 	}

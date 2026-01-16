@@ -31,7 +31,7 @@ type stats struct {
 	Turns             int
 	TWounded          int
 	TMWounded         int
-	TMonsLOS          int
+	TMonsFOV          int
 	NSpotted          int
 	NUSpotted         int
 	DSpotted          [MaxDepth + 1]int
@@ -63,8 +63,8 @@ func (g *Game) TurnStats() {
 	if g.Player.HP < g.Player.HPMax() {
 		g.Stats.TWounded++
 	}
-	if g.MonsterInLOS() != nil {
-		g.Stats.TMonsLOS++
+	if g.MonsterInFOV() != nil {
+		g.Stats.TMonsFOV++
 		if g.Player.HP < g.Player.HPMax() {
 			g.Stats.TMWounded++
 		}

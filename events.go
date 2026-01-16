@@ -38,7 +38,7 @@ type playerEvent struct {
 func (ev *playerEvent) Handle(g *Game) {
 	switch ev.Action {
 	case StorySequence:
-		g.ComputeLOS()
+		g.ComputeFOV()
 		g.md.Story()
 	case AbyssFall:
 		if g.Map.At(g.Player.P) == ChasmCell {
@@ -146,7 +146,7 @@ func (cev *posEvent) Handle(g *Game) {
 	switch cev.Action {
 	case CloudEnd:
 		delete(g.Map.Clouds, cev.P)
-		g.ComputeLOS()
+		g.ComputeFOV()
 	case ObstructionEnd:
 		if t, ok := g.Map.MagicalBarriers[cev.P]; ok {
 			g.Map.Set(cev.P, t)
@@ -172,14 +172,14 @@ func (cev *posEvent) Handle(g *Game) {
 		}
 		delete(g.Map.Clouds, cev.P)
 		g.NightFog(cev.P, 1)
-		g.ComputeLOS()
+		g.ComputeFOV()
 	case NightProgression:
 		if _, ok := g.Map.Clouds[cev.P]; !ok {
 			break
 		}
 		if cev.Timer <= 0 {
 			delete(g.Map.Clouds, cev.P)
-			g.ComputeLOS()
+			g.ComputeFOV()
 			break
 		}
 		g.MakeCreatureSleep(cev.P)
@@ -258,7 +258,7 @@ func (g *Game) OricExplosion(at gruid.Point) {
 	for _, p := range fogs {
 		g.Fog(p, 1)
 	}
-	g.ComputeLOS()
+	g.ComputeFOV()
 }
 
 func (g *Game) NightFog(at gruid.Point, radius int) {
@@ -274,7 +274,7 @@ func (g *Game) NightFog(at gruid.Point, radius int) {
 			g.MakeCreatureSleep(n.P)
 		}
 	}
-	g.ComputeLOS()
+	g.ComputeFOV()
 }
 
 func (g *Game) MakeCreatureSleep(p gruid.Point) {
@@ -321,7 +321,7 @@ func (g *Game) Burn(p gruid.Point) {
 	g.Map.Set(p, GroundCell)
 	g.Map.Clouds[p] = CloudFire
 	if g.Player.Sees(p) {
-		g.ComputeLOS()
+		g.ComputeFOV()
 	}
 	g.PushEventD(&posEvent{P: p, Action: FireProgression}, DurationCloudProgression)
 }

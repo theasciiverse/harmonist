@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.9"
+var Version string = "v0.7.0-dev.10"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -27,8 +27,8 @@ type Game struct {
 	MonsterBands     []bandInfo           // monster bands
 	Objects          Objects              // object entities
 	KnownMonster     map[gruid.Point]int  // monster memory cache by position
-	MonsterLOS       map[gruid.Point]bool // whether a position is in monster view
-	MonsterTargLOS   map[gruid.Point]bool // whether a position is in target monster view
+	MonsterFOV       map[gruid.Point]bool // whether a position is in monster view
+	MonsterTargFOV   map[gruid.Point]bool // whether a position is in target monster view
 	LightFOV         *rl.FOV              // light map
 
 	Events            *rl.EventQueue // event queue
@@ -193,7 +193,7 @@ func (g *Game) InitPlayer() {
 		MP:      DefaultMPmax,
 		Bananas: 1,
 	}
-	g.Player.LOS = map[gruid.Point]bool{}
+	g.Player.AFOV = map[gruid.Point]bool{}
 	g.Player.Statuses = map[status]int{}
 	g.Player.Expire = map[status]int{}
 	g.Player.Magaras = []Magara{
@@ -394,7 +394,7 @@ func (g *Game) InitLevelStructures() {
 	g.Map.Clouds = map[gruid.Point]Cloud{}
 	g.MonstersPosCache = make([]int, MapSize)
 	g.KnownMonster = map[gruid.Point]int{}
-	g.MonsterLOS = map[gruid.Point]bool{}
+	g.MonsterFOV = map[gruid.Point]bool{}
 	g.Objects.Magaras = map[gruid.Point]Magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
 	g.Objects.Items = map[gruid.Point]item{}
@@ -479,7 +479,7 @@ func (g *Game) InitLevel() {
 			g.Turn+10+RandInt(50))
 	}
 
-	// initialize LOS
+	// initialize FOV
 	if g.Map.Depth == 1 {
 		g.LogStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
 	}
@@ -489,9 +489,9 @@ func (g *Game) InitLevel() {
 	case MaxDepth:
 		g.LogStyled("This the bottom floor, you now have to look for the artifact.", logSpecial)
 	}
-	g.ComputeLOS()
+	g.ComputeFOV()
 	g.MakeMonstersAware()
-	g.ComputeMonsterLOS()
+	g.ComputeMonsterFOV()
 	if !Testing { // disable when testing
 		g.md.updateStatusInfo()
 	}

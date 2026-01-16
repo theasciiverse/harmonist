@@ -80,12 +80,12 @@ func TestInitLevel(t *testing.T) {
 	}
 }
 
-func BenchmarkLOS(b *testing.B) {
+func BenchmarkFOV(b *testing.B) {
 	g := &Game{}
 	g.Init()
 	g.InitLevel()
 	for range b.N {
-		g.ComputeLOS()
+		g.ComputeFOV()
 	}
 }
 

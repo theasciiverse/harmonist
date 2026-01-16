@@ -308,7 +308,7 @@ func (g *Game) ActivateQueenStone() {
 	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, QueenStoneDistance)
 	g.Log("The stone releases confusing sounds.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveMagicNoise, g.Player.P)
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -343,7 +343,7 @@ func (g *Game) ActivateNightStone() {
 		}
 	}
 	g.Log("The stone releases hypnotic harmonies.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveSleeping, g.Player.P)
 	for _, mons := range targets {
 		g.Logf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
@@ -364,7 +364,7 @@ func (g *Game) ActivateTreeStone() {
 		targets = append(targets, mons)
 	}
 	g.Log("The stone releases magical spores.")
-	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveTree, g.Player.P)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
 		if mons.Search == invalidPos {
@@ -379,7 +379,7 @@ func (g *Game) ActivateTreeStone() {
 }
 
 func (g *Game) ActivateTeleportStone() {
-	targets := g.MonstersInLOS()
+	targets := g.MonstersInFOV()
 	g.Log("The stone releases oric teleport energies.")
 	for _, mons := range targets {
 		if mons.Search == invalidPos && mons.Kind.CanOpenDoors() {

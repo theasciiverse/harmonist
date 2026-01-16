@@ -224,11 +224,11 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		if fgTerrain != ColorForeground {
 			fgColor = fgTerrain
 		}
-		if g.MonsterTargLOS != nil {
-			if g.MonsterTargLOS[p] {
+		if g.MonsterTargFOV != nil {
+			if g.MonsterTargFOV[p] {
 				fgColor = ColorOrange
 			}
-		} else if g.MonsterLOS[p] {
+		} else if g.MonsterFOV[p] {
 			fgColor = ColorOrange
 		}
 		infov := g.Player.Sees(p) || g.Wizard == WizardSeeAll

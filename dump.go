@@ -176,7 +176,7 @@ func (g *Game) DetailedStatistics(w io.Writer) {
 		fmt.Fprintf(w, "There were %d destroyed walls.\n", g.Stats.Digs)
 	}
 	fmt.Fprintf(w, "You spent %d%% turns wounded.\n", g.Stats.TWounded*100/(g.Stats.Turns+1))
-	fmt.Fprintf(w, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsLOS*100/(g.Stats.Turns+1))
+	fmt.Fprintf(w, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsFOV*100/(g.Stats.Turns+1))
 	fmt.Fprintf(w, "You spent %d%% turns wounded with monsters in sight.\n", g.Stats.TMWounded*100/(g.Stats.Turns+1))
 	maxDepth := max(g.Map.Depth-1, g.ExploredLevels)
 	if g.Player.HP <= 0 {
@@ -319,11 +319,11 @@ func (g *Game) DumpDungeon() string {
 				r = '@'
 			default:
 				r, _ = g.TerrainStyle(kt, p)
-				if _, ok := g.Map.Clouds[p]; ok && g.Player.LOS[p] {
+				if _, ok := g.Map.Clouds[p]; ok && g.Player.AFOV[p] {
 					r = '§'
 				}
 				m := g.MonsterAt(p)
-				if m.Exists() && g.Player.LOS[m.P] {
+				if m.Exists() && g.Player.AFOV[m.P] {
 					r = m.Kind.Letter()
 				}
 			}

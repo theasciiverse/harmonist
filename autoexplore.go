@@ -7,7 +7,7 @@ import (
 )
 
 func (g *Game) Autoexplore() (again bool, err error) {
-	if mons := g.MonsterInLOS(); mons.Exists() {
+	if mons := g.MonsterInFOV(); mons.Exists() {
 		return again, errors.New("You cannot auto-explore while there are monsters in view.")
 	}
 	if g.AllExplored() {
