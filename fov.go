@@ -1,18 +1,3 @@
-// This file implements a line of sight algorithm.
-//
-// It works in a way that can remind of the Dijkstra algorithm, but within each
-// cone between a diagonal and an orthogonal line, only movements along those
-// two directions are allowed. This allows the algorithm to be a simple pass on
-// squares around the player, starting from radius 1 until line of sight range.
-//
-// Going from a gruid.Point from to a gruid.Point pos has a cost, which depends
-// essentially on the type of terrain in from. Some circumstances, such as
-// being on top of a tree, can influence the cost of terrains.
-//
-// The obtained light rays are lines formed using at most two adjacent
-// directions: a diagonal and an orthogonal one (for example north east and
-// east).
-
 package main
 
 import (
