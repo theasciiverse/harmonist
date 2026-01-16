@@ -9,6 +9,17 @@ import (
 	"codeberg.org/anaseto/gruid/ui"
 )
 
+// logEntry describes a log entry.
+type logEntry struct {
+	Text  string
+	MText string
+	Index int
+	Tick  bool
+	Style logStyle
+	Dups  int
+}
+
+// logStyle describes the various kinds of logging styles.
 type logStyle int
 
 const (
@@ -21,13 +32,26 @@ const (
 	logConfirm
 )
 
-type logEntry struct {
-	Text  string
-	MText string
-	Index int
-	Tick  bool
-	Style logStyle
-	Dups  int
+// Rune returns the coloring markup rune for the style.
+func (st logStyle) Rune() rune {
+	var r rune
+	switch st {
+	case logNotable:
+		r = 'Y'
+	case logDamage:
+		r = 'O'
+	case logSpecial:
+		r = 'C'
+	case logStatusEnd:
+		r = 'V'
+	case logError:
+		r = 'R'
+	case logConfirm:
+		r = 'M'
+	default:
+		r = 'N'
+	}
+	return r
 }
 
 func (e logEntry) String() string {
@@ -90,6 +114,7 @@ func (g *Game) LogfStyled(format string, style logStyle, a ...any) {
 	g.LogEntry(e)
 }
 
+// LogEntry adds a new entry to the game logs.
 func (g *Game) LogEntry(e logEntry) {
 	if e.Index == g.LogNextTick {
 		e.Tick = true
@@ -122,6 +147,7 @@ func (g *Game) StoryPrintf(format string, a ...any) {
 	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Map.Depth, g.Turn, fmt.Sprintf(format, a...)))
 }
 
+// CrackSound produces a random crack message.
 func (g *Game) CrackSound() (text string) {
 	switch RandInt(4) {
 	case 0:
@@ -136,6 +162,7 @@ func (g *Game) CrackSound() (text string) {
 	return text
 }
 
+// ExplosionSound produces a random explosion message.
 func (g *Game) ExplosionSound() (text string) {
 	switch RandInt(3) {
 	case 0:
@@ -146,27 +173,6 @@ func (g *Game) ExplosionSound() (text string) {
 		text = "Boom!"
 	}
 	return text
-}
-
-func (st logStyle) Rune() rune {
-	var r rune
-	switch st {
-	case logNotable:
-		r = 'Y'
-	case logDamage:
-		r = 'O'
-	case logSpecial:
-		r = 'C'
-	case logStatusEnd:
-		r = 'V'
-	case logError:
-		r = 'R'
-	case logConfirm:
-		r = 'M'
-	default:
-		r = 'N'
-	}
-	return r
 }
 
 // DrawLog draws 2 compacted lines of log.
