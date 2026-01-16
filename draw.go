@@ -44,17 +44,7 @@ func (md *model) Draw() gruid.Grid {
 	switch md.mode {
 	case modeNormal:
 		if md.statusFocus {
-			rg := md.status.ActiveBounds()
-			x := (rg.Min.X + rg.Max.X) / 2
-			w := md.statusDesc.Content.Size().X
-			x -= w / 2
-			if x+w > UIWidth {
-				x = UIWidth - w
-			}
-			if x < 0 {
-				x = 0
-			}
-			md.statusDesc.Draw(md.gd.Slice(md.gd.Range().Lines(UIHeight-4, UIHeight-1).Shift(x, 0, 0, 0)))
+			md.drawStatusDesc()
 		} else if md.targ.ex.p != invalidPos {
 			md.drawPosInfo()
 		}
@@ -89,6 +79,21 @@ func (md *model) Draw() gruid.Grid {
 	}
 	md.gd.Slice(md.gd.Range().Line(UIHeight - 1)).Copy(md.status.Draw())
 	return md.gd
+}
+
+func (md *model) drawStatusDesc() {
+	rg := md.status.ActiveBounds()
+	x := (rg.Min.X + rg.Max.X) / 2
+	sz := md.statusDesc.Content.Size()
+	w, h := sz.X, sz.Y
+	x -= w / 2
+	if x+w >= UIWidth {
+		x = UIWidth - w - 1
+	}
+	if x < 0 {
+		x = 0
+	}
+	md.statusDesc.Draw(md.gd.Slice(md.gd.Range().Lines(UIHeight-3-h, UIHeight-1).Shift(x, 0, 0, 0)))
 }
 
 func drawWelcome(gd gruid.Grid) gruid.Grid {

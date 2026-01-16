@@ -642,6 +642,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 			}
 			md.statusDesc.Box = &ui.Box{Title: title}
 			md.statusDesc.SetText(sts[i].Desc())
+			md.statusDesc.Content = md.statusDesc.Content.Format(UIWidth - 2)
 			md.statusFocus = true
 		}
 	}

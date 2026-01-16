@@ -133,19 +133,19 @@ func (st status) Desc() string {
 	case StatusDig:
 		return "Allows walking into walls."
 	case StatusLight:
-		return "You are in a lighted cell."
+		return "You are in a lighted cell. Monsters may see you from a greater distance."
 	case StatusLevitation:
 		return "Allows to fly over chasm and oric barriers."
 	case StatusShadows:
 		return "Only adjacent monsters can see you on dark cells."
 	case StatusIlluminated:
-		return "You are magically lighted."
+		return "You are magically lighted. Monsters may see you from a greater distance unless you’re hidden in a place that covers the light."
 	case StatusTransparent:
-		return "Only adjacent monsters can see you on lighted cells."
+		return "Only adjacent monsters can see you on lighted cells. It does not affect your visibility on dark cells."
 	case StatusDisguised:
-		return "Most monsters will ignore you, except those with good sense of smell."
+		return "Most non-hunting monsters will ignore you. Monsters with good sense of smell may sense you from nearby if less than 3 tiles away."
 	case StatusDelay:
-		return "Time remaining before the explosion."
+		return "Time remaining before the delayed explosion."
 	case StatusDispersal:
 		return "Monsters that attempt to hit you will blink away."
 	default:
