@@ -365,7 +365,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 		md.pager.SetLines(md.logs)
 		md.pager.SetCursor(gruid.Point{0, len(md.logs)})
-		md.pager.SetBox(&ui.Box{Title: ui.Text("Messages").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+		md.pager.SetBox(&ui.Box{Title: ui.Text("Messages").WithStyle(gruid.Style{Fg: ColorYellow})})
 		md.mode = modePager
 		md.pagerMode = modeLogs
 	case ActionSave:
@@ -543,7 +543,7 @@ func (md *model) openSettings() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
@@ -588,7 +588,7 @@ func (md *model) openKeyBindings() {
 		r++
 	}
 	altBgEntries(entries)
-	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.keysMenu.SetEntries(entries)
 	md.keysMenu.SetActiveInvokable(0)
 	md.mode = modeMenu
@@ -608,7 +608,7 @@ var menuActions = []Action{
 var menuKeys = []rune{'m', '?', '#', 'C', 'S', 'Q'}
 
 func (md *model) openMenu() {
-	hstyle := gruid.Style{}.WithFg(ColorCyan)
+	hstyle := gruid.Style{Fg: ColorCyan}
 	entries := []ui.MenuEntry{}
 	for i, it := range menuActions {
 		r := menuKeys[i]
@@ -630,7 +630,7 @@ func (md *model) openMenu() {
 		})
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Menu").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
@@ -650,7 +650,7 @@ func (md *model) openIventory() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Inventory").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Inventory").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
@@ -664,22 +664,23 @@ func (md *model) evokeMagaraMenu() {
 	entries := []ui.MenuEntry{}
 	items := md.g.Player.Magaras
 	r := 'a'
+	stt := ui.StyledText{}.WithMarkups(Markups)
 	for _, it := range items {
 		entries = append(entries, ui.MenuEntry{
-			Text: ui.Textf("%c - %s ", r, it.ShortDesc()),
+			Text: stt.WithTextf("%c - %s ", r, it.ShortDesc()),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
 	md.menuMode = modeEvocation
 	it := items[0]
-	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-	md.description.Box = &ui.Box{Title: ui.Text(it.String())}
+	md.description.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Box = &ui.Box{Title: stt.WithText(it.String())}
 }
 
 func (md *model) equipMagaraMenu() {
@@ -694,7 +695,7 @@ func (md *model) equipMagaraMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Replace which magara?").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Replace which magara?").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
@@ -724,7 +725,7 @@ func (md *model) openHelp() {
 		})
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Help Menu").WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Help Menu").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
@@ -764,14 +765,14 @@ func (md *model) updateKeysDescription(title string, actions []string) {
 	} else {
 		title = fmt.Sprintf(" %s ", title)
 	}
-	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{Fg: ColorYellow})})
 	lines := []ui.StyledText{}
 	for i := 0; i < len(actions)-1; i += 2 {
 		stt := ui.StyledText{}
 		if actions[i+1] != "" {
 			stt = stt.WithTextf(" %-36s %s", actions[i], actions[i+1])
 		} else {
-			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{}.WithFg(ColorCyan))
+			stt = stt.WithTextf(" %s ", actions[i]).WithStyle(gruid.Style{Fg: ColorCyan})
 		}
 		if i%4 == 2 {
 			stt = stt.WithStyle(stt.Style().WithBg(ColorBackgroundSecondary))
@@ -811,7 +812,7 @@ func (md *model) helpTopic(title, content string) {
 	md.mode = modePager
 	md.pagerMode = modeHelpKeys
 	md.mode = modePager
-	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{}.WithFg(ColorYellow))})
+	md.pager.SetBox(&ui.Box{Title: ui.Text(title).WithStyle(gruid.Style{Fg: ColorYellow})})
 }
 
 func (md *model) helpBasics() {

@@ -60,8 +60,9 @@ func (md *model) Draw() gruid.Grid {
 			md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2, UIWidth)))
 			if md.menuMode == modeEquip {
 				it := md.g.Objects.Magaras[md.g.Player.P]
-				md.equipLabel.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-				md.equipLabel.Box = &ui.Box{Title: ui.Textf("%s (ground)", it.String())}
+				stt := ui.StyledText{}.WithMarkups(Markups)
+				md.equipLabel.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+				md.equipLabel.Box = &ui.Box{Title: stt.WithTextf("%s (ground)", it.String())}
 				md.equipLabel.Draw(md.gd.Slice(gruid.NewRange(0, gd.Size().Y, UIWidth/2, UIHeight-1)))
 			}
 		case modeGameMenu, modeHelpMenu, modeSettings:
@@ -69,7 +70,7 @@ func (md *model) Draw() gruid.Grid {
 		case modeKeys, modeKeysChange:
 			gd := md.keysMenu.Draw()
 			max := gd.Size()
-			t := ui.Text("(R) reset (Enter) change").WithStyle(gruid.Style{}.WithFg(ColorCyan))
+			t := ui.Text("(R) reset (Enter) change").WithStyle(gruid.Style{Fg: ColorCyan})
 			if md.menuMode == modeKeysChange {
 				t = t.WithText(" Press new key... ")
 			}

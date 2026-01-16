@@ -163,12 +163,13 @@ func (md *model) initKeys() {
 }
 
 func (md *model) initWidgets() {
-	md.log = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
-	md.description = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	stt := ui.StyledText{}.WithMarkups(Markups)
+	md.log = ui.NewLabel(stt)
+	md.description = ui.NewLabel(stt)
 	md.description.AdjustWidth = false
-	md.equipLabel = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}).WithMarkup('t', gruid.Style{Fg: ColorYellow}))
+	md.equipLabel = ui.NewLabel(stt)
 	md.equipLabel.AdjustWidth = false
-	md.statusDesc = ui.NewLabel(ui.StyledText{}.WithStyle(gruid.Style{}))
+	md.statusDesc = ui.NewLabel(stt)
 	md.pager = ui.NewPager(ui.PagerConfig{
 		Grid: gruid.NewGrid(UIWidth, UIHeight-1),
 		Box:  &ui.Box{},
@@ -179,7 +180,7 @@ func (md *model) initWidgets() {
 		Box:  &ui.Box{},
 		Keys: ui.PagerKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
 	})
-	md.pagerMarkup = ui.StyledText{}.WithMarkups(Markups)
+	md.pagerMarkup = stt
 	style := ui.MenuStyle{
 		Active: gruid.Style{}.WithFg(ColorYellow),
 	}
@@ -633,12 +634,12 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 				}
 				break
 			}
-			var title ui.StyledText
+			title := ui.StyledText{}.WithMarkups(Markups)
 			st := sts[i]
 			if !st.Flag() {
-				title = ui.Textf("%s (for %d turns)", sts[i].String(), md.g.Player.Statuses[sts[i]]/DurationStatusStep)
+				title = title.WithTextf("%s (for %d turns)", sts[i].String(), md.g.Player.Statuses[sts[i]]/DurationStatusStep)
 			} else {
-				title = ui.Text(sts[i].String())
+				title = title.WithText(sts[i].String())
 			}
 			md.statusDesc.Box = &ui.Box{Title: title}
 			md.statusDesc.SetText(sts[i].Desc())
@@ -787,13 +788,15 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		case modeInventory:
 			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
-			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-			md.description.Box = &ui.Box{Title: ui.Text(it.String())}
+			stt := ui.StyledText{}.WithMarkups(Markups)
+			md.description.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Box = &ui.Box{Title: stt.WithText(it.String())}
 		case modeEvocation:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
-			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-			md.description.Box = &ui.Box{Title: ui.Text(it.String())}
+			stt := ui.StyledText{}.WithMarkups(Markups)
+			md.description.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Box = &ui.Box{Title: stt.WithText(it.String())}
 			if act != ui.MenuInvoke {
 				break
 			}
@@ -807,8 +810,9 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 		case modeEquip:
 			items := md.g.Player.Magaras
 			it := items[md.menu.Active()]
-			md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-			md.description.Box = &ui.Box{Title: ui.Textf("%s (equipped)", it.String())}
+			stt := ui.StyledText{}.WithMarkups(Markups)
+			md.description.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+			md.description.Box = &ui.Box{Title: stt.WithTextf("%s (equipped)", it.String())}
 			if act != ui.MenuInvoke {
 				break
 			}

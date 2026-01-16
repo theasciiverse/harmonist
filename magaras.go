@@ -317,87 +317,52 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case NoMagara:
 		return "You do not have a magara equipped on this slot yet."
 	case BlinkMagara:
-		desc = "makes you blink away within your line of sight by using an oric energy disturbance. The magara is more susceptible to send you to the cells that are most far from you."
+		desc = "Makes you blink away within your line of sight by using an oric energy disturbance. The magara is more susceptible to send you to the cells that are most far from you."
 	case DigMagara:
-		desc = "makes you dig walls by walking into them like an earth dragon thanks to destructive oric magic."
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusDig.String(), DurationDigging, StatusDig.Desc())
 	case TeleportMagara:
-		desc = "creates an oric energy disturbance, making you teleport far away on the same level."
+		desc = "Creates an oric energy disturbance, making you teleport far away on the same level."
 	case SwiftnessMagara:
-		desc = fmt.Sprintf("makes you able to move %d times in a row for free.", DurationSwiftness)
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusSwift.String(), DurationSwiftness, StatusSwift.Desc())
 	case LevitationMagara:
-		desc = "makes you levitate with oric energies, allowing you to move over chasms, as well as through oric barriers."
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusLevitation.String(), DurationLevitation, StatusLevitation.Desc())
 	case FireMagara:
-		desc = "throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce purple mist inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
+		desc = "Throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce purple mist inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
 	case FogMagara:
-		desc = "creates a dense fog cloud in a 2-range radius using harmonic energies. The cloud will dissipate with time."
+		desc = "Creates a dense fog cloud in a 2-range radius using harmonic energies. The cloud will dissipate with time."
 	case ShadowsMagara:
-		desc = "surrounds you by harmonic shadows. While standing on a dark cell, only adjacent monsters will be able to see you. It does not affect your visibility on lighted cells."
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusShadows.String(), DurationShadows, StatusShadows.Desc())
 	case NoiseMagara:
-		desc = "tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. The possible monster destinations will be marked with noise symbols in the map. It only works on monsters that are not already seeing you."
+		desc = "Tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. The possible monster destinations will be marked with noise symbols in the map. It only works on monsters that are not already seeing you."
 	case ConfusionMagara:
-		desc = "confuses monsters in sight with harmonic light and sounds, leaving them unable to attack you."
+		desc = fmt.Sprintf("Confuses monsters in sight with harmonic light and sounds, leaving them unable to attack you for %d turns.", DurationConfusionMonster)
 	case ParalysisMagara:
-		desc = "makes monsters in sight unable to act by disturbing their senses with sound and light illusions."
+		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with sound and light illusions for %d turns.", DurationParalysisMonster)
 	case SleepingMagara:
-		desc = "induces deep sleeping and exhaustion for up to three random monsters you see in cardinal directions using hypnotic illusions."
+		desc = "Induces deep sleeping and exhaustion for up to three random monsters you see in cardinal directions using hypnotic illusions."
 	case TeleportOtherMagara:
-		desc = "creates oric energy disturbances, teleporting up to two random monsters you see in cardinal directions."
+		desc = "Creates oric energy disturbances, teleporting up to two random monsters you see in cardinal directions."
 	case SwappingMagara:
-		desc = "makes you swap positions with the farthest monster in sight. If there is more than one at the same distance, it will be chosen randomly."
+		desc = "Makes you swap positions with the farthest monster in sight. If there is more than one at the same distance, it will be chosen randomly."
 	case ObstructionMagara:
-		desc = "creates temporal barriers with oric energy between you and monsters in sight."
+		desc = fmt.Sprintf("Creates temporal barriers with oric energy between you and monsters in sight. They last at least %d turns.", DurationMagicalBarrier)
 	case LignificationMagara:
-		desc = "liberates magical spores that lignify up to 2 monsters in view, so that they cannot move. The monsters can still fight."
+		desc = fmt.Sprintf("Liberates magical spores that lignify up to 2 monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
 	case EnergyMagara:
-		desc = "replenishes your MP and HP."
+		desc = "Replenishes your MP and HP."
 	case TransparencyMagara:
-		desc = "feeds surrounding light to harmonic magic to make you transparent. When standing on a lighted cell, only adjacent monsters will be able to see you. It does not affect your visibility on dark cells."
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusTransparent.String(), DurationTransparency, StatusTransparent.Desc())
 	case DisguiseMagara:
-		desc = "surrounds you with harmonic illusions that make you look like a guard. As a result, most non-hunting monsters will ignore you. Monsters with good sense of smell may sense you from nearby if less than 3 tiles away."
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusDisguised.String(), DurationDisguise, StatusDisguised.Desc())
 	case DelayedNoiseMagara:
-		desc = "will produce a thunderous harmonic noise in your current cell. The noise will happen after a delay."
+		desc = fmt.Sprintf("Will produce a thunderous harmonic noise in your current cell after a @YDelay@N of %d turns.", DurationHarmonicNoiseDelay)
 	case DispersalMagara:
-		desc = "will make monsters that attempt to hit you blink away."
+		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusDispersal.String(), DurationDispersal, StatusDispersal.Desc())
 	case DelayedOricExplosionMagara:
-		desc = "will produce a big rock-destroying oric explosion at your current cell. The explosion will happen after a delay. It destroys only walls."
-	}
-	duration := 0
-	switch mag.Kind {
-	case ConfusionMagara:
-		duration = DurationConfusionMonster
-	case ParalysisMagara:
-		duration = DurationParalysisMonster
-	case ObstructionMagara:
-		duration = DurationMagicalBarrier
-	case LignificationMagara:
-		duration = DurationLignificationMonster
-	case ShadowsMagara:
-		duration = DurationShadows
-	case DigMagara:
-		duration = DurationDigging
-	case SwiftnessMagara:
-		duration = DurationSwiftness
-	case LevitationMagara:
-		duration = DurationLevitation
-	case TransparencyMagara:
-		duration = DurationTransparency
-	case DisguiseMagara:
-		duration = DurationDisguise
-	case DelayedNoiseMagara:
-		duration = DurationHarmonicNoiseDelay
-	case DelayedOricExplosionMagara:
-		duration = DurationOricExplosionDelay
-	}
-	if duration > 0 {
-		switch mag.Kind {
-		case DelayedNoiseMagara, DelayedOricExplosionMagara:
-			desc += fmt.Sprintf(" Delay lasts for %d turns.", duration)
-		default:
-			desc += fmt.Sprintf(" Effect lasts for %d turns.", duration)
-		}
+		desc = fmt.Sprintf("Will produce a big rock-destroying oric explosion at your current cell after a @YDelay@N of %d turns. It destroys only walls.", DurationHarmonicNoiseDelay)
 	}
 	desc += fmt.Sprintf("\n\nIt currently has %d charges.", mag.Charges)
-	return fmt.Sprintf("The %s %s", mag, desc)
+	return desc
 }
 
 // MPCost returns the MP cost of the magara (usually 1).
