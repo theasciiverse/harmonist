@@ -6,15 +6,15 @@ inspired from Shamogu.
 Improved and reworked content:
 
 * Magical stones have been reworked to have a strategical aspect in addition to
-  the tactical one, like menhirs in Shamogu. The mapping stone is gone and the
+  the tactical one, like menhirs in Shamogu. The mapping stone is gone, the
   fog stone was replaced by a new earth stone, which destroys nearby walls
-  (producing dust) and reveals interior walls. The other stones are still the
-  same but now provide some kind of partial information about the map, in
-  addition to their usual tactical effect (revealing barrels for barrel stone,
-  lights for night stone, doors for queenstone, magaras for teleport stone,
-  stairs for sealing stone, trees and partially foliage for tree stone). To
-  compensate for the extra strategic buff, there are somewhat less stones on
-  the maps than before.
+  (producing dust) and reveals interior walls, and the queenstone has been
+  merged with the sensing stone. The other stones are still the same but now
+  provide some kind of partial information about the map, in addition to their
+  usual tactical effect (revealing barrels for barrel stone, lights for night
+  stone, doors for queenstone, magaras for teleport stone, stairs for sealing
+  stone, trees and partially foliage for tree stone). To compensate for the
+  extra strategic buff, there are somewhat less stones on the maps than before.
 * The tile where a magical stone is present is now always lighted, due to
   magical stones producing a very small light. This change mostly intends to
   make stone coloring independent from lighting and not require the player to

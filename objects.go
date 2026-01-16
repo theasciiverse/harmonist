@@ -126,7 +126,6 @@ const (
 	NightStone
 	TeleportStone
 	TreeStone
-	SensingStone
 	// special
 	SealStone
 )
@@ -147,8 +146,6 @@ func (stn stone) String() (text string) {
 		text = "teleport stone"
 	case TreeStone:
 		text = "tree stone"
-	case SensingStone:
-		text = "sensing stone"
 	case SealStone:
 		text = "seal stone"
 	}
@@ -164,15 +161,13 @@ func (stn stone) Desc(g *Game) (text string) {
 	case EarthStone:
 		text = "It produces an oric explosion that destroys nearby walls. It reveals interior walls."
 	case QueenStone:
-		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters. It reveals any doors on the map."
+		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters. It reveals the current position of monsters and the nature of nearby ones."
 	case NightStone:
 		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight. It reveals any lights on the map."
 	case TeleportStone:
 		text = "Activating this magical stone will teleport away monsters in sight. It reveals any magaras on the map."
 	case TreeStone:
 		text = "Activating this magical stone will lignify monsters in sight. It reveals any trees on the map as well as some foliage."
-	case SensingStone:
-		text = "Activating this magical stone shows you the current position of monsters."
 	case SealStone:
 		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs. It reveals the position of the target barrier."
 	}
@@ -190,12 +185,10 @@ func (stn stone) Style(g *Game) (r rune, fg gruid.Color) {
 		fg = ColorForegroundEmph
 	case SealStone:
 		fg = ColorBlue
-	case SensingStone:
-		fg = ColorMagenta
 	case EarthStone:
 		fg = ColorRed
 	case QueenStone:
-		fg = ColorOrange
+		fg = ColorMagenta
 	case NightStone:
 		fg = ColorViolet
 	case BarrelStone:
@@ -236,8 +229,6 @@ func (g *Game) ActivateStone() (err error) {
 		g.ActivateTeleportStone()
 	case TreeStone:
 		g.ActivateTreeStone()
-	case SensingStone:
-		g.ActivateSensingStone()
 	case SealStone:
 		g.ActivateSealStone()
 	}
@@ -325,18 +316,18 @@ func (g *Game) ActivateQueenStone() {
 		if m.State == Resting {
 			continue
 		}
+		m.UpdateKnowledge(g, m.P)
 		c := g.PR.BreadthFirstMapAt(m.P)
 		if c > QueenStoneDistance {
 			continue
 		}
+		// Confuse and reveal nearby monster.
 		m.EnterConfusion(g)
 		if m.Search == invalidPos {
 			m.Search = m.P
 		}
-	}
-	for p, t := range g.Map.Terrain.All() {
-		if t == DoorCell {
-			g.SeeTerrainAt(p)
+		if !g.Player.Sees(m.P) {
+			g.SeeMonster(m, "sense")
 		}
 	}
 }
@@ -418,16 +409,6 @@ func (g *Game) ActivateBarrelStone() {
 	g.Log("You teleport away.")
 	g.md.TeleportAnimation(op, p, true)
 	g.PlacePlayerAt(p)
-}
-
-func (g *Game) ActivateSensingStone() error {
-	for _, mons := range g.Monsters {
-		if mons.Exists() && !g.Player.Sees(mons.P) {
-			mons.UpdateKnowledge(g, mons.P)
-		}
-	}
-	g.Logf("You briefly sense monsters in the map.")
-	return nil
 }
 
 func (g *Game) ActivateSealStone() {

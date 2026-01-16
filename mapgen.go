@@ -1107,7 +1107,6 @@ func (mg *MapGen) randomInStone(sts []stone) stone {
 		BarrelStone,
 		EarthStone,
 		QueenStone,
-		SensingStone,
 		TeleportStone,
 	}
 	for {
@@ -1123,7 +1122,6 @@ func (mg *MapGen) randomOutStone(sts []stone) stone {
 		BarrelStone,
 		EarthStone,
 		QueenStone,
-		SensingStone,
 		TeleportStone,
 		NightStone,
 		TreeStone,

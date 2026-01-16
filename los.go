@@ -234,17 +234,26 @@ func (g *Game) ComputeLOS() {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {
 			mons.ComputeLOS(g) // approximation of what the monster will see for player info purposes
+			mons.UpdateKnowledge(g, mons.P)
 			if mons.Seen {
 				g.StopAuto()
 				continue
 			}
-			mons.Seen = true
-			g.Logf("You see %s (%v).", mons.Kind.Indefinite(false), mons.State)
-			if mons.Kind.Notable() {
-				g.StoryPrintf("Saw %s", mons.Kind)
-			}
+			g.SeeMonster(mons, "see")
 			g.StopAuto()
 		}
+	}
+}
+
+// SeeMonster makes you see or sense a monster.
+func (g *Game) SeeMonster(mons *Monster, verb string) {
+	if mons.Seen {
+		return
+	}
+	mons.Seen = true
+	g.Logf("You %s %s (%v).", verb, mons.Kind.Indefinite(false), mons.State)
+	if mons.Kind.Notable() {
+		g.StoryPrintf("Saw %s", mons.Kind)
 	}
 }
 
@@ -606,7 +615,7 @@ func (g *Game) ComputeMonsterCone(m *Monster) {
 	}
 }
 
-// UpdateKnowledge updates player's knowledge about the given monster.
+// UpdateKnowledge updates player's position knowledge about the given monster.
 func (m *Monster) UpdateKnowledge(g *Game, p gruid.Point) {
 	if mons := g.KnownMonsterAt(p); mons.Exists() {
 		if mons.Index != m.Index {
