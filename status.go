@@ -119,7 +119,7 @@ func (st status) Desc() string {
 	case StatusExhausted:
 		return "Forbids jumping off walls or over monsters."
 	case StatusSwift:
-		return "Allows moving for free without spending a turn."
+		return "Allows moving for free without actually spending real turns for the duration, as if time had stopped for everyone but you."
 	case StatusLignification:
 		return "Forbids movement but gives extra temporary health."
 	case StatusConfusion:
