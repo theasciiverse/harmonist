@@ -166,7 +166,7 @@ const (
 func (ach achievement) Get(g *Game) {
 	if g.Stats.Achievements[ach] == 0 {
 		g.Stats.Achievements[ach] = g.Turn
-		g.PrintfStyled("Achievement: %s.", logSpecial, ach)
+		g.LogfStyled("Achievement: %s.", logSpecial, ach)
 		g.StoryPrintf("Achievement: %s", ach)
 	}
 }

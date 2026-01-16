@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"unicode"
+	"unicode/utf8"
 
 	"codeberg.org/anaseto/gruid"
 	"codeberg.org/anaseto/gruid/ui"
@@ -60,36 +62,45 @@ func (e logEntry) dumpString() string {
 	return s
 }
 
-func (g *Game) Print(s string) {
-	e := logEntry{Text: s, Index: g.LogIndex}
-	g.PrintEntry(e)
+// UpperFirst returns a string with its first letter in upper case.
+func UpperFirst(s string) string {
+	r, _ := utf8.DecodeRuneInString(s)
+	if r == utf8.RuneError {
+		return s
+	}
+	return string(unicode.ToUpper(r)) + s[utf8.RuneLen(r):]
 }
 
-func (g *Game) PrintStyled(s string, style logStyle) {
-	e := logEntry{Text: s, Index: g.LogIndex, Style: style}
-	g.PrintEntry(e)
+func (g *Game) Log(s string) {
+	e := logEntry{Text: UpperFirst(s), Index: g.LogIndex}
+	g.LogEntry(e)
 }
 
-func (g *Game) Printf(format string, a ...interface{}) {
-	e := logEntry{Text: fmt.Sprintf(format, a...), Index: g.LogIndex}
-	g.PrintEntry(e)
+func (g *Game) LogStyled(s string, style logStyle) {
+	e := logEntry{Text: UpperFirst(s), Index: g.LogIndex, Style: style}
+	g.LogEntry(e)
 }
 
-func (g *Game) PrintfStyled(format string, style logStyle, a ...interface{}) {
-	e := logEntry{Text: fmt.Sprintf(format, a...), Index: g.LogIndex, Style: style}
-	g.PrintEntry(e)
+func (g *Game) Logf(format string, a ...any) {
+	e := logEntry{Text: UpperFirst(fmt.Sprintf(format, a...)), Index: g.LogIndex}
+	g.LogEntry(e)
 }
 
-func (g *Game) PrintEntry(e logEntry) {
+func (g *Game) LogfStyled(format string, style logStyle, a ...any) {
+	e := logEntry{Text: UpperFirst(fmt.Sprintf(format, a...)), Index: g.LogIndex, Style: style}
+	g.LogEntry(e)
+}
+
+func (g *Game) LogEntry(e logEntry) {
 	if e.Index == g.LogNextTick {
 		e.Tick = true
 	}
-	if !e.Tick && len(g.Log) > 0 {
-		le := g.Log[len(g.Log)-1]
+	if !e.Tick && len(g.Logs) > 0 {
+		le := g.Logs[len(g.Logs)-1]
 		if le.Text == e.Text {
 			le.Dups++
 			le.MText = le.String()
-			g.Log[len(g.Log)-1] = le
+			g.Logs[len(g.Logs)-1] = le
 			return
 		}
 	}
@@ -97,10 +108,10 @@ func (g *Game) PrintEntry(e logEntry) {
 	if LogGame {
 		log.Printf("Depth %d:Turn %d:%v", g.Map.Depth, g.Turn, e.dumpString())
 	}
-	g.Log = append(g.Log, e)
+	g.Logs = append(g.Logs, e)
 	g.LogIndex++
-	if len(g.Log) > 100000 {
-		g.Log = g.Log[10000:]
+	if len(g.Logs) > 100000 {
+		g.Logs = g.Logs[10000:]
 	}
 }
 
@@ -108,7 +119,7 @@ func (g *Game) StoryPrint(s string) {
 	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Map.Depth, g.Turn, s))
 }
 
-func (g *Game) StoryPrintf(format string, a ...interface{}) {
+func (g *Game) StoryPrintf(format string, a ...any) {
 	g.Stats.Story = append(g.Stats.Story, fmt.Sprintf("Depth %2d|Turn %5d| %s", g.Map.Depth, g.Turn, fmt.Sprintf(format, a...)))
 }
 
@@ -175,8 +186,8 @@ func (md *model) DrawLog() ui.StyledText {
 	g := md.g
 	stt := ui.StyledText{}.WithMarkups(logStyles)
 	tick := false
-	for i := len(g.Log) - 1; i >= 0; i-- {
-		e := g.Log[i]
+	for i := len(g.Logs) - 1; i >= 0; i-- {
+		e := g.Logs[i]
 		s := e.MText
 		if stt.Text() != "" {
 			if tick {

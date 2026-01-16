@@ -240,7 +240,7 @@ func (md *model) init() gruid.Effect {
 		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
 	if err != nil {
-		g.PrintStyled("Warning: could not load old saved game… starting new game.", logError)
+		g.LogStyled("Warning: could not load old saved game… starting new game.", logError)
 		log.Printf("Error: %v", err)
 	}
 
@@ -360,7 +360,7 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 	case modeHPCritical:
 		if md.more(msg) {
 			md.mode = modeNormal
-			md.g.Print("Ok. Be careful, then.")
+			md.g.Log("Ok. Be careful, then.")
 		}
 		return nil
 	case modeNormal:
@@ -406,7 +406,7 @@ func (md *model) updateJumpConfirmation(msg gruid.Msg) {
 		if msg.Key == "y" || msg.Key == "Y" {
 			md.g.FallAbyss(DescendJump)
 		} else {
-			md.g.Print("No jump, then.")
+			md.g.Log("No jump, then.")
 		}
 	}
 }
@@ -418,7 +418,7 @@ func (md *model) updateWizardConfirmation(msg gruid.Msg) {
 		if msg.Key == "y" || msg.Key == "Y" {
 			md.g.EnterWizardMode()
 		} else {
-			md.g.Print("Continuing normally, then.")
+			md.g.Log("Continuing normally, then.")
 		}
 	}
 }
@@ -461,7 +461,7 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	}
 	again, eff, err := md.normalModeKeyDown(msg.Key, msg.Mod&gruid.ModShift != 0)
 	if err != nil {
-		md.g.Print(err.Error())
+		md.g.Log(err.Error())
 	}
 	if again {
 		return eff
@@ -518,7 +518,7 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 		}
 		if err != nil {
 			again = true
-			md.g.Print(err.Error())
+			md.g.Log(err.Error())
 		}
 		if again {
 			return eff
@@ -569,7 +569,7 @@ func (md *model) updateStatusMouse(msg gruid.MsgMouse) gruid.Effect {
 		}
 		again, eff, err := md.DoAction(action)
 		if err != nil {
-			md.g.Print(err.Error())
+			md.g.Log(err.Error())
 		}
 		if again {
 			return eff
@@ -674,12 +674,12 @@ func (md *model) EndTurn() gruid.Effect {
 		return nil
 	}
 	if md.critical {
-		md.g.PrintStyled("*** CRITICAL HP WARNING ***", logDamage)
+		md.g.LogStyled("*** CRITICAL HP WARNING ***", logDamage)
 		md.critical = false
 		md.confirm = true
 	}
 	if md.confirm {
-		md.g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
+		md.g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 		md.confirm = false
 	}
 	md.g.LogNextTick = md.g.LogIndex
@@ -742,7 +742,7 @@ func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
 		GameConfig.TargetModeKeys = md.keysTarget
 		err := SaveConfig()
 		if err != nil {
-			md.g.PrintStyled("Error while saving config changes.", logError)
+			md.g.LogStyled("Error while saving config changes.", logError)
 		}
 		md.openKeyBindings()
 		return nil
@@ -768,7 +768,7 @@ func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
 			GameConfig.TargetModeKeys = md.keysTarget
 			err := SaveConfig()
 			if err != nil {
-				md.g.PrintStyled("Error while resetting config changes.", logError)
+				md.g.LogStyled("Error while resetting config changes.", logError)
 			}
 			md.openKeyBindings()
 		}
@@ -798,7 +798,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			}
 			err := md.g.UseMagara(md.menu.Active())
 			if err != nil {
-				md.g.Print(err.Error())
+				md.g.Log(err.Error())
 				md.mode = modeNormal
 				break
 			}
@@ -813,7 +813,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 			}
 			err := md.g.EquipMagara(md.menu.Active())
 			if err != nil {
-				md.g.Print(err.Error())
+				md.g.Log(err.Error())
 				md.mode = modeNormal
 				break
 			}
@@ -882,19 +882,19 @@ func (md *model) death() {
 	if len(g.Stats.Achievements) == 0 {
 		NoAchievement.Get(g)
 	}
-	g.PrintStyled("You die...", logSpecial)
-	g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
+	g.LogStyled("You die...", logSpecial)
+	g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 	md.mode = modeEnd
 }
 
 func (md *model) win() {
 	g := md.g
 	if g.Wizard != WizardNone {
-		g.PrintStyled("You escape by the magic portal! **WIZARD**", logSpecial)
-		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
+		g.LogStyled("You escape by the magic portal! **WIZARD**", logSpecial)
+		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 	} else {
-		g.PrintStyled("You escape by the magic portal!", logSpecial)
-		g.PrintStyled("[SPACE/ESC to continue]", logConfirm)
+		g.LogStyled("You escape by the magic portal!", logSpecial)
+		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 	}
 	md.mode = modeEnd
 }

@@ -70,7 +70,7 @@ func (sev *statusEvent) Handle(g *Game) {
 	g.Player.Statuses[st] -= DurationStatusStep
 	if g.Player.Statuses[st] <= 0 {
 		g.Player.Statuses[st] = 0
-		g.PrintStyled(StatusEndMsgs[st], logStatusEnd)
+		g.LogStyled(StatusEndMsgs[st], logStatusEnd)
 		g.md.StatusEndAnimation()
 		switch st {
 		case StatusLevitation:
@@ -111,7 +111,7 @@ func (mev *monsterStatusEvent) Handle(g *Game) {
 	if mons.Statuses[st] <= 0 {
 		mons.Statuses[st] = 0
 		if g.Player.Sees(mons.P) {
-			g.Printf("%s is no longer %s.", mons.Kind.Definite(true), st)
+			g.Logf("%s is no longer %s.", mons.Kind.Definite(true), st)
 		}
 		switch st {
 		case MonsConfused, MonsLignified:
@@ -155,7 +155,7 @@ func (cev *posEvent) Handle(g *Game) {
 		p := g.FreePassableCell()
 		g.MagicalBarrierAt(p)
 		if g.Player.Sees(p) {
-			g.Printf("You see an oric barrier appear out of thin air.")
+			g.Logf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
 		g.PushEvent(&posEvent{Action: ObstructionProgression},
@@ -191,8 +191,8 @@ func (cev *posEvent) Handle(g *Game) {
 		g.PushEvent(&posEvent{Action: MistProgression},
 			g.Turn+DurationMistProgression+RandInt(DurationMistProgression/4))
 	case Earthquake:
-		g.PrintStyled("The earth suddenly shakes with force!", logSpecial)
-		g.PrintStyled("Craack!", logSpecial)
+		g.LogStyled("The earth suddenly shakes with force!", logSpecial)
+		g.LogStyled("Craack!", logSpecial)
 		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.P)
 		g.Map.NoiseIllusion[cev.P] = true
@@ -212,7 +212,7 @@ func (cev *posEvent) Handle(g *Game) {
 	case DelayedHarmonicNoiseEvent:
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
-			g.Print("Pop!")
+			g.Log("Pop!")
 			g.Map.NoiseIllusion[cev.P] = true
 			g.MakeNoise(DelayedHarmonicNoise, cev.P)
 		} else {
@@ -234,7 +234,7 @@ func (cev *posEvent) Handle(g *Game) {
 // OricExplosion produces an oric explosion centered around the given position.
 func (g *Game) OricExplosion(at gruid.Point) {
 	g.Player.Statuses[StatusDelay] = 0
-	g.Print(g.CrackSound())
+	g.Log(g.CrackSound())
 	g.Map.NoiseIllusion[at] = true
 	dij := &gridPath{dungeon: g.Map}
 	g.MakeNoise(OricExplosionNoise, at)
@@ -280,7 +280,7 @@ func (g *Game) NightFog(at gruid.Point, radius int) {
 func (g *Game) MakeCreatureSleep(p gruid.Point) {
 	if p == g.Player.P {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
-			g.Print("The clouds of night confuse you.")
+			g.Log("The clouds of night confuse you.")
 		}
 		return
 	}
@@ -291,7 +291,7 @@ func (g *Game) MakeCreatureSleep(p gruid.Point) {
 	}
 	mons.EnterConfusion(g)
 	if mons.State != Resting && g.Player.Sees(mons.P) {
-		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
+		g.Logf("%s falls asleep.", mons.Kind.Definite(true))
 	}
 	mons.State = Resting
 	mons.Dir = ZP
@@ -309,14 +309,14 @@ func (g *Game) Burn(p gruid.Point) {
 	g.Stats.Burns++
 	switch t {
 	case DoorCell:
-		g.Print("The door vanishes in magical flames.")
+		g.Log("The door vanishes in magical flames.")
 	case TableCell:
-		g.Print("The table vanishes in magical flames.")
+		g.Log("The table vanishes in magical flames.")
 	case BarrelCell:
-		g.Print("The barrel vanishes in magical flames.")
+		g.Log("The barrel vanishes in magical flames.")
 		delete(g.Objects.Barrels, p)
 	case TreeCell:
-		g.Print("The tree vanishes in magical flames.")
+		g.Log("The tree vanishes in magical flames.")
 	}
 	g.Map.Set(p, GroundCell)
 	g.Map.Clouds[p] = CloudFire

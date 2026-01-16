@@ -191,7 +191,7 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 	}
 	g.PlacePlayerAt(p)
 	g.Stats.Jumps++
-	g.Printf("You jump over %s", mons.Kind.Definite(false))
+	g.Logf("You jump over %s", mons.Kind.Definite(false))
 	g.StoryPrintf("Jumped over %s", mons.Kind)
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
@@ -247,7 +247,7 @@ func (g *Game) WallJump(p gruid.Point) error {
 	g.md.PushAnimation(path)
 	g.PlacePlayerAt(q)
 	g.Stats.WallJumps++
-	g.Print("You jump by propelling yourself against the wall.")
+	g.Log("You jump by propelling yourself against the wall.")
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}

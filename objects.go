@@ -212,7 +212,7 @@ func (g *Game) UseStone(p gruid.Point) {
 	g.StoryPrintf("Activated %s", g.Objects.Stones[p])
 	g.Objects.Stones[p] = InertStone
 	g.Stats.UsedStones++
-	g.Print("The stone becomes inert.")
+	g.Log("The stone becomes inert.")
 }
 
 func (g *Game) ActivateStone() (err error) {
@@ -255,7 +255,7 @@ const (
 )
 
 func (g *Game) ActivateEarthStone() {
-	g.Print("You activate the earth stone.")
+	g.Log("You activate the earth stone.")
 	pp := g.Player.P
 	g.OricExplosion(pp)
 	mp := &mappingPath{g: g}
@@ -316,7 +316,7 @@ func (g *Game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.P)
 	dij := &noisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, QueenStoneDistance)
-	g.Print("The stone releases confusing sounds.")
+	g.Log("The stone releases confusing sounds.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, g.Player.P)
 	for _, m := range g.Monsters {
 		if !m.Exists() {
@@ -351,10 +351,10 @@ func (g *Game) ActivateNightStone() {
 			targets = append(targets, mons)
 		}
 	}
-	g.Print("The stone releases hypnotic harmonies.")
+	g.Log("The stone releases hypnotic harmonies.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSleeping, g.Player.P)
 	for _, mons := range targets {
-		g.Printf("%s falls asleep.", mons.Kind.Definite(true))
+		g.Logf("%s falls asleep.", mons.Kind.Definite(true))
 		mons.State = Resting
 		mons.Dir = ZP
 		mons.ExhaustTime(g, 4+RandInt(2))
@@ -372,7 +372,7 @@ func (g *Game) ActivateTreeStone() {
 		}
 		targets = append(targets, mons)
 	}
-	g.Print("The stone releases magical spores.")
+	g.Log("The stone releases magical spores.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveTree, g.Player.P)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
@@ -389,14 +389,14 @@ func (g *Game) ActivateTreeStone() {
 
 func (g *Game) ActivateTeleportStone() {
 	targets := g.MonstersInLOS()
-	g.Print("The stone releases oric teleport energies.")
+	g.Log("The stone releases oric teleport energies.")
 	for _, mons := range targets {
 		if mons.Search == invalidPos && mons.Kind.CanOpenDoors() {
 			mons.Search = mons.P
 		}
 		mons.TeleportAway(g)
 		if mons.Kind.ReflectsTeleport() {
-			g.Printf("The %s reflected back some energies.", mons.Kind)
+			g.Logf("The %s reflected back some energies.", mons.Kind)
 			g.Teleportation()
 			break
 		}
@@ -407,7 +407,7 @@ func (g *Game) ActivateTeleportStone() {
 }
 
 func (g *Game) ActivateBarrelStone() {
-	g.Print("You activate the barrel stone.")
+	g.Log("You activate the barrel stone.")
 	barrels := []gruid.Point{}
 	for p := range g.Objects.Barrels {
 		barrels = append(barrels, p)
@@ -415,7 +415,7 @@ func (g *Game) ActivateBarrelStone() {
 	}
 	p := barrels[RandInt(len(barrels))]
 	op := g.Player.P
-	g.Print("You teleport away.")
+	g.Log("You teleport away.")
 	g.md.TeleportAnimation(op, p, true)
 	g.PlacePlayerAt(p)
 }
@@ -426,14 +426,14 @@ func (g *Game) ActivateSensingStone() error {
 			mons.UpdateKnowledge(g, mons.P)
 		}
 	}
-	g.Printf("You briefly sense monsters in the map.")
+	g.Logf("You briefly sense monsters in the map.")
 	return nil
 }
 
 func (g *Game) ActivateSealStone() {
 	if g.Map.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
-		g.Print("You feel oric energies dissipating.")
+		g.Log("You feel oric energies dissipating.")
 		return
 	}
 	for p, st := range g.Objects.Stairs {
@@ -443,7 +443,7 @@ func (g *Game) ActivateSealStone() {
 			g.SeeTerrainAt(p)
 		}
 	}
-	g.Print("You feel oric energies dissipating.")
+	g.Log("You feel oric energies dissipating.")
 }
 
 type scroll int
@@ -719,13 +719,13 @@ func (g *Game) EquipItem() error {
 	}
 	if oitem != NoItem {
 		g.Objects.Items[g.Player.P] = oitem
-		g.Printf("You equip the %s.", it.ShortDesc(g))
-		g.Printf("You leave the %s.", oitem.ShortDesc(g))
+		g.Logf("You equip the %s.", it.ShortDesc(g))
+		g.Logf("You leave the %s.", oitem.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	} else {
 		delete(g.Objects.Items, g.Player.P)
 		g.Map.Set(g.Player.P, GroundCell)
-		g.Printf("You equip the %s.", it.ShortDesc(g))
+		g.Logf("You equip the %s.", it.ShortDesc(g))
 		g.StoryPrintf("Equipped %s", it.ShortDesc(g))
 	}
 	switch {
@@ -825,7 +825,7 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 	if !ok {
 		// should not happen
 		g.Map.Set(p, GroundCell)
-		g.PrintStyled("Unexpected potion.", logError)
+		g.LogStyled("Unexpected potion.", logError)
 		return
 	}
 	switch ptn {
@@ -842,7 +842,7 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 		g.Player.MP++
 		g.StoryPrintf("Drank %s (MP: %d).", ptn, g.Player.MP)
 	}
-	g.Printf("You drink %s.", ptn.ShortDesc(g))
+	g.Logf("You drink %s.", ptn.ShortDesc(g))
 	g.Map.Set(p, GroundCell)
 	delete(g.Objects.Potions, p)
 }

@@ -107,9 +107,9 @@ func (g *Game) Dump() string {
 	fmt.Fprintf(buf, "You explored %d level%s out of %d.\n", maxDepth, s, MaxDepth)
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "Last messages:\n")
-	for i := len(g.Log) - 10; i < len(g.Log); i++ {
+	for i := len(g.Logs) - 10; i < len(g.Logs); i++ {
 		if i >= 0 {
-			fmt.Fprintf(buf, "%s\n", g.Log[i].dumpString())
+			fmt.Fprintf(buf, "%s\n", g.Logs[i].dumpString())
 		}
 	}
 	fmt.Fprintf(buf, "\n")

@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.8"
+var Version string = "v0.7.0-dev.9"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -37,7 +37,7 @@ type Game struct {
 	LiberatedShaedra  bool           // whether Shaedra was liberated
 	Turn              int            // current turn
 
-	Log         []logEntry  // log entries
+	Logs        []logEntry  // log entries
 	LogIndex    int         // current log entry index
 	LogNextTick int         // log entry index at turn start
 	Params      startParams // various procinfo params
@@ -461,14 +461,14 @@ func (g *Game) InitLevel() {
 	}
 	switch g.Params.Event[g.Map.Depth] {
 	case UnstableLevel:
-		g.PrintStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
+		g.LogStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		g.StoryPrint("Special event: magically unstable level")
 		for range 7 {
 			g.PushEvent(&posEvent{Action: ObstructionProgression},
 				g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/2))
 		}
 	case MistLevel:
-		g.PrintStyled("The air seems dense on this level.", logSpecial)
+		g.LogStyled("The air seems dense on this level.", logSpecial)
 		g.StoryPrint("Special event: mist level")
 		for range 20 {
 			g.PushEvent(&posEvent{Action: MistProgression},
@@ -481,13 +481,13 @@ func (g *Game) InitLevel() {
 
 	// initialize LOS
 	if g.Map.Depth == 1 {
-		g.PrintStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
+		g.LogStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
 	}
 	switch g.Map.Depth {
 	case WinDepth:
-		g.PrintStyled("Finally! Shaedra should be imprisoned somewhere around here.", logSpecial)
+		g.LogStyled("Finally! Shaedra should be imprisoned somewhere around here.", logSpecial)
 	case MaxDepth:
-		g.PrintStyled("This the bottom floor, you now have to look for the artifact.", logSpecial)
+		g.LogStyled("This the bottom floor, you now have to look for the artifact.", logSpecial)
 	}
 	g.ComputeLOS()
 	g.MakeMonstersAware()
@@ -597,10 +597,10 @@ func (g *Game) Descend(style descendstyle) bool {
 	}
 	if style != DescendNormal {
 		g.md.AbyssFallAnimation()
-		g.PrintStyled("You fall into the abyss. It hurts!", logDamage)
+		g.LogStyled("You fall into the abyss. It hurts!", logDamage)
 		g.StoryPrint("Fell into the abyss")
 	} else {
-		g.Print("You descend deeper in the dungeon.")
+		g.Log("You descend deeper in the dungeon.")
 		g.StoryPrint("Descended stairs")
 	}
 	g.Map.Depth++
@@ -614,7 +614,7 @@ func (g *Game) Descend(style descendstyle) bool {
 // EnterWizardMode enters wizard mode.
 func (g *Game) EnterWizardMode() {
 	g.Wizard = WizardNormal
-	g.PrintStyled("Wizard mode enabled.", logSpecial)
+	g.LogStyled("Wizard mode enabled.", logSpecial)
 	g.StoryPrint("Entered wizard mode.")
 }
 
@@ -625,7 +625,7 @@ func (g *Game) ApplyRest() {
 	g.Player.MP = g.Player.MPMax()
 	g.Stats.Rest++
 	g.Stats.DRests[g.Map.Depth]++
-	g.PrintStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
+	g.LogStyled("You feel fresh again after eating banana and sleeping.", logStatusEnd)
 	g.StoryPrintf("Rested in barrel (bananas: %d)", g.Player.Bananas)
 	if g.Stats.Rest == 10 {
 		AchSleepy.Get(g)
@@ -654,7 +654,7 @@ func (g *Game) AutoPlayer() bool {
 			var finished bool
 			if g.autoexploreMapRebuild {
 				if g.AllExplored() {
-					g.Print("You finished exploring.")
+					g.Log("You finished exploring.")
 					break
 				}
 				sources := g.AutoexploreSources()
@@ -665,14 +665,14 @@ func (g *Game) AutoPlayer() bool {
 				n = nil
 			}
 			if finished && g.AllExplored() {
-				g.Print("You finished exploring.")
+				g.Log("You finished exploring.")
 			} else if n == nil {
-				g.Print("You could not safely reach some places.")
+				g.Log("You could not safely reach some places.")
 			}
 			if n != nil {
 				again, err := g.PlayerBump(*n)
 				if err != nil {
-					g.Print(err.Error())
+					g.Log(err.Error())
 					break
 				}
 				return !again
@@ -698,7 +698,7 @@ func (g *Game) Died() bool {
 	if g.Player.HP <= 0 {
 		if g.Wizard != WizardNone {
 			g.Player.HP = g.Player.HPMax()
-			g.PrintStyled("*** Wizard mode resurrects you! ***", logSpecial)
+			g.LogStyled("*** Wizard mode resurrects you! ***", logSpecial)
 			g.StoryPrint("Resurrected by the Wizard!")
 		} else {
 			g.LevelStats()

@@ -441,7 +441,7 @@ func (m *Monster) TeleportAway(g *Game) {
 		m.Target = m.P
 	}
 	if g.Player.Sees(m.P) {
-		g.PrintfStyled("%s teleports away.", logNotable, m.Kind.Definite(true))
+		g.LogfStyled("%s teleports away.", logNotable, m.Kind.Definite(true))
 	}
 	opos := m.P
 	m.MoveTo(g, p)
@@ -466,7 +466,7 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 	if !g.Player.Sees(m.P) && g.Player.Sees(p) {
 		if !m.Seen {
 			m.Seen = true
-			g.Printf("%s (%v) comes into view.", m.Kind.Indefinite(true), m.State)
+			g.Logf("%s (%v) comes into view.", m.Kind.Indefinite(true), m.State)
 		}
 		g.StopAuto()
 	}
@@ -483,9 +483,9 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 			g.HandleKill(m)
 			switch t {
 			case ChasmCell:
-				g.Printf("%s falls into the abyss.", m.Kind.Definite(true))
+				g.Logf("%s falls into the abyss.", m.Kind.Definite(true))
 			case WaterCell:
-				g.Printf("%s drowns.", m.Kind.Definite(true))
+				g.Logf("%s drowns.", m.Kind.Definite(true))
 			}
 		}
 	}
@@ -585,7 +585,7 @@ func (m *Monster) AttackAction(g *Game) bool {
 func (m *Monster) Explode(g *Game) {
 	m.Dead = true
 	neighbors := g.cardinalNeighbors(m.P)
-	g.Printf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
+	g.Logf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
 	g.md.ExplosionAnimation(FireExplosion, m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
 	for _, p := range append(neighbors, m.P) {
@@ -786,7 +786,7 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 				g.Map.Set(m.P, LightCell)
 				g.Objects.Lights[m.P] = true
 				if g.Player.Sees(m.P) {
-					g.Printf("%s makes a new fire.", m.Kind.Definite(true))
+					g.Logf("%s makes a new fire.", m.Kind.Definite(true))
 				}
 				return true
 			} else if !on && m.SeesLight(g, p) {
@@ -795,7 +795,7 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 		}
 	case MonsCrazyImp:
 		if g.Player.Sees(m.P) && RandInt(2) == 0 && !m.Status(MonsConfused) && !m.Status(MonsExhausted) {
-			g.PrintStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
+			g.LogStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
 			g.MakeNoise(SingingNoise, m.P)
 			m.Exhaust(g)
 		}
@@ -934,9 +934,9 @@ func (m *Monster) HandleMove(g *Game) bool {
 			if distance(g.Player.P, target) < 12 {
 				// XXX use dijkstra distance ?
 				if t == WallCell {
-					g.Printf("%s You hear an earth-splitting noise.", g.CrackSound())
+					g.Logf("%s You hear an earth-splitting noise.", g.CrackSound())
 				} else if t == BarrelCell || t == DoorCell || t == TableCell {
-					g.Printf("%s You hear an wood-splitting noise.", g.CrackSound())
+					g.Logf("%s You hear an wood-splitting noise.", g.CrackSound())
 				}
 				g.StopAuto()
 			}
@@ -1020,11 +1020,11 @@ func (m *Monster) handleTurn(g *Game) {
 	}
 	if distance(mpos, ppos) == 1 && g.Map.At(ppos) != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
-			g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
+			g.Logf("%s appears too confused to attack.", m.Kind.Definite(true))
 			return
 		}
 		if g.Map.At(ppos) == TreeCell && !m.Kind.CanAttackOnTree() {
-			g.Printf("%s watches you from below.", m.Kind.Definite(true))
+			g.Logf("%s watches you from below.", m.Kind.Definite(true))
 			return
 		}
 		m.AttackAction(g)
@@ -1085,7 +1085,7 @@ func (m *Monster) HitPlayer(g *Game) {
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.PrintfStyled("%s hits you (1 dmg).%s", logDamage, m.Kind.Definite(true), sclang)
+	g.LogfStyled("%s hits you (1 dmg).%s", logDamage, m.Kind.Definite(true), sclang)
 	m.InflictDamage(g)
 	if g.Player.HP <= 0 {
 		return
@@ -1099,9 +1099,9 @@ func (m *Monster) HitPlayer(g *Game) {
 	case AmuletConfusion:
 		m.EnterConfusion(g)
 		// XXX: maybe affect all monsters in sight?
-		g.PrintfStyled("Your amulet releases confusing harmonies.", logNotable)
+		g.LogfStyled("Your amulet releases confusing harmonies.", logNotable)
 	case AmuletFog:
-		g.PrintStyled("Your amulet feels warm.", logNotable)
+		g.LogStyled("Your amulet feels warm.", logNotable)
 		g.SwiftFog()
 	case AmuletObstruction:
 		opos := m.P
@@ -1113,18 +1113,18 @@ func (m *Monster) HitPlayer(g *Game) {
 		}
 		if opos != m.P {
 			g.MagicalBarrierAt(opos)
-			g.PrintStyled("The amulet releases an oric wind.", logNotable)
+			g.LogStyled("The amulet releases an oric wind.", logNotable)
 			m.Exhaust(g)
 		}
 	case AmuletTeleport:
-		g.PrintStyled("Your amulet shines.", logNotable)
+		g.LogStyled("Your amulet shines.", logNotable)
 		m.TeleportAway(g)
 		if m.Kind.ReflectsTeleport() {
-			g.PrintfStyled("The %s reflected back some energies.", logNotable, m.Kind)
+			g.LogfStyled("The %s reflected back some energies.", logNotable, m.Kind)
 			g.Teleportation()
 		}
 	case AmuletLignification:
-		g.PrintStyled("Your amulet glows.", logNotable)
+		g.LogStyled("Your amulet glows.", logNotable)
 		if !m.Kind.ResistsLignification() {
 			m.EnterLignification(g)
 		}
@@ -1147,7 +1147,7 @@ func (m *Monster) EnterConfusion(g *Game) bool {
 	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.P) {
-			g.Printf("%s looks confused.", m.Kind.Definite(true))
+			g.Logf("%s looks confused.", m.Kind.Definite(true))
 		}
 		return true
 	}
@@ -1158,7 +1158,7 @@ func (m *Monster) EnterLignification(g *Game) {
 	if m.PutStatus(g, MonsLignified, DurationLignificationMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.P) {
-			g.Printf("%s is rooted to the ground.", m.Kind.Definite(true))
+			g.Logf("%s is rooted to the ground.", m.Kind.Definite(true))
 		}
 	}
 }
@@ -1192,7 +1192,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 			break
 		}
 		g.PlacePlayerAt(m.P)
-		g.PrintStyled("The flying milfid makes you swap positions.", logNotable)
+		g.LogStyled("The flying milfid makes you swap positions.", logNotable)
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
 		if g.Map.At(g.Player.P) == ChasmCell {
@@ -1207,7 +1207,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 			g.Player.Bananas = 0
 		} else {
 			m.PutStatus(g, MonsSatiated, DurationSatiationMonster)
-			g.PrintStyled("The tiny harpy steals a banana from you.", logNotable)
+			g.LogStyled("The tiny harpy steals a banana from you.", logNotable)
 			g.StoryPrintf("Banana stolen by %s (bananas: %d)", m.Kind, g.Player.Bananas)
 			g.Stats.StolenBananas++
 			m.Target = m.NextTarget(g)
@@ -1257,7 +1257,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 	}
 	g.md.PushAnimation(path)
 	g.PlacePlayerAt(p)
-	g.Printf("%s pushes you%s.", m.Kind.Definite(true), cs)
+	g.Logf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
 	if t == ChasmCell {
 		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
@@ -1269,7 +1269,7 @@ func (m *Monster) RangedAttack(g *Game) bool {
 		return false
 	}
 	if m.Status(MonsConfused) {
-		g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
+		g.Logf("%s appears too confused to attack.", m.Kind.Definite(true))
 		return false
 	}
 	if distance(m.P, g.Player.P) <= 1 && m.Kind != MonsSatowalgaPlant {
@@ -1373,7 +1373,7 @@ func (m *Monster) CreateBarrier(g *Game) bool {
 		}
 		g.MagicalBarrierAt(p)
 		done = true
-		g.PrintStyled("The oric celmist creates a magical barrier.", logNotable)
+		g.LogStyled("The oric celmist creates a magical barrier.", logNotable)
 		g.StoryPrintf("Blocked by %s barrier", m.Kind)
 		g.Stats.TimesBlocked++
 		break
@@ -1387,7 +1387,7 @@ func (m *Monster) CreateBarrier(g *Game) bool {
 
 func (m *Monster) Illuminate(g *Game) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
-		g.PrintStyled("The harmonic celmist casts magical harmonies on you.", logNotable)
+		g.LogStyled("The harmonic celmist casts magical harmonies on you.", logNotable)
 		g.StoryPrintf("Illuminated by %s", m.Kind)
 		g.MakeNoise(HarmonicNoise, g.Player.P)
 		m.Exhaust(g)
@@ -1401,7 +1401,7 @@ func (m *Monster) VampireSpit(g *Game) bool {
 	if blocked || g.Player.HasStatus(StatusConfusion) {
 		return false
 	}
-	g.PrintStyled("The vampire spits at you.", logNotable)
+	g.LogStyled("The vampire spits at you.", logNotable)
 	g.StoryPrint("A vampire spitted at you.")
 	g.Confusion()
 	m.Exhaust(g)
@@ -1413,7 +1413,7 @@ func (m *Monster) ThrowSpores(g *Game) bool {
 	if blocked || g.Player.HasStatus(StatusLignification) {
 		return false
 	}
-	g.PrintStyled("The tree mushroom releases spores.", logNotable)
+	g.LogStyled("The tree mushroom releases spores.", logNotable)
 	g.StoryPrintf("Lignified by %s", m.Kind)
 	g.EnterLignification()
 	m.Exhaust(g)
@@ -1431,7 +1431,7 @@ func (m *Monster) ThrowJavelin(g *Game) bool {
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.Printf("%s throws a javelin at you (1 dmg).%s", m.Kind.Definite(true), sclang)
+	g.Logf("%s throws a javelin at you (1 dmg).%s", m.Kind.Definite(true), sclang)
 	g.StoryPrintf("Targeted by %s javelin", m.Kind)
 	g.md.MonsterJavelinAnimation(g.Ray(m.P), true)
 	g.MakeNoise(noise, g.Player.P)
@@ -1452,7 +1452,7 @@ func (m *Monster) Corrode(g *Game) {
 		}
 	}
 	if count > 0 {
-		g.Printf("You lose %d magara charges by corrosion.", count)
+		g.Logf("You lose %d magara charges by corrosion.", count)
 		g.StoryPrintf("Corroded by %s (lost %d magara charges)", m.Kind, count)
 	}
 }
@@ -1463,7 +1463,7 @@ func (m *Monster) ThrowAcid(g *Game) bool {
 		return false
 	}
 	noise := g.HitNoise(false) // no clang with acid projectiles
-	g.Printf("%s throws acid at you (1 dmg).", m.Kind.Definite(true))
+	g.Logf("%s throws acid at you (1 dmg).", m.Kind.Definite(true))
 	g.md.MonsterProjectileAnimation(g.Ray(m.P), '*', ColorGreen)
 	g.MakeNoise(noise, g.Player.P)
 	m.InflictDamage(g)
@@ -1482,7 +1482,7 @@ func (m *Monster) NixeAttraction(g *Game) bool {
 		return false
 	}
 	g.MakeNoise(MagicCastNoise, m.P)
-	g.PrintfStyled("%s lures you to her.", logDamage, m.Kind.Definite(true))
+	g.LogfStyled("%s lures you to her.", logDamage, m.Kind.Definite(true))
 	g.StoryPrintf("Lured by %s", m.Kind)
 	g.md.TeleportAnimation(g.Player.P, ray[1], true)
 	g.PlacePlayerAt(ray[1])
@@ -1495,7 +1495,7 @@ func (m *Monster) SmitingAttack(g *Game) bool {
 		return false
 	}
 	if m.Status(MonsConfused) {
-		g.Printf("%s appears too confused to attack.", m.Kind.Definite(true))
+		g.Logf("%s appears too confused to attack.", m.Kind.Definite(true))
 		return false
 	}
 	if !m.SeesPlayer(g) {
@@ -1527,7 +1527,7 @@ func (m *Monster) AbsorbMana(g *Game) bool {
 		return false
 	}
 	g.Player.MP -= 1
-	g.Printf("%s absorbs your mana.", m.Kind.Definite(true))
+	g.Logf("%s absorbs your mana.", m.Kind.Definite(true))
 	g.StoryPrintf("Mana absorbed by %s (MP: %d)", m.Kind, g.Player.MP)
 	m.ExhaustTime(g, 1+RandInt(2))
 	return true
@@ -1539,7 +1539,7 @@ func (m *Monster) Blink(g *Game) {
 		return
 	}
 	opos := m.P
-	g.Printf("The %s blinks away.", m.Kind)
+	g.Logf("The %s blinks away.", m.Kind)
 	g.md.TeleportAnimation(opos, npos, true)
 	m.MoveTo(g, npos)
 }
@@ -1567,7 +1567,7 @@ func (m *Monster) MakeHunt(g *Game) (noticed bool) {
 func (m *Monster) MakeAware(g *Game) {
 	if m.Peaceful(g) || m.Status(MonsSatiated) {
 		if m.State == Resting && distance(m.P, g.Player.P) == 1 {
-			g.Printf("%s awakens.", m.Kind.Definite(true))
+			g.Logf("%s awakens.", m.Kind.Definite(true))
 			m.MakeWander()
 		}
 		return
@@ -1577,13 +1577,13 @@ func (m *Monster) MakeAware(g *Game) {
 	}
 	switch m.State {
 	case Resting:
-		g.Printf("%s awakens.", m.Kind.Definite(true))
+		g.Logf("%s awakens.", m.Kind.Definite(true))
 	case Wandering, Watching:
-		g.Printf("%s notices you.", m.Kind.Definite(true))
+		g.Logf("%s notices you.", m.Kind.Definite(true))
 	}
 	noticed := m.MakeHunt(g)
 	if noticed && m.Kind == MonsDog {
-		g.Printf("%s barks.", m.Kind.Definite(true))
+		g.Logf("%s barks.", m.Kind.Definite(true))
 		g.StoryPrintf("Barked at by %s", m.Kind)
 		g.MakeNoise(BarkNoise, m.P)
 	}

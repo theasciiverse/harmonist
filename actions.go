@@ -363,7 +363,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		if len(md.logs) > 0 {
 			md.logs = md.logs[:len(md.logs)-1]
 		}
-		for _, e := range g.Log[len(md.logs):] {
+		for _, e := range g.Logs[len(md.logs):] {
 			md.logs = append(md.logs, md.pagerMarkup.WithText(e.MText))
 		}
 		md.pager.SetLines(md.logs)
@@ -387,9 +387,9 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		msg, errdump := g.WriteDump()
 		if errdump != nil {
 			log.Printf("error writing dump: %v", errdump)
-			g.PrintStyled("Error writing statistics.", logError)
+			g.LogStyled("Error writing statistics.", logError)
 		} else {
-			g.Print(msg)
+			g.Log(msg)
 		}
 		md.mode = modeNormal
 	case ActionWizardDescend:
@@ -410,7 +410,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		md.g.md.CancelExamine()
 		switch md.g.Wizard {
 		case WizardNone:
-			md.g.PrintStyled("Do you really want to enter Wizard Mode ? (debug/cheat mode) [y/N]", logConfirm)
+			md.g.LogStyled("Do you really want to enter Wizard Mode ? (debug/cheat mode) [y/N]", logConfirm)
 			md.mode = modeWizardConfirmation
 		case WizardNormal:
 			md.g.Wizard = WizardSeeAll
@@ -492,10 +492,10 @@ func (md *model) readScroll() {
 	sc, ok := md.g.Objects.Scrolls[md.g.Player.P]
 	if !ok {
 		// Should not happen.
-		md.g.PrintStyled("Error while reading message.", logError)
+		md.g.LogStyled("Error while reading message.", logError)
 		return
 	}
-	md.g.Print("You read the message.")
+	md.g.Log("You read the message.")
 	md.mode = modeSmallPager
 	st := gruid.Style{}
 	switch sc {
@@ -946,6 +946,6 @@ func (md *model) checkShaedra(st stair) (err error) {
 
 // Quit enters confirmation mode for quit without saving.
 func (md *model) Quit() {
-	md.g.PrintStyled("Do you really want to quit without saving? [y/N]", logConfirm)
+	md.g.LogStyled("Do you really want to quit without saving? [y/N]", logConfirm)
 	md.mode = modeQuitConfirmation
 }

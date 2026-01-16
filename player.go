@@ -71,7 +71,7 @@ func (g *Game) AutoToDir() bool {
 			nbs == dirBlockedLaterals && (g.autoDirChanged || g.dirNeighbors(g.Player.P, g.autoDir) == dirBlockedLaterals)) {
 			again, err := g.PlayerBump(p)
 			if err != nil {
-				g.Print(err.Error())
+				g.Log(err.Error())
 				g.autoDir = ZP
 				return false
 			}
@@ -173,7 +173,7 @@ func (g *Game) MoveToTarget() bool {
 		g.WaitTurn()
 	}
 	if err != nil {
-		g.Print(err.Error())
+		g.Log(err.Error())
 		g.autoTarget = invalidPos
 		return false
 	}
@@ -253,12 +253,12 @@ func (g *Game) Teleportation() {
 	if valid(p) {
 		// should always happen
 		opos := g.Player.P
-		g.Print("You teleport away.")
+		g.Log("You teleport away.")
 		g.md.TeleportAnimation(opos, p, true)
 		g.PlacePlayerAt(p)
 	} else {
 		// should not happen
-		g.Print("Something went wrong with the teleportation.")
+		g.Log("Something went wrong with the teleportation.")
 	}
 }
 
@@ -275,9 +275,9 @@ func (g *Game) CollectGround() {
 			// TODO: move here message
 		case BananaCell:
 			if g.Player.Bananas >= MaxBananas {
-				g.Print("There is a banana, but your pack is already full.")
+				g.Log("There is a banana, but your pack is already full.")
 			} else {
-				g.Print("You take a banana.")
+				g.Log("You take a banana.")
 				g.Player.Bananas++
 				g.StoryPrintf("Found banana (bananas: %d)", g.Player.Bananas)
 				g.Map.Set(p, GroundCell)
@@ -294,24 +294,24 @@ func (g *Game) CollectGround() {
 				g.Player.Magaras[i] = g.Objects.Magaras[p]
 				delete(g.Objects.Magaras, p)
 				g.Map.Set(p, GroundCell)
-				g.Printf("You take the %s.", g.Player.Magaras[i])
+				g.Logf("You take the %s.", g.Player.Magaras[i])
 				g.StoryPrintf("Took %s", g.Player.Magaras[i])
 				break switchcell
 			}
-			g.Printf("You stand over %s.", Indefinite(g.Objects.Magaras[p].String(), false))
+			g.Logf("You stand over %s.", Indefinite(g.Objects.Magaras[p].String(), false))
 		case FakeStairCell:
 			g.Map.Set(p, GroundCell)
-			g.PrintStyled("You stand over fake stairs.", logSpecial)
-			g.PrintStyled("Harmonic illusions!", logSpecial)
+			g.LogStyled("You stand over fake stairs.", logSpecial)
+			g.LogStyled("Harmonic illusions!", logSpecial)
 			g.StoryPrint("Found harmonic fake stairs!")
 			g.md.FoundFakeStairsAnimation()
 		case PotionCell:
 			g.DrinkPotion(p)
 		default:
-			g.Printf("You are standing over %s.", g.TerrainShortDesc(t, p))
+			g.Logf("You are standing over %s.", g.TerrainShortDesc(t, p))
 		}
 	} else if t == DoorCell {
-		g.Print("You stand at the door.")
+		g.Log("You stand at the door.")
 	}
 	if ReachNotable(t) {
 		g.Reach(p)
@@ -341,7 +341,7 @@ func (g *Game) FallAbyss(style descendstyle) {
 }
 
 func (g *Game) AbyssJumpConfirmation() {
-	g.PrintStyled("Do you really want to jump into the abyss? (DANGEROUS) [y/N]", logConfirm)
+	g.LogStyled("Do you really want to jump into the abyss? (DANGEROUS) [y/N]", logConfirm)
 	g.md.mode = modeJumpConfirmation
 }
 
@@ -385,18 +385,18 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 			return again, g.AbyssJump()
 		}
 		if t == BarrelCell {
-			g.Print("You hide yourself inside the barrel.")
+			g.Log("You hide yourself inside the barrel.")
 		} else if t == TableCell {
-			g.Print("You hide yourself under the table.")
+			g.Log("You hide yourself under the table.")
 		} else if t == TreeCell {
-			g.Print("You climb to the top.")
+			g.Log("You climb to the top.")
 		} else if t == HoledWallCell {
-			g.Print("You crawl under the wall.")
+			g.Log("You crawl under the wall.")
 		}
 		if IsDiggable(t) && t != HoledWallCell {
 			g.Map.Set(p, RubbleCell)
 			g.MakeNoise(WallNoise, p)
-			g.Print(g.CrackSound())
+			g.Log(g.CrackSound())
 			g.Fog(p, 1)
 			g.Stats.Digs++
 			g.Stats.DestructionUse++
@@ -427,7 +427,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		again = true
 		g.Player.Statuses[StatusSwift]--
 		if !g.Player.HasStatus(StatusSwift) {
-			g.Print("You no longer feel swift.")
+			g.Log("You no longer feel swift.")
 		}
 		g.md.updateMapInfo()
 		return again, nil
@@ -447,12 +447,12 @@ func (g *Game) SwiftFog() {
 	}
 	g.PutStatus(StatusSwift, DurationShortSwiftness)
 	g.ComputeLOS()
-	g.Print("You feel an energy burst and smoke comes out from you.")
+	g.Log("You feel an energy burst and smoke comes out from you.")
 }
 
 func (g *Game) Confusion() {
 	if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
-		g.Print("You feel confused.")
+		g.Log("You feel confused.")
 	}
 }
 
@@ -473,7 +473,7 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 	}
 	if g.Map.At(g.Player.P) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
 		g.MakeNoise(QueenRockFootstepNoise, g.Player.P)
-		g.Print("Tap-tap.")
+		g.Log("Tap-tap.")
 	}
 	g.CollectGround()
 	g.ComputeLOS()
@@ -484,7 +484,7 @@ const LignificationHPbonus = 4
 
 func (g *Game) EnterLignification() {
 	if g.PutStatus(StatusLignification, DurationLignificationPlayer) {
-		g.Print("You feel rooted to the ground.")
+		g.Log("You feel rooted to the ground.")
 		g.Player.HPbonus += LignificationHPbonus
 	}
 }
@@ -496,7 +496,7 @@ func (g *Game) ExtinguishFire() error {
 	if g.Stats.Extinguishments >= 15 {
 		AchExtinguisher.Get(g)
 	}
-	g.Print("You extinguish the fire.")
+	g.Log("You extinguish the fire.")
 	return nil
 }
 

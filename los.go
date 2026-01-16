@@ -159,11 +159,11 @@ const DefaultMonsterLOSRange = 12
 
 func (g *Game) StopAuto() {
 	if g.autoexploring && !g.autoHalt {
-		g.Print("You stop exploring.")
+		g.Log("You stop exploring.")
 	} else if g.autoDir != ZP {
-		g.Print("You stop.")
+		g.Log("You stop.")
 	} else if g.autoTarget != invalidPos {
-		g.Print("You stop.")
+		g.Log("You stop.")
 	}
 	g.autoHalt = true
 	g.autoDir = ZP
@@ -239,7 +239,7 @@ func (g *Game) ComputeLOS() {
 				continue
 			}
 			mons.Seen = true
-			g.Printf("You see %s (%v).", mons.Kind.Indefinite(false), mons.State)
+			g.Logf("You see %s (%v).", mons.Kind.Indefinite(false), mons.State)
 			if mons.Kind.Notable() {
 				g.StoryPrintf("Saw %s", mons.Kind)
 			}
@@ -377,18 +377,18 @@ func (g *Game) SeeTerrainAt(p gruid.Point) {
 			see = "sense"
 		}
 		if IsNotable(t) {
-			g.PrintfStyled("You %s %s.", logNotable, see, g.TerrainShortDesc(t, p))
+			g.LogfStyled("You %s %s.", logNotable, see, g.TerrainShortDesc(t, p))
 			g.StopAuto()
 			g.SeeNotable(t, p)
 		}
 	default:
 		// XXX this can be improved to handle more terrain types changes
 		if t == WallCell && kt != WallCell {
-			g.Printf("There is no longer a wall there.")
+			g.Logf("There is no longer a wall there.")
 			g.StopAuto()
 			g.autoexploreMapRebuild = true
 		} else if cld, ok := g.Map.Clouds[p]; ok && cld == CloudFire && t != kt && Flammable(kt) {
-			g.Printf("There are flames there.")
+			g.Logf("There are flames there.")
 			g.StopAuto()
 			g.autoexploreMapRebuild = true
 		}
@@ -457,7 +457,7 @@ func (g *Game) ComputeNoise() {
 			}
 			if mons.Noise {
 				count++
-				g.Printf("You hear %s.", monsterNoise(mons.Kind))
+				g.Logf("You hear %s.", monsterNoise(mons.Kind))
 			}
 		}
 	}

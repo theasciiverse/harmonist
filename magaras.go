@@ -130,8 +130,8 @@ func (g *Game) EquipMagara(i int) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.P]
 	g.Objects.Magaras[g.Player.P] = omagara
-	g.Printf("You take the %s.", g.Player.Magaras[i])
-	g.Printf("You leave the %s.", omagara)
+	g.Logf("You take the %s.", g.Player.Magaras[i])
+	g.Logf("You leave the %s.", omagara)
 	g.StoryPrintf("Took %s (%d), left %s (%d)", g.Player.Magaras[i], g.Player.Magaras[i].Charges, omagara, omagara.Charges)
 	return nil
 }
@@ -425,14 +425,14 @@ func (g *Game) Blink() bool {
 	npos := g.BlinkPos(false)
 	if !valid(npos) {
 		// should not happen
-		g.Print("You could not blink.")
+		g.Log("You could not blink.")
 		return false
 	}
 	opos := g.Player.P
 	if npos == opos {
-		g.Print("You blink in-place.")
+		g.Log("You blink in-place.")
 	} else {
-		g.Print("You blink away.")
+		g.Log("You blink away.")
 	}
 	g.md.TeleportAnimation(opos, npos, true)
 	g.PlacePlayerAt(npos)
@@ -482,7 +482,7 @@ func (g *Game) EvokeDig() error {
 	if !g.PutStatus(StatusDig, DurationDigging) {
 		return errors.New("You are already digging.")
 	}
-	g.Print("You feel like an earth dragon.")
+	g.Log("You feel like an earth dragon.")
 	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
@@ -514,7 +514,7 @@ func (g *Game) EvokeTeleportOther() error {
 		}
 		ms[i].TeleportAway(g)
 		if ms[i].Kind.ReflectsTeleport() {
-			g.Printf("The %s reflected back some energies.", ms[i].Kind)
+			g.Logf("The %s reflected back some energies.", ms[i].Kind)
 			g.Teleportation()
 			break
 		}
@@ -525,14 +525,14 @@ func (g *Game) EvokeTeleportOther() error {
 
 func (g *Game) EvokeHealWounds() error {
 	g.Player.HP = g.Player.HPMax()
-	g.Print("Your feel healthy again.")
+	g.Log("Your feel healthy again.")
 	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
 
 func (g *Game) EvokeRefillMagic() error {
 	g.Player.MP = g.Player.MPMax()
-	g.Print("Your magic forces return.")
+	g.Log("Your magic forces return.")
 	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
@@ -542,7 +542,7 @@ func (g *Game) EvokeSwiftness() error {
 		return errors.New("You are already swift.")
 	}
 	g.Player.Statuses[StatusSwift] += DurationSwiftness
-	g.Printf("You feel swift.")
+	g.Logf("You feel swift.")
 	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
@@ -551,7 +551,7 @@ func (g *Game) EvokeLevitation() error {
 	if !g.PutStatus(StatusLevitation, DurationLevitation) {
 		return errors.New("You are already levitating.")
 	}
-	g.Printf("You feel light.")
+	g.Logf("You feel light.")
 	g.md.PlayerGoodEffectAnimation()
 	return nil
 }
@@ -588,7 +588,7 @@ func (g *Game) EvokeSwapping() error {
 }
 
 func (g *Game) swapWithMonster(mons *Monster) {
-	g.Printf("You swap positions with the %s.", mons.Kind)
+	g.Logf("You swap positions with the %s.", mons.Kind)
 	g.md.SwappingAnimation(mons.P, g.Player.P)
 	g.PlacePlayerAt(mons.P)
 	if g.Map.At(g.Player.P) == ChasmCell {
@@ -635,7 +635,7 @@ func (cl Cloud) String() (s string) {
 
 func (g *Game) EvokeFog() error {
 	g.Fog(g.Player.P, 3)
-	g.Print("You are surrounded by a dense fog.")
+	g.Log("You are surrounded by a dense fog.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
@@ -661,7 +661,7 @@ func (g *Game) EvokeShadows() error {
 	if !g.PutStatus(StatusShadows, DurationShadows) {
 		return errors.New("You are already surrounded by shadows.")
 	}
-	g.Print("You are surrounded by shadows.")
+	g.Log("You are surrounded by shadows.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
@@ -680,7 +680,7 @@ func (g *Game) EvokeParalysis() error {
 	if count == 0 {
 		return errors.New("No suitable targets in view.")
 	}
-	g.Print("Whoosh! A slowing luminous wave emerges.")
+	g.Log("Whoosh! A slowing luminous wave emerges.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveSlowing, g.Player.P)
 	return nil
 }
@@ -696,7 +696,7 @@ func (g *Game) EvokeSleeping() error {
 	for i := range ma {
 		mons := ms[i]
 		if mons.State != Resting {
-			g.Printf("%s falls asleep.", mons.Kind.Definite(true))
+			g.Logf("%s falls asleep.", mons.Kind.Definite(true))
 		} else {
 			continue
 		}
@@ -709,9 +709,9 @@ func (g *Game) EvokeSleeping() error {
 		return errors.New("There are no suitable targets.")
 	}
 	if ma == 1 {
-		g.Print("A beam of sleeping emerges.")
+		g.Log("A beam of sleeping emerges.")
 	} else {
-		g.Print("Two beams of sleeping emerge.")
+		g.Log("Two beams of sleeping emerge.")
 	}
 	g.md.BeamsAnimation(targets, BeamSleeping)
 
@@ -740,9 +740,9 @@ func (g *Game) EvokeLignification() error {
 		return errors.New("There are no suitable targets.")
 	}
 	if ma == 1 {
-		g.Print("A beam of lignification emerges.")
+		g.Log("A beam of lignification emerges.")
 	} else {
-		g.Print("Two beams of lignification emerge.")
+		g.Log("Two beams of lignification emerge.")
 	}
 	g.md.BeamsAnimation(targets, BeamLignification)
 	return nil
@@ -795,7 +795,7 @@ func (g *Game) EvokeNoise() error {
 		g.Map.NoiseIllusion[target] = true
 	}
 	g.md.NoiseAnimation(noises)
-	g.Print("Monsters are tricked by magical sounds.")
+	g.Log("Monsters are tricked by magical sounds.")
 	return nil
 }
 
@@ -813,7 +813,7 @@ func (g *Game) EvokeConfusion() error {
 	if count == 0 {
 		return errors.New("No suitable targets in view.")
 	}
-	g.Print("Whoosh! A confusing luminous wave emerges.")
+	g.Log("Whoosh! A confusing luminous wave emerges.")
 	g.md.LOSWavesAnimation(DefaultLOSRange, WaveConfusion, g.Player.P)
 	return nil
 }
@@ -823,7 +823,7 @@ func (g *Game) EvokeFire() error {
 	if len(burnpos) == 0 {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}
-	g.Print("Sparks emanate from the magara.")
+	g.Log("Sparks emanate from the magara.")
 	g.md.EffectAtPPAnimation()
 	for _, p := range burnpos {
 		g.Burn(p)
@@ -858,7 +858,7 @@ func (g *Game) EvokeObstruction() error {
 	if len(targets) == 0 {
 		return errors.New("No targetable monsters in view.")
 	}
-	g.Print("Magical barriers emerged.")
+	g.Log("Magical barriers emerged.")
 	g.md.BeamsAnimation(targets, BeamObstruction)
 	return nil
 }
@@ -882,7 +882,7 @@ func (g *Game) EvokeEnergyMagara() error {
 	if g.Player.MP == g.Player.MPMax() && g.Player.HP == g.Player.HPMax() {
 		return errors.New("You are already full of energy.")
 	}
-	g.Print("The magara glows.")
+	g.Log("The magara glows.")
 	g.md.PlayerGoodEffectAnimation()
 	g.Player.MP = g.Player.MPMax()
 	g.Player.HP = g.Player.HPMax()
@@ -893,7 +893,7 @@ func (g *Game) EvokeTransparencyMagara() error {
 	if !g.PutStatus(StatusTransparent, DurationTransparency) {
 		return errors.New("You are already transparent.")
 	}
-	g.Print("Light makes you diaphanous.")
+	g.Log("Light makes you diaphanous.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
@@ -902,7 +902,7 @@ func (g *Game) EvokeDisguiseMagara() error {
 	if !g.PutStatus(StatusDisguised, DurationDisguise) {
 		return errors.New("You are already disguised.")
 	}
-	g.Print("You look now like a normal guard.")
+	g.Log("You look now like a normal guard.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
@@ -913,7 +913,7 @@ func (g *Game) EvokeDelayedNoiseMagara() error {
 	}
 	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
-	g.Print("Timer activated.")
+	g.Log("Timer activated.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
@@ -922,7 +922,7 @@ func (g *Game) EvokeDispersalMagara() error {
 	if !g.PutStatus(StatusDispersal, DurationDispersal) {
 		return errors.New("You are already dispersing.")
 	}
-	g.Print("You feel unstable.")
+	g.Log("You feel unstable.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
@@ -933,7 +933,7 @@ func (g *Game) EvokeOricExplosionMagara() error {
 	}
 	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
-	g.Print("Timer activated.")
+	g.Log("Timer activated.")
 	g.md.EffectAtPPAnimation()
 	return nil
 }
