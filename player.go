@@ -410,7 +410,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		if g.Player.Inventory.Body == CloakSmoke {
 			_, ok := g.Map.Clouds[g.Player.P]
 			if !ok && AllowsFog(g.Map.At(g.Player.P)) {
-				g.Map.Clouds[g.Player.P] = CloudFog
+				g.Map.Clouds[g.Player.P] = CloudPlain
 				g.PushEventD(&posEvent{P: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
 			}
 		}
@@ -438,7 +438,7 @@ func (g *Game) SwiftFog() {
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {
-			g.Map.Clouds[n.P] = CloudFog
+			g.Map.Clouds[n.P] = CloudPlain
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}

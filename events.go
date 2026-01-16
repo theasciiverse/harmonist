@@ -267,7 +267,7 @@ func (g *Game) NightFog(at gruid.Point, radius int) {
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok {
-			g.Map.Clouds[n.P] = CloudNight
+			g.Map.Clouds[n.P] = CloudPurpleMist
 			g.PushEventD(&posEvent{Action: NightProgression,
 				P: n.P, Timer: DurationNightFog}, DurationCloudProgression)
 
@@ -280,7 +280,7 @@ func (g *Game) NightFog(at gruid.Point, radius int) {
 func (g *Game) MakeCreatureSleep(p gruid.Point) {
 	if p == g.Player.P {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
-			g.Log("The clouds of night confuse you.")
+			g.Log("The purple mist confuses you.")
 		}
 		return
 	}

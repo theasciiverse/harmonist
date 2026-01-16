@@ -237,7 +237,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			switch cld {
 			case CloudFire:
 				fgColor = ColorOrange
-			case CloudNight:
+			case CloudPurpleMist:
 				fgColor = ColorViolet
 			}
 		}

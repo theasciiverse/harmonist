@@ -327,9 +327,9 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case LevitationMagara:
 		desc = "makes you levitate with oric energies, allowing you to move over chasms, as well as through oric barriers."
 	case FireMagara:
-		desc = "throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce night clouds inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
+		desc = "throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce purple mist inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
 	case FogMagara:
-		desc = "creates a dense fog in a 2-range radius using harmonic energies. The fog will dissipate with time."
+		desc = "creates a dense fog cloud in a 2-range radius using harmonic energies. The cloud will dissipate with time."
 	case ShadowsMagara:
 		desc = "surrounds you by harmonic shadows. While standing on a dark cell, only adjacent monsters will be able to see you. It does not affect your visibility on lighted cells."
 	case NoiseMagara:
@@ -616,19 +616,19 @@ func (g *Game) MonstersInFOV() []*Monster {
 type Cloud int
 
 const (
-	CloudFog Cloud = iota
+	CloudPlain Cloud = iota
 	CloudFire
-	CloudNight
+	CloudPurpleMist
 )
 
 func (cl Cloud) String() (s string) {
 	switch cl {
-	case CloudFog:
-		s = "fog"
+	case CloudPlain:
+		s = "cloud" // dense fog, dust
 	case CloudFire:
 		s = "fire"
-	case CloudNight:
-		s = "purple fog"
+	case CloudPurpleMist:
+		s = "purple mist"
 	}
 	return s
 }
@@ -647,7 +647,7 @@ func (g *Game) Fog(at gruid.Point, radius int) {
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {
-			g.Map.Clouds[n.P] = CloudFog
+			g.Map.Clouds[n.P] = CloudPlain
 			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
