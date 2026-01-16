@@ -485,30 +485,30 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 	switch t {
 	case WallCell:
-		r, fg = '#', ColorFgLOS
+		r, fg = '#', ColorForeground
 	case GroundCell:
-		r, fg = '.', ColorFgLOS
+		r, fg = '.', ColorForeground
 	case DoorCell:
-		r, fg = '+', ColorFgPlace
+		r, fg = '+', ColorMagenta
 	case FoliageCell:
-		r, fg = '"', ColorFgLOS
+		r, fg = '"', ColorForeground
 	case BarrelCell:
-		r, fg = '&', ColorFgObject
+		r, fg = '&', ColorYellow
 	case StoneCell:
 		r, fg = g.Objects.Stones[p].Style(g)
 	case StairCell:
 		st := g.Objects.Stairs[p]
 		r, fg = st.Style(g)
 	case MagaraCell:
-		r, fg = '/', ColorFgObject
+		r, fg = '/', ColorYellow
 	case BananaCell:
-		r, fg = ')', ColorFgObject
+		r, fg = ')', ColorYellow
 	case LightCell:
-		r, fg = '☼', ColorFgObject
+		r, fg = '☼', ColorYellow
 	case ExtinguishedLightCell:
-		r, fg = '○', ColorFgLOS
+		r, fg = '○', ColorForeground
 	case TableCell:
-		r, fg = 'π', ColorFgObject
+		r, fg = 'π', ColorYellow
 	case TreeCell:
 		r, fg = '♣', ColorGreen
 	case HoledWallCell:
@@ -520,33 +520,33 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 	case ItemCell:
 		r, fg = g.Objects.Items[p].Style(g)
 	case BarrierCell:
-		r, fg = 'Ξ', ColorFgMagicPlace
+		r, fg = 'Ξ', ColorCyan
 	case WindowCell:
 		r, fg = 'Θ', ColorViolet
 	case ChasmCell:
-		r, fg = '◊', ColorFgLOS
+		r, fg = '◊', ColorForeground
 		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case WaterCell:
-		r, fg = '≈', ColorFgLOS
+		r, fg = '≈', ColorForeground
 	case RubbleCell:
-		r, fg = '^', ColorFgLOS
+		r, fg = '^', ColorForeground
 	case CavernCell:
-		r, fg = ',', ColorFgLOS
+		r, fg = ',', ColorForeground
 	case FakeStairCell:
-		r, fg = '>', ColorFgPlace
+		r, fg = '>', ColorMagenta
 		if g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case PotionCell:
 		r, fg = g.Objects.Potions[p].Style(g)
 	case QueenRockCell:
-		r, fg = '‗', ColorFgLOS
+		r, fg = '‗', ColorForeground
 	case UnknownPassable:
-		r, fg = '♫', ColorFgLOS
+		r, fg = '♫', ColorForeground
 	case Unknown:
-		r, fg = ' ', ColorFgLOS
+		r, fg = ' ', ColorForeground
 	}
 	return r, fg
 }

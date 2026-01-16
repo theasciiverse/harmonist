@@ -143,9 +143,9 @@ func (md *model) SwappingAnimation(mp, pp gruid.Point) {
 	_, fgm, bgColorm := md.positionDrawing(mp)
 	_, _, bgColorp := md.positionDrawing(pp)
 	md.anims.Draw(mp, 'Φ', fgm, bgColorp)
-	md.anims.Draw(pp, 'Φ', ColorFgPlayer, bgColorm)
+	md.anims.Draw(pp, 'Φ', ColorBlue, bgColorm)
 	md.anims.Frame(AnimDurMedium)
-	md.anims.Draw(mp, 'Φ', ColorFgPlayer, bgColorp)
+	md.anims.Draw(mp, 'Φ', ColorBlue, bgColorp)
 	md.anims.Draw(pp, 'Φ', fgm, bgColorm)
 	md.anims.Frame(AnimDurMedium)
 }
@@ -224,7 +224,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 		return
 	}
 	md.LOSWavesAnimation(DefaultLOSRange, WaveMagicNoise, md.g.Player.P)
-	colors := []gruid.Color{ColorFgSleepingMonster, ColorFgMagicPlace}
+	colors := []gruid.Color{ColorViolet, ColorCyan}
 	for i := range 2 {
 		for _, p := range noises {
 			r := '♫'
@@ -245,10 +245,10 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 	g := md.g
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
-	colors := [2]gruid.Color{ColorFgExplosionStart, ColorFgExplosionEnd}
+	colors := [2]gruid.Color{ColorYellow, ColorOrange}
 	if es == WallExplosion || es == AroundWallExplosion {
-		colors[0] = ColorFgExplosionWallStart
-		colors[1] = ColorFgExplosionWallEnd
+		colors[0] = ColorViolet
+		colors[1] = ColorMagenta
 	}
 	for range 3 {
 		nb := g.playerPassableNeighbors(p)
@@ -317,32 +317,32 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 		p := idxtopos(i)
 		switch ws {
 		case WaveConfusion:
-			fg := ColorFgConfusedMonster
+			fg := ColorGreen
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
 		case WaveSleeping:
-			fg := ColorFgSleepingMonster
+			fg := ColorViolet
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
 		case WaveSlowing:
-			fg := ColorFgParalysedMonster
+			fg := ColorCyan
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
 		case WaveTree:
-			fg := ColorFgLignifiedMonster
+			fg := ColorYellow
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
 		case WaveNoise:
-			fg := ColorFgWanderingMonster
+			fg := ColorOrange
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
 		case WaveMagicNoise:
-			fg := ColorFgMagicPlace
+			fg := ColorCyan
 			md.WaveDrawAt(p, fg)
 		}
 	}
@@ -354,7 +354,7 @@ func (md *model) WallExplosionAnimation(p gruid.Point) {
 		return
 	}
 	md.startAnimSeq()
-	colors := [2]gruid.Color{ColorFgExplosionWallStart, ColorFgExplosionWallEnd}
+	colors := [2]gruid.Color{ColorViolet, ColorMagenta}
 	for _, fg := range colors {
 		_, _, bgColor := md.positionDrawing(p)
 		md.anims.DrawReverse(p, '%', fg, bgColor)
@@ -382,9 +382,9 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	//	case BeamSleeping:
 	//		fg = ColorFgSleepingMonster
 	case BeamLignification:
-		fg = ColorFgLignifiedMonster
+		fg = ColorYellow
 	case BeamObstruction:
-		fg = ColorFgMagicPlace
+		fg = ColorCyan
 	}
 	for range 3 {
 		for i := len(ray) - 1; i >= 0; i-- {
@@ -406,7 +406,7 @@ func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 	}
 	md.startAnimSeq()
 	md.anims.Frame(AnimDurShort)
-	colors := [2]gruid.Color{ColorFgConfusedMonster, ColorFgMagicPlace}
+	colors := [2]gruid.Color{ColorGreen, ColorCyan}
 	for range 3 {
 		for i := len(ray) - 1; i >= 0; i-- {
 			fg := colors[RandInt(2)]
@@ -445,7 +445,7 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	for i := range len(ray) {
 		p := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(p)
-		md.anims.Draw(p, md.ProjectileSymbol(dirnorm(g.Player.P, p)), ColorFgMonster, bgColor)
+		md.anims.Draw(p, md.ProjectileSymbol(dirnorm(g.Player.P, p)), ColorRed, bgColor)
 		md.anims.Frame(AnimDurShort)
 		md.anims.Draw(p, r, fgColor, bgColor)
 	}
@@ -459,10 +459,10 @@ func (md *model) WoundedAnimation() {
 	g := md.g
 	md.startAnimSeq()
 	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorFgHPwounded, bg)
+	md.anims.Draw(g.Player.P, r, ColorYellow, bg)
 	md.anims.Frame(AnimDurShortMedium)
 	if g.Player.HP <= 15 {
-		md.anims.Draw(g.Player.P, r, ColorFgHPcritical, bg)
+		md.anims.Draw(g.Player.P, r, ColorRed, bg)
 		md.anims.Frame(AnimDurShortMedium)
 	}
 }
@@ -525,9 +525,9 @@ func (md *model) PushAnimation(path []gruid.Point) {
 	md.startAnimSeq()
 	_, _, bg := md.positionDrawing(path[0])
 	for _, p := range path[:len(path)-1] {
-		md.anims.Draw(p, '×', ColorFgPlayer, bg)
+		md.anims.Draw(p, '×', ColorBlue, bg)
 	}
-	md.anims.Draw(path[len(path)-1], '@', ColorFgPlayer, bg)
+	md.anims.Draw(path[len(path)-1], '@', ColorBlue, bg)
 	md.anims.Frame(AnimDurMediumLong)
 }
 
@@ -544,7 +544,7 @@ func (md *model) AbyssFallAnimation() {
 		it := gd.Iterator()
 		for it.Next() {
 			if it.Cell() == rl.Cell(i) {
-				md.anims.Draw(it.P(), ' ', ColorFg, ColorBgDark)
+				md.anims.Draw(it.P(), ' ', ColorForeground, ColorBackground)
 			}
 		}
 		md.anims.Frame(AnimDurShort)
@@ -574,7 +574,7 @@ func (md *model) FreeingShaedra() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Monolith)
-			md.anims.Draw(g.Places.Monolith, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Monolith, 'Φ', ColorCyan, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -583,7 +583,7 @@ func (md *model) FreeingShaedra() {
 			md.startAnimSeq()
 			md.anims.Frame(AnimDurMediumLong)
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
@@ -594,8 +594,8 @@ func (md *model) FreeingShaedra() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorFgMagicPlace, bg)
-			md.anims.Draw(g.Places.Shaedra, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Shaedra, 'Φ', ColorCyan, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Map.Set(g.Places.Shaedra, GroundCell)
@@ -633,7 +633,7 @@ func (md *model) TakingArtifact() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Monolith)
-			md.anims.Draw(g.Places.Monolith, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Monolith, 'Φ', ColorCyan, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -641,7 +641,7 @@ func (md *model) TakingArtifact() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorFgMagicPlace, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor

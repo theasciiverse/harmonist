@@ -242,16 +242,16 @@ func (md *model) updateStatusInfo() {
 
 	st := gruid.Style{}
 	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
-		'G': st.WithFg(ColorFgHPok),
-		'g': st.WithFg(ColorFgMPok),
-		'W': st.WithFg(ColorFgHPwounded),
-		'w': st.WithFg(ColorFgMPpartial),
-		'C': st.WithFg(ColorFgHPcritical),
-		'c': st.WithFg(ColorFgMPcritical),
-		'x': st.WithFg(ColorFgStatusExpire),
-		's': st.WithFg(ColorFgStatusGood),
-		'o': st.WithFg(ColorFgStatusOther),
-		'b': st.WithFg(ColorFgStatusBad),
+		'G': st.WithFg(ColorGreen),
+		'g': st.WithFg(ColorBlue),
+		'W': st.WithFg(ColorYellow),
+		'w': st.WithFg(ColorViolet),
+		'C': st.WithFg(ColorRed),
+		'c': st.WithFg(ColorMagenta),
+		'x': st.WithFg(ColorViolet),
+		's': st.WithFg(ColorBlue),
+		'o': st.WithFg(ColorYellow),
+		'b': st.WithFg(ColorRed),
 		'B': st.WithFg(ColorCyan),
 		'R': st.WithFg(ColorRed),
 		'Y': st.WithFg(ColorYellow),
@@ -375,8 +375,8 @@ func (md *model) updateStatusInfo() {
 		t := g.Map.At(p)
 		if t != GroundCell {
 			r, fg := g.TerrainStyle(t, p)
-			if g.Illuminated(p) && IsIlluminable(t) && fg == ColorFgLOS {
-				fg = ColorFgLOSLight
+			if g.Illuminated(p) && IsIlluminable(t) && fg == ColorForeground {
+				fg = ColorYellow
 			}
 			entries = append(entries, ui.MenuEntry{
 				Text:     stt.WithTextf("%c ", r).WithStyle(gruid.Style{Fg: fg, Attrs: AttrInMap}),

@@ -103,15 +103,15 @@ func (st stair) Style(g *Game) (r rune, fg gruid.Color) {
 	r = '>'
 	switch st {
 	case WinStair:
-		fg = ColorFgMagicPlace
+		fg = ColorCyan
 		r = 'Δ'
 	case NormalStair:
-		fg = ColorFgPlace
+		fg = ColorMagenta
 		if g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case SealedStair:
-		fg = ColorFgMagicPlace
+		fg = ColorCyan
 	}
 	return r, fg
 }
@@ -508,7 +508,7 @@ func (sc scroll) Desc(g *Game) (desc string) {
 
 func (sc scroll) Style(g *Game) (r rune, fg gruid.Color) {
 	r = '?'
-	fg = ColorFgMagicPlace
+	fg = ColorCyan
 	if sc == ScrollLore {
 		fg = ColorViolet
 	}
@@ -558,10 +558,10 @@ func (st story) String() (desc string) {
 }
 
 func (st story) Style(g *Game) (r rune, fg gruid.Color) {
-	fg = ColorFgPlayer
+	fg = ColorBlue
 	switch st {
 	case NoStory:
-		fg = ColorFgLOS
+		fg = ColorForeground
 		r = '.'
 	case StoryShaedra:
 		r = 'S'
@@ -571,7 +571,7 @@ func (st story) Style(g *Game) (r rune, fg gruid.Color) {
 		r = '='
 	case StoryArtifactSealed:
 		r = '='
-		fg = ColorFgMagicPlace
+		fg = ColorCyan
 	}
 	return r, fg
 }
@@ -694,7 +694,7 @@ func (it item) Desc(g *Game) (desc string) {
 }
 
 func (it item) Style(g *Game) (r rune, fg gruid.Color) {
-	fg = ColorFgObject
+	fg = ColorYellow
 	if it.IsAmulet() {
 		r = '='
 	} else if it.IsCloak() {
@@ -813,9 +813,9 @@ func (ptn potion) Style(g *Game) (r rune, fg gruid.Color) {
 	r = '!'
 	switch ptn {
 	case HealthPotion:
-		fg = ColorFgHPok
+		fg = ColorGreen
 	case MagicPotion:
-		fg = ColorFgMPok
+		fg = ColorBlue
 	}
 	return r, fg
 }

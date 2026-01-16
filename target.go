@@ -135,7 +135,7 @@ func (md *model) drawPosInfo() {
 	if len(features) > 1 {
 		t += " (" + strings.Join(features[1:], ", ") + ")"
 	}
-	fg := ColorFg
+	fg := ColorForeground
 	desc := ""
 	if info.Unknown {
 		desc = "You do not know what is in there."
@@ -200,19 +200,19 @@ func (md *model) drawPosInfo() {
 func (m *Monster) color(g *Game) gruid.Color {
 	var fg gruid.Color
 	if m.Status(MonsLignified) {
-		fg = ColorFgLignifiedMonster
+		fg = ColorYellow
 	} else if m.Status(MonsConfused) {
-		fg = ColorFgConfusedMonster
+		fg = ColorGreen
 	} else if m.Status(MonsParalysed) {
-		fg = ColorFgParalysedMonster
+		fg = ColorCyan
 	} else if m.State == Resting {
-		fg = ColorFgSleepingMonster
+		fg = ColorViolet
 	} else if m.State == Hunting {
-		fg = ColorFgMonster
+		fg = ColorRed
 	} else if m.Peaceful(g) {
-		fg = ColorFgPlayer
+		fg = ColorBlue
 	} else {
-		fg = ColorFgWanderingMonster
+		fg = ColorOrange
 	}
 	return fg
 }
