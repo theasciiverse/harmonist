@@ -179,7 +179,7 @@ func (md *model) initWidgets() {
 		Box:  &ui.Box{},
 		Keys: ui.PagerKeys{Quit: []gruid.Key{gruid.KeySpace, "x", "X", gruid.KeyEscape}},
 	})
-	md.pagerMarkup = ui.StyledText{}.WithMarkups(logStyles)
+	md.pagerMarkup = ui.StyledText{}.WithMarkups(Markups)
 	style := ui.MenuStyle{
 		Active: gruid.Style{}.WithFg(ColorYellow),
 	}

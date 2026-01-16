@@ -199,21 +199,21 @@ func (md *model) statusHPColor() rune {
 	hpColor := 'G'
 	switch g.Player.HP + g.Player.HPbonus {
 	case 1, 2:
-		hpColor = 'C'
+		hpColor = 'R'
 	case 3, 4:
-		hpColor = 'W'
+		hpColor = 'Y'
 	}
 	return hpColor
 }
 
 func (md *model) statusMPColor() rune {
 	g := md.g
-	mpColor := 'g'
+	mpColor := 'B'
 	switch g.Player.MP {
 	case 1, 2:
-		mpColor = 'c'
+		mpColor = 'M'
 	case 3, 4:
-		mpColor = 'w'
+		mpColor = 'V'
 	}
 	return mpColor
 }
@@ -240,23 +240,7 @@ func (md *model) updateStatusInfo() {
 	g := md.g
 	var entries []ui.MenuEntry
 
-	st := gruid.Style{}
-	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
-		'G': st.WithFg(ColorGreen),
-		'g': st.WithFg(ColorBlue),
-		'W': st.WithFg(ColorYellow),
-		'w': st.WithFg(ColorViolet),
-		'C': st.WithFg(ColorRed),
-		'c': st.WithFg(ColorMagenta),
-		'x': st.WithFg(ColorViolet),
-		's': st.WithFg(ColorBlue),
-		'o': st.WithFg(ColorYellow),
-		'b': st.WithFg(ColorRed),
-		'B': st.WithFg(ColorCyan),
-		'R': st.WithFg(ColorRed),
-		'Y': st.WithFg(ColorYellow),
-		'M': st.WithFg(ColorYellow).WithAttrs(AttrInMap),
-	})
+	stt := ui.StyledText{}.WithMarkups(Markups)
 	// depth
 	var depth string
 	if g.Map.Depth == -1 {
@@ -317,7 +301,7 @@ func (md *model) updateStatusInfo() {
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(mps), Disabled: true})
 
 	// bananas
-	bananas := fmt.Sprintf("@M)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
+	bananas := fmt.Sprintf("@y)@N:%1d/%1d ", g.Player.Bananas, MaxBananas)
 	entries = append(entries, ui.MenuEntry{Text: stt.WithText(bananas), Disabled: true})
 
 	// menus
@@ -345,15 +329,15 @@ func (md *model) updateStatusInfo() {
 		entries = append(entries, ui.MenuEntry{Text: stt.WithText("| "), Disabled: true})
 	}
 	for _, st := range sts {
-		r := 'o'
+		r := 'Y'
 		if st.Good() {
-			r = 's'
+			r = 'B'
 			t := DurationTurn
 			if !st.Flag() && g.Player.Expire[st] >= g.Turn && g.Player.Expire[st]-g.Turn <= t {
-				r = 'x'
+				r = 'V'
 			}
 		} else if st.Bad() {
-			r = 'b'
+			r = 'R'
 		}
 		var sttext string
 		if !st.Flag() {
@@ -383,9 +367,9 @@ func (md *model) updateStatusInfo() {
 				Disabled: true})
 		}
 		if md.g.resting {
-			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@BResting...@N"), Disabled: true})
+			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@CResting...@N"), Disabled: true})
 		} else if md.targ.kbTargeting {
-			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@B[Examine]@N"), Disabled: true})
+			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@C[Examine]@N"), Disabled: true})
 		}
 	}
 

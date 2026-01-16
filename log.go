@@ -6,7 +6,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"codeberg.org/anaseto/gruid"
 	"codeberg.org/anaseto/gruid/ui"
 )
 
@@ -153,38 +152,27 @@ func (st logStyle) Rune() rune {
 	var r rune
 	switch st {
 	case logNotable:
-		r = 'y'
+		r = 'Y'
 	case logDamage:
-		r = 'o'
+		r = 'O'
 	case logSpecial:
-		r = 'c'
+		r = 'C'
 	case logStatusEnd:
-		r = 'v'
+		r = 'V'
 	case logError:
-		r = 'r'
+		r = 'R'
 	case logConfirm:
-		r = 'm'
+		r = 'M'
 	default:
 		r = 'N'
 	}
 	return r
 }
 
-var logStyles = map[rune]gruid.Style{
-	'r': gruid.Style{}.WithFg(ColorRed),
-	'y': gruid.Style{}.WithFg(ColorYellow),
-	't': gruid.Style{}.WithFg(ColorYellow),
-	'g': gruid.Style{}.WithFg(ColorGreen),
-	'o': gruid.Style{}.WithFg(ColorOrange),
-	'm': gruid.Style{}.WithFg(ColorMagenta),
-	'v': gruid.Style{}.WithFg(ColorViolet),
-	'c': gruid.Style{}.WithFg(ColorCyan),
-}
-
 // DrawLog draws 2 compacted lines of log.
 func (md *model) DrawLog() ui.StyledText {
 	g := md.g
-	stt := ui.StyledText{}.WithMarkups(logStyles)
+	stt := ui.StyledText{}.WithMarkups(Markups)
 	tick := false
 	for i := len(g.Logs) - 1; i >= 0; i-- {
 		e := g.Logs[i]
