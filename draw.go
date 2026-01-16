@@ -41,9 +41,6 @@ func (md *model) Draw() gruid.Grid {
 	md.drawMap(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
 	md.log.Content = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
-	if md.targ.ex.p != invalidPos {
-		md.drawPosInfo()
-	}
 	switch md.mode {
 	case modeNormal:
 		if md.statusFocus {
@@ -58,6 +55,8 @@ func (md *model) Draw() gruid.Grid {
 				x = 0
 			}
 			md.statusDesc.Draw(md.gd.Slice(md.gd.Range().Lines(UIHeight-4, UIHeight-1).Shift(x, 0, 0, 0)))
+		} else if md.targ.ex.p != invalidPos {
+			md.drawPosInfo()
 		}
 	case modePager:
 		md.gd.Copy(md.pager.Draw())

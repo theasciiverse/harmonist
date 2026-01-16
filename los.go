@@ -443,34 +443,46 @@ func (g *Game) ComputeNoise() {
 			case MonsMirrorSpecter:
 				if mons.Kind == MonsMirrorSpecter && goodhearing {
 					mons.Noise = true
-					g.Print("You hear an imperceptible air movement.")
-					count++
 				}
 			case MonsWingedMilfid, MonsTinyHarpy:
 				mons.Noise = true
-				g.Print("You hear the flapping of wings.")
-				count++
 			case MonsEarthDragon, MonsTreeMushroom, MonsYack:
 				mons.Noise = true
-				g.Print("You hear heavy footsteps.")
-				count++
 			case MonsWorm, MonsAcidMound:
 				mons.Noise = true
-				g.Print("You hear a creep noise.")
-				count++
 			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
 				mons.Noise = true
-				g.Print("You hear light footsteps.")
-				count++
 			default:
 				mons.Noise = true
-				g.Print("You hear footsteps.")
+			}
+			if mons.Noise {
 				count++
+				g.Printf("You hear %s.", monsterNoise(mons.Kind))
 			}
 		}
 	}
 	if count > 0 {
 		g.StopAuto()
+	}
+}
+
+func monsterNoise(mk monsterKind) string {
+	switch mk {
+	case MonsSatowalgaPlant, MonsButterfly:
+		// Should not happen.
+		return "a silent noise"
+	case MonsMirrorSpecter:
+		return "an imperceptible air movement"
+	case MonsWingedMilfid, MonsTinyHarpy:
+		return "the flapping of wings"
+	case MonsEarthDragon, MonsTreeMushroom, MonsYack:
+		return "heavy footsteps"
+	case MonsWorm, MonsAcidMound:
+		return "a creep noise"
+	case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
+		return "light footsteps"
+	default:
+		return "footsteps"
 	}
 }
 

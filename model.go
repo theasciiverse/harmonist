@@ -483,11 +483,11 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	switch msg.Action {
 	case gruid.MouseWheelUp:
 		if md.targ.ex.p != invalidPos {
-			md.targ.ex.scroll = true
+			md.targ.ex.scroll = false
 		}
 	case gruid.MouseWheelDown:
 		if md.targ.ex.p != invalidPos {
-			md.targ.ex.scroll = false
+			md.targ.ex.scroll = true
 		}
 	case gruid.MouseMove:
 		if md.auto || md.targ.kbTargeting {

@@ -85,7 +85,6 @@ func (md *model) KeyboardExamine() {
 type posInfo struct {
 	P       gruid.Point
 	Unknown bool
-	Noise   bool
 	Sees    bool
 	Player  bool
 	Monster *Monster
@@ -103,15 +102,12 @@ func (md *model) drawPosInfo() {
 	info := md.targ.ex.info
 
 	y := 2
-	stt := ui.StyledText{}.WithMarkups(map[rune]gruid.Style{
-		'h': gruid.Style{}.WithFg(ColorCyan),
-		's': gruid.Style{}.WithFg(ColorGreen),
-	})
+	stt := ui.StyledText{}.WithMarkups(Markups)
 	formatBox := func(title, s string, fg gruid.Color) {
 		md.description.Content = stt.WithText(s).Format(MapWidth/2 - 3)
-		if md.description.Content.Size().Y+2 > 2+MapHeight {
+		if md.description.Content.Size().Y+2 > MapHeight {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg)),
-				Footer: ui.Text("scroll/page down for more...")}
+				Footer: ui.NewStyledText("scroll/page down for more...", gruid.Style{Fg: ColorMagenta})}
 		} else {
 			md.description.Box = &ui.Box{Title: ui.NewStyledText(title, gruid.Style{}.WithFg(fg))}
 		}
@@ -119,7 +115,10 @@ func (md *model) drawPosInfo() {
 	}
 
 	features := []string{}
-	if !info.Unknown {
+	if info.Unknown {
+		features = append(features, "unknown terrain")
+		features = append(features, "unexplored")
+	} else {
 		features = append(features, g.TerrainName(info.Cell, info.P))
 		if info.Cloud != "" && info.Sees {
 			features = append(features, info.Cloud)
@@ -127,16 +126,9 @@ func (md *model) drawPosInfo() {
 		if info.Lighted && info.Sees {
 			features = append(features, "lighted")
 		}
-	} else {
-		features = append(features, "unknown")
-	}
-	if info.Noise {
-		features = append(features, "noise")
-	}
-	if !info.Sees && !info.Unknown {
-		features = append(features, "seen")
-	} else if info.Unknown {
-		features = append(features, "unexplored")
+		if !info.Sees {
+			features = append(features, "seen")
+		}
 	}
 	t := features[0]
 	if len(features) > 1 {
@@ -149,18 +141,28 @@ func (md *model) drawPosInfo() {
 	} else {
 		desc = g.TerrainDesc(info.Cell, info.P)
 	}
+	if !md.targ.ex.scroll {
+		formatBox(t, desc, fg)
+	}
 
 	if info.Player {
-		if !md.targ.ex.scroll {
-			formatBox(t, desc, fg)
-		}
 		formatBox("Syu", "This is you, the monkey named Syu.", ColorBlue)
 		return
 	}
 
+	noiseBox := func() {
+		if mons := g.MonsterAt(info.P); mons.Exists() && mons.Noise {
+			fg := mons.noiseColor()
+			noiseMsg := fmt.Sprintf("You heard %s around there.", monsterNoise(mons.Kind))
+			formatBox("monster noise", noiseMsg, fg)
+		} else if g.Map.NoiseIllusion[info.P] {
+			formatBox("noise", "You heard noise around there.", ColorCyan)
+		}
+	}
+
 	mons := info.Monster
 	if !mons.Exists() {
-		formatBox(t, desc, fg)
+		noiseBox()
 		return
 	}
 	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, dirString(mons.Dir))
@@ -179,18 +181,16 @@ func (md *model) drawPosInfo() {
 	if info.Sees {
 		statuses := mons.statusesText()
 		if statuses != "" {
-			mdesc = append(mdesc, fmt.Sprintf("@hStatuses:@N %s", statuses))
+			mdesc = append(mdesc, fmt.Sprintf("@CStatuses:@N %s", statuses))
 		}
 	}
-	mdesc = append(mdesc, "@hTraits:@N "+mons.traits())
-	if !md.targ.ex.scroll {
-		formatBox(t, desc, fg)
-	}
+	mdesc = append(mdesc, "@CTraits:@N "+mons.traits())
 	if !mons.Seen && g.Wizard != WizardSeeAll {
 		formatBox("unknown monster", "You sensed a monster there.", mfg)
 	} else {
 		formatBox(title, strings.Join(mdesc, "\n"), mfg)
 	}
+	noiseBox()
 }
 
 func (m *Monster) color(g *Game) gruid.Color {
@@ -269,14 +269,8 @@ func (md *model) updatePosInfo() {
 		return
 	case !IsKnown(g.Map.KnownTerrain.At(p)) && g.Wizard != WizardSeeAll:
 		pi.Unknown = true
-		if g.Map.NoiseIllusion[p] {
-			pi.Noise = true
-		}
 		if mons := g.KnownMonsterAt(p); mons.Exists() {
 			pi.Monster = mons
-		}
-		if mons := g.MonsterAt(p); mons.Exists() && mons.Noise {
-			pi.Noise = true
 		}
 		md.targ.ex.info = pi
 		return
@@ -292,9 +286,6 @@ func (md *model) updatePosInfo() {
 	}
 	if mons := g.MonsterAt(p); mons.Exists() && infov {
 		pi.Monster = mons
-		if mons.Noise {
-			pi.Noise = true
-		}
 	} else if mons := g.KnownMonsterAt(p); mons.Exists() && g.Wizard != WizardSeeAll {
 		pi.Monster = mons
 	}
@@ -304,9 +295,6 @@ func (md *model) updatePosInfo() {
 	pi.Cell = t
 	if infov && g.Illuminated(p) && IsIlluminable(t) {
 		pi.Lighted = true
-	}
-	if g.Map.NoiseIllusion[p] {
-		pi.Noise = true
 	}
 	md.targ.ex.info = pi
 }
