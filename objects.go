@@ -155,7 +155,7 @@ func (stn stone) String() (text string) {
 func (stn stone) Desc(g *Game) (text string) {
 	switch stn {
 	case InertStone:
-		text = "This magical stone has been depleted of magical energies but still emits a slight glow."
+		text = "This magical stone has been depleted of magical energies but still emits a faint glow."
 	case BarrelStone:
 		text = "Activating this magical stone will teleport you away to a random barrel in the same level. It reveals any other barrels on the map."
 	case EarthStone:
