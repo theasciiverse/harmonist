@@ -48,11 +48,7 @@ func (pl *Player) HPMax() int {
 const DefaultMPmax = 6
 
 func (pl *Player) MPMax() int {
-	mpmax := DefaultMPmax
-	if pl.Inventory.Body == CloakMagic {
-		mpmax += 2
-	}
-	return mpmax
+	return DefaultMPmax
 }
 
 func (pl *Player) HasStatus(st status) bool {

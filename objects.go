@@ -559,10 +559,9 @@ func (st story) Style(g *Game) (r rune, fg gruid.Color) {
 type item int
 
 const (
-	NoItem     item = iota
-	CloakMagic      // XXX boring
+	NoItem item = iota
 	CloakHear
-	CloakVitality // XXX boring
+	CloakVitality
 	CloakAcrobat
 	CloakShadows
 	CloakSmoke
@@ -577,8 +576,7 @@ const (
 
 func (it item) IsCloak() bool {
 	switch it {
-	case CloakMagic,
-		CloakHear,
+	case CloakHear,
 		CloakVitality,
 		CloakAcrobat,
 		CloakSmoke,
@@ -605,8 +603,6 @@ func (it item) String() (desc string) {
 	switch it {
 	case NoItem:
 		desc = "empty slot"
-	case CloakMagic:
-		desc = "cloak of magic"
 	case CloakHear:
 		desc = "cloak of hearing"
 	case CloakVitality:
@@ -643,34 +639,32 @@ func (it item) Desc(g *Game) (desc string) {
 	switch it {
 	case NoItem:
 		return "You do not have an item equipped on this slot yet."
-	case CloakMagic:
-		desc = "increases your magical reserves."
 	case CloakHear:
-		desc = "improves your hearing skills."
+		desc = "Improves your hearing skills."
 	case CloakVitality:
-		desc = "improves your health."
+		desc = "Improves your maximum health by 2."
 	case CloakAcrobat:
-		desc = "removes exhaustion from jumps."
+		desc = "Prevents exhaustion from jumping."
 	case CloakShadows:
-		desc = "reduces the range at which foes see you in the dark."
+		desc = "Reduces the range at which foes see you in the dark by one."
 	case CloakSmoke:
-		desc = "leaves smoke behind as you move, making you difficult to spot."
+		desc = "Leaves smoke behind as you move, making you difficult to spot."
 	case CloakConversion:
-		desc = "converts lost health from wounds into magical energy."
+		desc = "Converts lost health from wounds into magical energy."
 	case AmuletTeleport:
-		desc = "teleports away foes that critically hit you."
+		desc = "Teleports away foes that critically hit you."
 	case AmuletConfusion:
-		desc = "confuses foes that critically hit you."
+		desc = "Confuses foes that critically hit you."
 	case AmuletFog:
-		desc = "releases fog and makes you swift when critically hurt."
+		desc = "Releases fog and makes you swift when critically hurt."
 	case AmuletLignification:
-		desc = "lignifies foes that critically hit you."
+		desc = "Lignifies foes that critically hit you."
 	case AmuletObstruction:
-		desc = "uses a magical barrier to blow away monsters that critically hit you."
+		desc = "Uses a magical barrier to blow away monsters that critically hit you."
 	case MarevorMagara:
-		desc = "magara was given to you by Marevor Helith so that he can create an escape portal when you reach Shaedra. Its sister magara, the Gem Portal Artifact, also crafted by Marevor, is the artifact that was stolen and that Shaedra was trying to retrieve before being captured.\n\nThis magara needs a lot of time to recharge, so you’ll only be able to use it once."
+		desc = "It was given to you by Marevor Helith so that he can create an escape portal when you reach Shaedra. Its sister magara, the Gem Portal Artifact, also crafted by Marevor, is the artifact that was stolen and that Shaedra was trying to retrieve before being captured.\n\nThis magara needs a lot of time to recharge, so you’ll only be able to use it once."
 	}
-	return "The " + it.ShortDesc(g) + " " + desc
+	return desc
 }
 
 func (it item) Style(g *Game) (r rune, fg gruid.Color) {
@@ -718,7 +712,7 @@ func (g *Game) EquipItem() error {
 }
 
 func (g *Game) RandomCloak() (it item) {
-	cloaks := []item{CloakMagic,
+	cloaks := []item{
 		CloakHear,
 		CloakVitality,
 		CloakAcrobat,
