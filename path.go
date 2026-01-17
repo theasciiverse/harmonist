@@ -33,7 +33,7 @@ type dungeonPath struct {
 }
 
 func (dp *dungeonPath) Neighbors(p gruid.Point) []gruid.Point {
-	return dp.nbs.Cardinal(p, valid)
+	return dp.nbs.Cardinal(p, InMap)
 }
 
 func (dp *dungeonPath) Cost(from, to gruid.Point) int {
@@ -56,7 +56,7 @@ type gridPath struct {
 }
 
 func (gp *gridPath) Neighbors(p gruid.Point) []gruid.Point {
-	return gp.nbs.Cardinal(p, valid)
+	return gp.nbs.Cardinal(p, InMap)
 }
 
 func (gp *gridPath) Cost(from, to gruid.Point) int {
@@ -77,7 +77,7 @@ func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
 	if d.At(p) == WallCell {
 		return nil
 	}
-	return dp.nbs.Cardinal(p, valid)
+	return dp.nbs.Cardinal(p, InMap)
 }
 
 func (dp *mappingPath) Cost(from, to gruid.Point) int {
@@ -94,7 +94,7 @@ type tunnelPath struct {
 }
 
 func (tp *tunnelPath) Neighbors(p gruid.Point) []gruid.Point {
-	return tp.nbs.Cardinal(p, valid)
+	return tp.nbs.Cardinal(p, InMap)
 }
 
 func (tp *tunnelPath) Cost(from, to gruid.Point) int {
@@ -146,7 +146,7 @@ func (g *Game) ppPassable(p gruid.Point) bool {
 	if g.Wizard == WizardSeeAll {
 		kt = g.Map.Terrain.At(p)
 	}
-	return valid(p) && IsKnown(kt) && (IsPlayerPassable(kt) ||
+	return InMap(p) && IsKnown(kt) && (IsPlayerPassable(kt) ||
 		g.Player.HasStatus(StatusLevitation) && (kt == BarrierCell || kt == ChasmCell) ||
 		g.Player.HasStatus(StatusDig) && IsDiggable(kt))
 }
@@ -181,7 +181,7 @@ type noisePath struct {
 func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
 	d := fp.g.Map
 	keep := func(q gruid.Point) bool {
-		return valid(q) && d.At(q) != WallCell
+		return InMap(q) && d.At(q) != WallCell
 	}
 	return fp.nbs.Cardinal(p, keep)
 }
@@ -203,7 +203,7 @@ func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 			// XXX little info leak
 			return false
 		}
-		if !valid(q) {
+		if !InMap(q) {
 			return false
 		}
 		return IsPlayerPassable(kt) && kt != WallCell
@@ -235,7 +235,7 @@ func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
 	if m.Kind != MonsEarthDragon {
 		return mp.CanPass(p)
 	}
-	if !valid(p) {
+	if !InMap(p) {
 		return false
 	}
 	g := mp.g

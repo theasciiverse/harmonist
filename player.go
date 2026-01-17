@@ -147,7 +147,7 @@ func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
 }
 
 func (g *Game) MoveToTarget() bool {
-	if !valid(g.autoTarget) {
+	if !InMap(g.autoTarget) {
 		return false
 	}
 	path := g.PlayerPath(g.Player.P, g.autoTarget)
@@ -170,7 +170,7 @@ func (g *Game) MoveToTarget() bool {
 		g.autoTarget = invalidPos
 		return false
 	}
-	if valid(g.autoTarget) && g.Player.P == g.autoTarget {
+	if InMap(g.autoTarget) && g.Player.P == g.autoTarget {
 		g.autoTarget = invalidPos
 	}
 	return !again
@@ -243,7 +243,7 @@ func (g *Game) Teleportation() {
 		break
 
 	}
-	if valid(p) {
+	if InMap(p) {
 		// should always happen
 		opos := g.Player.P
 		g.Log("You teleport away.")
@@ -351,7 +351,7 @@ func (g *Game) AbyssJump() error {
 }
 
 func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
-	if !valid(p) {
+	if !InMap(p) {
 		return again, errors.New("You cannot move there.")
 	}
 	t := g.Map.At(p)
@@ -518,7 +518,7 @@ func (g *Game) PutFakeStatus(st status, duration int) bool {
 }
 
 func (g *Game) PlayerCanPass(p gruid.Point) bool {
-	if !valid(p) {
+	if !InMap(p) {
 		return false
 	}
 	t := g.Map.At(p)
@@ -528,7 +528,7 @@ func (g *Game) PlayerCanPass(p gruid.Point) bool {
 }
 
 func (g *Game) PlayerCanJumpPass(p gruid.Point) bool {
-	if !valid(p) {
+	if !InMap(p) {
 		return false
 	}
 	t := g.Map.At(p)

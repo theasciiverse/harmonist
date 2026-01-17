@@ -3,25 +3,25 @@ package main
 import "codeberg.org/anaseto/gruid"
 
 func (g *Game) cardinalNeighbors(p gruid.Point) []gruid.Point {
-	return g.nbs.Cardinal(p, valid)
+	return g.nbs.Cardinal(p, InMap)
 }
 
 func (g *Game) playerPassableNeighbors(p gruid.Point) []gruid.Point {
 	d := g.Map
 	return g.nbs.All(p, func(q gruid.Point) bool {
-		return valid(q) && IsPlayerPassable(d.At(q))
+		return InMap(q) && IsPlayerPassable(d.At(q))
 	})
 }
 
 func (g *Game) nonWallNeighbors(p gruid.Point) []gruid.Point {
 	return g.nbs.Cardinal(p, func(q gruid.Point) bool {
-		return valid(q) && g.Map.At(q) != WallCell
+		return InMap(q) && g.Map.At(q) != WallCell
 	})
 }
 
 func (g *Game) flammableNeighbors(p gruid.Point) []gruid.Point {
 	return g.nbs.Cardinal(p, func(q gruid.Point) bool {
-		return valid(q) && Flammable(g.Map.At(q))
+		return InMap(q) && Flammable(g.Map.At(q))
 	})
 }
 

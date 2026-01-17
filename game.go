@@ -679,7 +679,7 @@ func (g *Game) AutoPlayer() bool {
 			}
 		}
 		g.autoexploring = false
-	case valid(g.autoTarget):
+	case InMap(g.autoTarget):
 		if g.MoveToTarget() {
 			return true
 		}

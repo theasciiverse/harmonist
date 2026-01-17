@@ -54,11 +54,11 @@ func Neighbors(p gruid.Point) iter.Seq[gruid.Point] {
 	return func(yield func(gruid.Point) bool) {
 		for i := -1; i <= 1; i += 2 {
 			q := p.Shift(i, 0)
-			if valid(q) && !yield(q) {
+			if InMap(q) && !yield(q) {
 				return
 			}
 			q = p.Shift(0, i)
-			if valid(q) && !yield(q) {
+			if InMap(q) && !yield(q) {
 				return
 			}
 		}

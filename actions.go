@@ -233,7 +233,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 			again, err = g.PlayerBump(g.Player.P.Add(keyToDir(action)))
 		} else {
 			p := md.targ.ex.p.Add(keyToDir(action))
-			if valid(p) {
+			if InMap(p) {
 				md.Examine(p)
 			}
 			again = true
@@ -246,7 +246,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 			p := md.targ.ex.p
 			for range 5 {
 				p = p.Add(keyToDir(action))
-				if !valid(p) {
+				if !InMap(p) {
 					break
 				}
 				q = p

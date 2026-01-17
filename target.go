@@ -54,7 +54,7 @@ func (md *model) Examine(p gruid.Point) {
 }
 
 func (md *model) examine(p gruid.Point) {
-	if !valid(p) {
+	if !InMap(p) {
 		return
 	}
 	md.SetCursor(p)

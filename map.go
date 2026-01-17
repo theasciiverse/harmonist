@@ -35,7 +35,7 @@ func (m *Map) Set(p gruid.Point, t rl.Cell) {
 
 // HasFreeNeighbor reports whether the given position has a free neighbor.
 func (m *Map) HasFreeNeighbor(nbs *paths.Neighbors, p gruid.Point) bool {
-	nb := nbs.Cardinal(p, valid)
+	nb := nbs.Cardinal(p, InMap)
 	for _, q := range nb {
 		if Passable(m.At(q)) {
 			return true

@@ -388,7 +388,7 @@ func (g *Game) Blink() bool {
 		return false
 	}
 	npos := g.BlinkPos(false)
-	if !valid(npos) {
+	if !InMap(npos) {
 		// should not happen
 		g.Log("You could not blink.")
 		return false

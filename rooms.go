@@ -62,7 +62,7 @@ func (r *room) HasSpace(dg *MapGen) bool {
 	for i := r.p.X - 1; i <= r.p.X+r.w; i++ {
 		for j := r.p.Y - 1; j <= r.p.Y+r.h; j++ {
 			p := gruid.Point{i, j}
-			if valid(p) && dg.room[p] {
+			if InMap(p) && dg.room[p] {
 				return false
 			}
 		}
@@ -73,12 +73,12 @@ func (r *room) HasSpace(dg *MapGen) bool {
 func (r *room) Dig(dg *MapGen) {
 	runedraw := func(p gruid.Point, c rune) {
 		q := gruid.Point{X: r.p.X + p.X, Y: r.p.Y + p.Y}
-		if valid(q) && c != '?' {
+		if InMap(q) && c != '?' {
 			dg.room[q] = true
 		}
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, GroundCell)
 			}
 		case 'B':
@@ -104,27 +104,27 @@ func (r *room) Dig(dg *MapGen) {
 			case 4, 5:
 				t = GroundCell
 			}
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, t)
 			}
 		case '#', '+':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, WallCell)
 			}
 		case 'T':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, TreeCell)
 			}
 		case 'π':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, TableCell)
 			}
 		case 'l':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, LightCell)
 			}
 		case 'W':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, WindowCell)
 			}
 		case '"',
@@ -164,23 +164,23 @@ func (r *room) Dig(dg *MapGen) {
 			}
 			r.entries = append(r.entries, e)
 		case '"':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, FoliageCell)
 			}
 		case ',':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, CavernCell)
 			}
 		case '~':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, WaterCell)
 			}
 		case 'c':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, ChasmCell)
 			}
 		case 'q':
-			if valid(q) {
+			if InMap(q) {
 				dg.m.Set(q, QueenRockCell)
 			}
 		case 'S':

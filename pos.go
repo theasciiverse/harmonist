@@ -88,7 +88,8 @@ func idx(p gruid.Point) int {
 	return p.Y*MapWidth + p.X
 }
 
-func valid(p gruid.Point) bool {
+// InMap reports whether the given position is within map boundaries.
+func InMap(p gruid.Point) bool {
 	return p.Y >= 0 && p.Y < MapHeight && p.X >= 0 && p.X < MapWidth
 }
 

@@ -206,7 +206,7 @@ func (g *Game) ComputeFOV() {
 			if g.Map.At(n.P) == WallCell {
 				// this is just an approximation, but ok in practice
 				nb := nbs.All(n.P, func(npos gruid.Point) bool {
-					if !valid(npos) || !g.Illuminated(npos) || g.Map.At(npos) == WallCell {
+					if !InMap(npos) || !g.Illuminated(npos) || g.Map.At(npos) == WallCell {
 						return false
 					}
 					cost, ok := g.Player.FOV.At(npos)

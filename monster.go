@@ -372,7 +372,7 @@ func (m *Monster) Init() {
 }
 
 func (m *Monster) CanPass(g *Game, p gruid.Point) bool {
-	if !valid(p) {
+	if !InMap(p) {
 		return false
 	}
 	t := g.Map.At(p)
@@ -509,7 +509,7 @@ func (m *Monster) PlaceAtStart(g *Game, p gruid.Point) {
 }
 
 func (m *Monster) PlaceAt(g *Game, p gruid.Point) {
-	if !valid(m.P) {
+	if !InMap(m.P) {
 		log.Printf("monster place at: bad position %v", m.P)
 		// should not happen
 		return
@@ -637,7 +637,7 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 	neighbors := [4]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1})}
 	fnb := []gruid.Point{}
 	for _, nbpos := range neighbors {
-		if !valid(nbpos) {
+		if !InMap(nbpos) {
 			continue
 		}
 		t := g.Map.At(nbpos)
@@ -1229,7 +1229,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 		i++
 		q = q.Add(dir)
 		path = append(path, q)
-		if !valid(q) || BlocksRange(g.Map.At(q)) {
+		if !InMap(q) || BlocksRange(g.Map.At(q)) {
 			path = path[:len(path)-1]
 			break
 		}
@@ -1535,7 +1535,7 @@ func (m *Monster) AbsorbMana(g *Game) bool {
 
 func (m *Monster) Blink(g *Game) {
 	npos := g.BlinkPos(true)
-	if !valid(npos) || npos == g.Player.P || npos == m.P {
+	if !InMap(npos) || npos == g.Player.P || npos == m.P {
 		return
 	}
 	opos := m.P

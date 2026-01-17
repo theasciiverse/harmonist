@@ -181,7 +181,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 	}
 	mg.addSpecialFeatures(g, ml)
 	mg.PR.CCMapAll(newPather(func(p gruid.Point) bool {
-		return valid(p) && Passable(g.Map.At(p))
+		return InMap(p) && Passable(g.Map.At(p))
 	}))
 	mg.GenMonsters(g)
 	mg.putCavernCells()
@@ -356,7 +356,7 @@ func (mg *MapGen) connectRoomsShortestPath(i, j int) bool {
 		return false
 	}
 	for _, p := range path {
-		if !valid(p) {
+		if !InMap(p) {
 			panic(fmt.Sprintf("gruid.Point %v from %v to %v", p, e1pos, e2pos))
 		}
 		t := mg.m.At(p)
@@ -483,17 +483,17 @@ func (mg *MapGen) putWindows(g *Game, n int) {
 // holed wall.
 func (g *Game) holedWallCandidate(p gruid.Point) bool {
 	d := g.Map
-	if !valid(p) || d.At(p) != WallCell {
+	if !InMap(p) || d.At(p) != WallCell {
 		return false
 	}
-	return valid(p.Add(gruid.Point{-1, 0})) && valid(p.Add(gruid.Point{1, 0})) &&
+	return InMap(p.Add(gruid.Point{-1, 0})) && InMap(p.Add(gruid.Point{1, 0})) &&
 		d.At(p.Add(gruid.Point{-1, 0})) == WallCell && d.At(p.Add(gruid.Point{1, 0})) == WallCell &&
-		valid(p.Add(gruid.Point{0, -1})) && Passable(d.At(p.Add(gruid.Point{0, -1}))) &&
-		valid(p.Add(gruid.Point{0, 1})) && Passable(d.At(p.Add(gruid.Point{0, 1}))) ||
-		(valid(p.Add(gruid.Point{-1, 0})) && valid(p.Add(gruid.Point{1, 0})) &&
+		InMap(p.Add(gruid.Point{0, -1})) && Passable(d.At(p.Add(gruid.Point{0, -1}))) &&
+		InMap(p.Add(gruid.Point{0, 1})) && Passable(d.At(p.Add(gruid.Point{0, 1}))) ||
+		(InMap(p.Add(gruid.Point{-1, 0})) && InMap(p.Add(gruid.Point{1, 0})) &&
 			Passable(d.At(p.Add(gruid.Point{-1, 0}))) && Passable(d.At(p.Add(gruid.Point{1, 0}))) &&
-			valid(p.Add(gruid.Point{0, -1})) && d.At(p.Add(gruid.Point{0, -1})) == WallCell &&
-			valid(p.Add(gruid.Point{0, 1})) && d.At(p.Add(gruid.Point{0, 1})) == WallCell)
+			InMap(p.Add(gruid.Point{0, -1})) && d.At(p.Add(gruid.Point{0, -1})) == WallCell &&
+			InMap(p.Add(gruid.Point{0, 1})) && d.At(p.Add(gruid.Point{0, 1})) == WallCell)
 }
 
 // genShaedraCell places Shaedra, Marevor, and the monolith.
@@ -878,7 +878,7 @@ func (mg *MapGen) outsideCavernMiddleCell(g *Game) gruid.Point {
 // wall neighbors (excluding boundaries).
 func (mg *MapGen) hasTooManyWallNeighbors(p gruid.Point) bool {
 	m := mg.m
-	nbs := mg.neighbors.All(p, valid)
+	nbs := mg.neighbors.All(p, InMap)
 	count := 8 - len(nbs)
 	for _, q := range nbs {
 		if !Passable(m.At(q)) {
@@ -1175,7 +1175,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 	d := mg.m
 	passable := func(p gruid.Point) func(q gruid.Point) bool {
 		return func(q gruid.Point) bool {
-			return valid(q) && mg.m.At(q) == WallCell && !mg.room[q] && distance(p, q) < 10+mg.rand.IntN(10)
+			return InMap(q) && mg.m.At(q) == WallCell && !mg.room[q] && distance(p, q) < 10+mg.rand.IntN(10)
 		}
 	}
 	for {
@@ -1213,7 +1213,7 @@ func (mg *MapGen) genQueenRock() {
 	for i := 0; i < 1+mg.rand.IntN(2); i++ {
 		p := cavern[RandInt(len(cavern))]
 		passable := func(q gruid.Point) bool {
-			return valid(q) && mg.m.At(q) == CavernCell && distance(q, p) < 15+mg.rand.IntN(5)
+			return InMap(q) && mg.m.At(q) == CavernCell && distance(q, p) < 15+mg.rand.IntN(5)
 		}
 		cp := newPather(passable)
 		for _, q := range mg.PR.CCMap(cp, p) {
@@ -1294,12 +1294,12 @@ func (mg *MapGen) DigBlock(block []gruid.Point) []gruid.Point {
 			break
 		}
 		p = randomNeighbor(p)
-		if !valid(p) {
+		if !InMap(p) {
 			block = block[:0]
 			p = mg.WallCell()
 			continue
 		}
-		if !valid(p) {
+		if !InMap(p) {
 			return nil
 		}
 	}

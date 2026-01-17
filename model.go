@@ -447,7 +447,7 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 		return nil
 	}
 	md.statusFocus = false
-	if !md.targ.kbTargeting && valid(md.targ.ex.p) {
+	if !md.targ.kbTargeting && InMap(md.targ.ex.p) {
 		md.CancelExamine()
 	}
 	if md.targ.ex.p != invalidPos {
@@ -494,7 +494,7 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 		if md.auto || md.targ.kbTargeting {
 			break
 		}
-		if valid(p) {
+		if InMap(p) {
 			md.Examine(p)
 		} else {
 			md.CancelExamine()
@@ -502,7 +502,7 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	case gruid.MouseSecondary:
 		md.openMenu()
 	case gruid.MouseMain:
-		if !valid(p) {
+		if !InMap(p) {
 			return nil
 		}
 		var again bool
