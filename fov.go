@@ -364,7 +364,7 @@ func (g *Game) SeePosition(p gruid.Point) {
 			distance(g.Player.P, g.Places.Monolith) <= 1) &&
 		g.Player.P != g.Places.Marevor &&
 		g.Player.P != g.Places.Monolith {
-		g.PushEventFirst(&playerEvent{Action: StorySequence}, g.Turn)
+		g.PushEventFirst(&PlayerEvent{Action: StorySequence}, g.Turn)
 		g.LiberatedShaedra = true
 	}
 }

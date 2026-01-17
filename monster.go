@@ -562,7 +562,7 @@ func (g *Game) MonsterAt(p gruid.Point) *Monster {
 }
 
 func (m *Monster) EndTurn(g *Game) {
-	g.PushEventD(&monsterTurnEvent{Index: m.Index}, 1)
+	g.PushEventD(&MonsterTurnEvent{Index: m.Index}, 1)
 }
 
 func (m *Monster) AttackAction(g *Game) bool {
@@ -1136,7 +1136,7 @@ func (m *Monster) PutStatus(g *Game, st monsterStatus, duration int) bool {
 		return false
 	}
 	m.Statuses[st] += duration
-	g.PushEventD(&monsterStatusEvent{
+	g.PushEventD(&MonsterStatusEvent{
 		Index:  m.Index,
 		Status: st}, DurationStatusStep)
 
@@ -1196,7 +1196,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
 		if g.Map.At(g.Player.P) == ChasmCell {
-			g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
+			g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1260,7 +1260,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 	g.Logf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
 	if t == ChasmCell {
-		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
+		g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
 	}
 }
 

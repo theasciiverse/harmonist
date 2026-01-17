@@ -557,7 +557,7 @@ func (g *Game) swapWithMonster(mons *Monster) {
 	g.md.SwappingAnimation(mons.P, g.Player.P)
 	g.PlacePlayerAt(mons.P)
 	if g.Map.At(g.Player.P) == ChasmCell {
-		g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
+		g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
 	}
 }
 
@@ -613,7 +613,7 @@ func (g *Game) Fog(at gruid.Point, radius int) {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {
 			g.Map.Clouds[n.P] = CloudPlain
-			g.PushEvent(&posEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
+			g.PushEvent(&PosEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
 	g.ComputeFOV()
@@ -839,7 +839,7 @@ func (g *Game) MagicalBarrierAt(p gruid.Point) {
 	g.Map.Set(p, BarrierCell)
 	delete(g.Map.Clouds, p)
 	g.Map.MagicalBarriers[p] = t
-	g.PushEvent(&posEvent{P: p, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
+	g.PushEvent(&PosEvent{P: p, Action: ObstructionEnd}, g.Turn+DurationMagicalBarrier+RandInt(DurationMagicalBarrier/2))
 	g.ComputeFOV()
 }
 
@@ -876,7 +876,7 @@ func (g *Game) EvokeDelayedNoiseMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedHarmonicNoiseEvent,
+	g.PushEventD(&PosEvent{P: g.Player.P, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
 	g.Log("Timer activated.")
 	g.md.EffectAtPPAnimation()
@@ -896,7 +896,7 @@ func (g *Game) EvokeOricExplosionMagara() error {
 	if !g.PutFakeStatus(StatusDelay, DurationHarmonicNoiseDelay) {
 		return errors.New("You are already using delayed magic.")
 	}
-	g.PushEventD(&posEvent{P: g.Player.P, Action: DelayedOricExplosionEvent,
+	g.PushEventD(&PosEvent{P: g.Player.P, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
 	g.Log("Timer activated.")
 	g.md.EffectAtPPAnimation()

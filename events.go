@@ -4,38 +4,46 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-type event interface {
+// Event represents the various kinds events.
+type Event interface {
 	Handle(*Game)
 }
 
-func (g *Game) PushEvent(ev event, r int) {
+// PushEvent pushes an event with the given priority (corresponding to a game
+// turn).
+func (g *Game) PushEvent(ev Event, r int) {
 	g.Events.Push(ev, r)
 }
 
-func (g *Game) PushEventD(ev event, delay int) {
+// PushEventD pushes an event with the given delay (relative to current turn).
+func (g *Game) PushEventD(ev Event, delay int) {
 	g.Events.Push(ev, g.Turn+delay)
 }
 
-func (g *Game) PushEventFirst(ev event, r int) {
+// PushEventFirst pushes an event with the given priority (corresponding to a
+// game turn), ensuring it's ranked first among events with same priority.
+func (g *Game) PushEventFirst(ev Event, r int) {
 	g.Events.PushFirst(ev, r)
 }
 
-type endTurnEvent int
+// EndTurnEvent represents an event corresponding to the end of the current
+// turn.
+type EndTurnEvent struct{}
 
-const endTurnAction endTurnEvent = 0
+// PlayerEvent represents a player-related event.
+type PlayerEvent struct {
+	Action PlayerEventAction
+}
 
-type playerEventAction int
+// PlayerEventAction represents special kinds of player-related events.
+type PlayerEventAction int
 
 const (
-	StorySequence playerEventAction = iota
+	StorySequence PlayerEventAction = iota
 	AbyssFall
 )
 
-type playerEvent struct {
-	Action playerEventAction
-}
-
-func (ev *playerEvent) Handle(g *Game) {
+func (ev *PlayerEvent) Handle(g *Game) {
 	switch ev.Action {
 	case StorySequence:
 		g.ComputeFOV()
@@ -47,10 +55,12 @@ func (ev *playerEvent) Handle(g *Game) {
 	}
 }
 
-type statusEvent struct {
+// StatusEvent represents a status progression event.
+type StatusEvent struct {
 	Status status
 }
 
+// StatusEndMsg contains end-of-status messages for the various statuses.
 var StatusEndMsgs = [...]string{
 	StatusExhausted:     "You no longer feel exhausted.",
 	StatusSwift:         "You no longer feel speedy.",
@@ -65,7 +75,7 @@ var StatusEndMsgs = [...]string{
 	StatusDispersal:     "You are no longer unstable.",
 }
 
-func (sev *statusEvent) Handle(g *Game) {
+func (sev *StatusEvent) Handle(g *Game) {
 	st := sev.Status
 	g.Player.Statuses[st] -= DurationStatusStep
 	if g.Player.Statuses[st] <= 0 {
@@ -75,7 +85,7 @@ func (sev *statusEvent) Handle(g *Game) {
 		switch st {
 		case StatusLevitation:
 			if g.Map.At(g.Player.P) == ChasmCell {
-				g.PushEventFirst(&playerEvent{Action: AbyssFall}, g.Turn)
+				g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
 			}
 		case StatusLignification:
 			g.Player.HPbonus -= LignificationHPbonus
@@ -88,23 +98,26 @@ func (sev *statusEvent) Handle(g *Game) {
 	}
 }
 
-type monsterTurnEvent struct {
-	Index int
+// MonsterTurnEvent represents an event corresponding to a monster's turn.
+type MonsterTurnEvent struct {
+	Index int // monster index
 }
 
-func (mev *monsterTurnEvent) Handle(g *Game) {
+func (mev *MonsterTurnEvent) Handle(g *Game) {
 	mons := g.Monsters[mev.Index]
 	if mons.Exists() {
 		mons.HandleTurn(g)
 	}
 }
 
-type monsterStatusEvent struct {
-	Index  int
-	Status monsterStatus
+// MonsterStatusEvent represents a status progression event for a given
+// monster.
+type MonsterStatusEvent struct {
+	Index  int           // monster index
+	Status monsterStatus // status effect
 }
 
-func (mev *monsterStatusEvent) Handle(g *Game) {
+func (mev *MonsterStatusEvent) Handle(g *Game) {
 	mons := g.Monsters[mev.Index]
 	st := mev.Status
 	mons.Statuses[st] -= DurationStatusStep
@@ -118,31 +131,33 @@ func (mev *monsterStatusEvent) Handle(g *Game) {
 			mons.Path = mons.APath(g, mons.P, mons.Target)
 		}
 	} else {
-		g.PushEventD(&monsterStatusEvent{Index: mev.Index, Status: st}, DurationStatusStep)
+		g.PushEventD(&MonsterStatusEvent{Index: mev.Index, Status: st}, DurationStatusStep)
 	}
 }
 
-type posAction int
+// PosEvent represents a positional event.
+type PosEvent struct {
+	P      gruid.Point // event's position
+	Action PosAction   // event's action
+	Timer  int         // number of turns until activation
+}
+
+// PosAction represents various kinds of actions for positional events.
+type PosAction int
 
 const (
-	CloudEnd posAction = iota
+	CloudEnd PosAction = iota
 	ObstructionEnd
 	ObstructionProgression
 	FireProgression
-	NightProgression
-	MistProgression
+	PurpleMistProgression
+	FogProgression
 	Earthquake
 	DelayedHarmonicNoiseEvent
 	DelayedOricExplosionEvent
 )
 
-type posEvent struct {
-	P      gruid.Point
-	Action posAction
-	Timer  int
-}
-
-func (cev *posEvent) Handle(g *Game) {
+func (cev *PosEvent) Handle(g *Game) {
 	switch cev.Action {
 	case CloudEnd:
 		delete(g.Map.Clouds, cev.P)
@@ -158,7 +173,7 @@ func (cev *posEvent) Handle(g *Game) {
 			g.Logf("You see an oric barrier appear out of thin air.")
 			g.StopAuto()
 		}
-		g.PushEvent(&posEvent{Action: ObstructionProgression},
+		g.PushEvent(&PosEvent{Action: ObstructionProgression},
 			g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/4))
 	case FireProgression:
 		if _, ok := g.Map.Clouds[cev.P]; !ok {
@@ -171,9 +186,9 @@ func (cev *posEvent) Handle(g *Game) {
 			g.Burn(p)
 		}
 		delete(g.Map.Clouds, cev.P)
-		g.NightFog(cev.P, 1)
+		g.PurpleMist(cev.P, 1)
 		g.ComputeFOV()
-	case NightProgression:
+	case PurpleMistProgression:
 		if _, ok := g.Map.Clouds[cev.P]; !ok {
 			break
 		}
@@ -182,13 +197,13 @@ func (cev *posEvent) Handle(g *Game) {
 			g.ComputeFOV()
 			break
 		}
-		g.MakeCreatureSleep(cev.P)
+		g.applyPurpleMistEffectsAt(cev.P)
 		cev.Timer--
 		g.PushEventD(cev, DurationTurn)
-	case MistProgression:
+	case FogProgression:
 		p := g.FreePassableCell()
 		g.Fog(p, 1)
-		g.PushEvent(&posEvent{Action: MistProgression},
+		g.PushEvent(&PosEvent{Action: FogProgression},
 			g.Turn+DurationMistProgression+RandInt(DurationMistProgression/4))
 	case Earthquake:
 		g.LogStyled("The earth suddenly shakes with force!", logSpecial)
@@ -261,23 +276,24 @@ func (g *Game) OricExplosion(at gruid.Point) {
 	g.ComputeFOV()
 }
 
-func (g *Game) NightFog(at gruid.Point, radius int) {
+// PurpleMist produces purple mist around the given position.
+func (g *Game) PurpleMist(at gruid.Point, radius int) {
 	dij := &noisePath{g: g}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok {
 			g.Map.Clouds[n.P] = CloudPurpleMist
-			g.PushEventD(&posEvent{Action: NightProgression,
+			g.PushEventD(&PosEvent{Action: PurpleMistProgression,
 				P: n.P, Timer: DurationNightFog}, DurationCloudProgression)
 
-			g.MakeCreatureSleep(n.P)
+			g.applyPurpleMistEffectsAt(n.P)
 		}
 	}
 	g.ComputeFOV()
 }
 
-func (g *Game) MakeCreatureSleep(p gruid.Point) {
+func (g *Game) applyPurpleMistEffectsAt(p gruid.Point) {
 	if p == g.Player.P {
 		if g.PutStatus(StatusConfusion, DurationConfusionPlayer) {
 			g.Log("The purple mist confuses you.")
@@ -298,6 +314,7 @@ func (g *Game) MakeCreatureSleep(p gruid.Point) {
 	mons.ExhaustTime(g, 4+RandInt(2))
 }
 
+// Burn starts a magical fire at the given position.
 func (g *Game) Burn(p gruid.Point) {
 	if _, ok := g.Map.Clouds[p]; ok {
 		return
@@ -323,9 +340,10 @@ func (g *Game) Burn(p gruid.Point) {
 	if g.Player.Sees(p) {
 		g.ComputeFOV()
 	}
-	g.PushEventD(&posEvent{P: p, Action: FireProgression}, DurationCloudProgression)
+	g.PushEventD(&PosEvent{P: p, Action: FireProgression}, DurationCloudProgression)
 }
 
+// The following constants represent various kinds of durations.
 const (
 	DurationSwiftness              = 4
 	DurationShadows                = 15

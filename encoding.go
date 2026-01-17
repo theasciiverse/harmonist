@@ -9,12 +9,12 @@ import (
 )
 
 func init() {
-	gob.Register(&playerEvent{})
-	gob.Register(&statusEvent{})
-	gob.Register(&monsterTurnEvent{})
-	gob.Register(&monsterStatusEvent{})
-	gob.Register(&posEvent{})
-	gob.Register(endTurnEvent(0))
+	gob.Register(&PlayerEvent{})
+	gob.Register(&StatusEvent{})
+	gob.Register(&MonsterTurnEvent{})
+	gob.Register(&MonsterStatusEvent{})
+	gob.Register(&PosEvent{})
+	gob.Register(EndTurnEvent{})
 }
 
 // GameSave returns encoded game data for saving.

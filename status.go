@@ -125,7 +125,7 @@ func (st status) Desc() string {
 	case StatusConfusion:
 		return "Forbids magara use."
 	case StatusFlames:
-		return "Surrounded by slowing magical flames."
+		return "Surrounded by magical flames. The flames are harmless by themselves, but they will eventually dissolve into confusing purple mist. The purple mist will make monsters sleep, too."
 	case StatusHidden:
 		return "No monster can see you."
 	case StatusUnhidden:

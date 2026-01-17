@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.11"
+var Version string = "v0.7.0-dev.12"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -457,25 +457,25 @@ func (g *Game) InitLevel() {
 		monsters[i], monsters[j] = monsters[j], monsters[i]
 	})
 	for _, m := range monsters {
-		g.PushEvent(&monsterTurnEvent{Index: m.Index}, g.Turn)
+		g.PushEvent(&MonsterTurnEvent{Index: m.Index}, g.Turn)
 	}
 	switch g.Params.Event[g.Map.Depth] {
 	case UnstableLevel:
 		g.LogStyled("Uncontrolled oric magic fills the air on this level.", logSpecial)
 		g.StoryPrint("Special event: magically unstable level")
 		for range 7 {
-			g.PushEvent(&posEvent{Action: ObstructionProgression},
+			g.PushEvent(&PosEvent{Action: ObstructionProgression},
 				g.Turn+DurationObstructionProgression+RandInt(DurationObstructionProgression/2))
 		}
 	case MistLevel:
 		g.LogStyled("The air seems dense on this level.", logSpecial)
-		g.StoryPrint("Special event: mist level")
+		g.StoryPrint("Special event: foggy level")
 		for range 20 {
-			g.PushEvent(&posEvent{Action: MistProgression},
+			g.PushEvent(&PosEvent{Action: FogProgression},
 				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
 		}
 	case EarthquakeLevel:
-		g.PushEvent(&posEvent{P: gruid.Point{MapWidth/2 - 15 + RandInt(30), MapHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
+		g.PushEvent(&PosEvent{P: gruid.Point{MapWidth/2 - 15 + RandInt(30), MapHeight/2 - 5 + RandInt(10)}, Action: Earthquake},
 			g.Turn+10+RandInt(50))
 	}
 
@@ -504,7 +504,7 @@ func (g *Game) InitLevel() {
 func (g *Game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
 		switch ev.(type) {
-		case *monsterTurnEvent, *posEvent, *monsterStatusEvent, *playerEvent:
+		case *MonsterTurnEvent, *PosEvent, *MonsterStatusEvent, *PlayerEvent:
 			return false
 		default:
 			// keep player statuses events
@@ -516,7 +516,7 @@ func (g *Game) CleanEvents() {
 	for !g.Events.Empty() {
 		ev, r := g.Events.PopR()
 		if r == turn {
-			e, ok := ev.(event)
+			e, ok := ev.(Event)
 			if ok {
 				e.Handle(g)
 			}
@@ -710,7 +710,7 @@ func (g *Game) Died() bool {
 
 // EndTurn finalizes a turn.
 func (g *Game) EndTurn() {
-	g.Events.Push(endTurnAction, g.Turn+DurationTurn)
+	g.Events.Push(EndTurnEvent{}, g.Turn+DurationTurn)
 	for {
 		if g.Died() {
 			return
@@ -721,14 +721,14 @@ func (g *Game) EndTurn() {
 		ev, r := g.Events.PopR()
 		g.Turn = r
 		switch ev := ev.(type) {
-		case *playerEvent:
+		case *PlayerEvent:
 			ev.Handle(g)
 			if ev.Action == AbyssFall {
 				return
 			}
-		case endTurnEvent:
+		case EndTurnEvent:
 			return
-		case event:
+		case Event:
 			ev.Handle(g)
 		default:
 			log.Printf("bad event: %v", ev)
