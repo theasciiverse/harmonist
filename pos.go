@@ -6,7 +6,7 @@ import (
 
 func distance(from, to gruid.Point) int {
 	delta := to.Sub(from)
-	return abs(delta.X) + abs(delta.Y)
+	return Abs(delta.X) + Abs(delta.Y)
 }
 
 // ZP is the zero value for gruid.Point.
@@ -67,8 +67,8 @@ func sign(n int) int {
 // jump).
 func dirnorm(p, q gruid.Point) gruid.Point {
 	dir := q.Sub(p)
-	dx := abs(dir.X)
-	dy := abs(dir.Y)
+	dx := Abs(dir.X)
+	dy := Abs(dir.Y)
 	dir = gruid.Point{sign(dir.X), sign(dir.Y)}
 	switch {
 	case dx == dy:

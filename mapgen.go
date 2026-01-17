@@ -1183,11 +1183,11 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 		sp := newPather(passable(p))
 		size := len(mg.PR.CCMap(sp, p))
 		count++
-		if abs(bestsize-90) > abs(size-90) {
+		if Abs(bestsize-90) > Abs(size-90) {
 			bestsize = size
 			bestpos = p
 		}
-		if count > 15 || abs(size-90) < 25 {
+		if count > 15 || Abs(size-90) < 25 {
 			break
 		}
 	}

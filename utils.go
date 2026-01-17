@@ -7,13 +7,15 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-func abs(x int) int {
+// Abs returns the absolute value.
+func Abs(x int) int {
 	if x < 0 {
 		return -x
 	}
 	return x
 }
 
+// RandInt is like rand.IntN but returns zero for non-positive integers.
 func RandInt(n int) int {
 	if n <= 0 {
 		return 0
@@ -22,13 +24,8 @@ func RandInt(n int) int {
 	return x
 }
 
-func max(x, y int) int {
-	if x > y {
-		return x
-	}
-	return y
-}
-
+// Indefinite returns the given text prefixed by an indefinite article
+// (uppercased if desired).
 func Indefinite(s string, upper bool) (text string) {
 	if len(s) > 0 {
 		switch s[0] {
