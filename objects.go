@@ -261,9 +261,8 @@ func (g *Game) ActivateEarthStone() {
 		if t != WallCell {
 			continue
 		}
-		kt := g.Map.KnownTerrain.At(n.P)
-		if IsKnown(kt) && kt == WallCell && g.Map.hasInteriorNeighbor(n.P) {
-			g.SeeTerrainAt(n.P)
+		if g.Map.KnownTerrain.At(n.P) != WallCell && g.Map.hasInteriorNeighbor(n.P) {
+			g.Map.KnownTerrain.Set(n.P, WallCell)
 			draw = true
 		}
 	}
