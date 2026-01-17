@@ -257,7 +257,10 @@ func (tm *monochromeTileManager) TileSize() gruid.Point {
 
 func base64pngToRGBA(bs []byte) (*image.RGBA, error) {
 	buf := make([]byte, len(bs))
-	base64.StdEncoding.Decode(buf, bs) // TODO: check error
+	_, err := base64.StdEncoding.Decode(buf, bs)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode base64-encoded png: %v", err)
+	}
 	br := bytes.NewReader(buf)
 	img, err := png.Decode(br)
 	if err != nil {
