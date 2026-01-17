@@ -6,6 +6,15 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
+// These constants represent various kinds of vision/light ranges.
+const (
+	DefaultFOVRange        = 12
+	DefaultMonsterFOVRange = 12
+	LightRange             = 6
+	TreeRange              = 50
+)
+
+// lighter implements rl.Lighter.
 type lighter struct {
 	rs raystyle
 	g  *Game
@@ -18,7 +27,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	// no terrain cost on origin
 	if src == from {
 		// specific diagonal costs
-		vis := g.DiagonalOpaque(from, to)
+		vis := g.diagonalVisibility(from, to)
 		switch vis {
 		case Opaque:
 			return wallcost
@@ -38,7 +47,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		return wallcost
 	}
 	// specific diagonal costs
-	vis := g.DiagonalOpaque(from, to)
+	vis := g.diagonalVisibility(from, to)
 	if vis == Opaque {
 		return wallcost
 	}
@@ -62,10 +71,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 		}
 	}
 	if rs != TreePlayerRay && vis == Fuzzy {
-		cost := wallcost - distance(from, src) - 1
-		if cost < 1 {
-			cost = 1
-		}
+		cost := max(1, wallcost-distance(from, src)-1)
 		return cost
 	}
 	if rs == TreePlayerRay && t == WindowCell && distance(src, from) >= DefaultFOVRange {
@@ -87,6 +93,7 @@ func (lt *lighter) MaxCost(src gruid.Point) int {
 	}
 }
 
+// visibility represents various kinds of visibility effects of terrain.
 type visibility uint32
 
 const (
@@ -95,7 +102,7 @@ const (
 	Clear  visibility = 0b11
 )
 
-func (g *Game) DiagonalOpaque(from, to gruid.Point) visibility {
+func (g *Game) diagonalVisibility(from, to gruid.Point) visibility {
 	// The state uses cardinal movement only, so two diagonal walls should,
 	// for example, block line of sight. This is in contrast with the main
 	// mechanics of the line of sight algorithm, which for gameplay reasons
@@ -137,6 +144,7 @@ func (g *Game) DiagonalOpaque(from, to gruid.Point) visibility {
 	return vis
 }
 
+// raystyle represents the various kinds of vision ray styles.
 type raystyle int
 
 const (
@@ -145,11 +153,6 @@ const (
 	TreePlayerRay
 	LightRay
 )
-
-const LightRange = 6
-
-const DefaultFOVRange = 12
-const DefaultMonsterFOVRange = 12
 
 func (g *Game) StopAuto() {
 	if g.autoexploring && !g.autoHalt {
@@ -164,8 +167,6 @@ func (g *Game) StopAuto() {
 	g.autoTarget = invalidPos
 }
 
-const TreeRange = 50
-
 func (g *Game) Illuminated(p gruid.Point) bool {
 	c, ok := g.LightFOV.At(p)
 	return ok && c <= LightRange || g.Map.Terrain.At(p) == StoneCell
@@ -175,6 +176,8 @@ func (g *Game) blocksSSCFOV(p gruid.Point) bool {
 	return g.Map.At(p) != WallCell
 }
 
+// ComputeFOV updates the field of view of both player and monsters (so that
+// the player can tell what monsters will see).
 func (g *Game) ComputeFOV() {
 	g.ComputeLights()
 	for k := range g.Player.AFOV {
@@ -251,20 +254,14 @@ func (g *Game) SeeMonster(mons *Monster, verb string) {
 	}
 }
 
+// visionRange returns the vision range from the given position.
 func visionRange(p gruid.Point, radius int) gruid.Range {
 	drg := gruid.NewRange(0, 0, MapWidth, MapHeight)
 	delta := gruid.Point{radius, radius}
 	return drg.Intersect(gruid.Range{Min: p.Sub(delta), Max: p.Add(delta).Shift(1, 1)})
 }
 
-func (g *Game) mfovSetCenter(p gruid.Point) {
-	if g.mfov == nil {
-		g.mfov = rl.NewFOV(visionRange(p, DefaultMonsterFOVRange))
-	} else {
-		g.mfov.SetRange(visionRange(p, DefaultMonsterFOVRange))
-	}
-}
-
+// ComputeFOV updates the field of view of the monster.
 func (m *Monster) ComputeFOV(g *Game) {
 	if m.Kind.Peaceful() {
 		return
@@ -272,7 +269,11 @@ func (m *Monster) ComputeFOV(g *Game) {
 	for k := range m.FOV {
 		delete(m.FOV, k)
 	}
-	g.mfovSetCenter(m.P)
+	if g.mfov == nil {
+		g.mfov = rl.NewFOV(visionRange(m.P, DefaultMonsterFOVRange))
+	} else {
+		g.mfov.SetRange(visionRange(m.P, DefaultMonsterFOVRange))
+	}
 	lt := &lighter{rs: MonsterRay, g: g}
 	lnodes := g.mfov.VisionMap(lt, m.P)
 	g.mfov.SSCVisionMap(
@@ -297,6 +298,8 @@ func (m *Monster) ComputeFOV(g *Game) {
 	}
 }
 
+// SeeNotable makes the player look at any notable features at the given
+// position.
 func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 	switch t {
 	case MagaraCell:
@@ -405,6 +408,7 @@ func (g *Game) SeeTerrainAt(p gruid.Point) {
 	}
 }
 
+// Ray returns a light ray to the given position (from the player's).
 func (g *Game) Ray(p gruid.Point) []gruid.Point {
 	t := g.Map.At(g.Player.P)
 	rs := NormalPlayerRay
@@ -420,6 +424,7 @@ func (g *Game) Ray(p gruid.Point) []gruid.Point {
 	return ps
 }
 
+// ComputeNoise updates monster noise information.
 func (g *Game) ComputeNoise() {
 	dij := &noisePath{g: g}
 	rg := DefaultFOVRange
@@ -489,14 +494,18 @@ func monsterNoise(mk monsterKind) string {
 	}
 }
 
+// Sees reports whether the player sees the given position.
 func (pl *Player) Sees(p gruid.Point) bool {
 	return pl.AFOV[p]
 }
 
+// SeesPlayer reports whether the monster can see the player.
 func (m *Monster) SeesPlayer(g *Game) bool {
 	return m.Sees(g, g.Player.P) && g.Player.Sees(m.P)
 }
 
+// SeesLight reports whether the monster (a guard in practice) would see a
+// campfire at the given position.
 func (m *Monster) SeesLight(g *Game, p gruid.Point) bool {
 	if !(m.FOV[p] && inViewCone(m.Dir, m.P, p)) {
 		return false
@@ -507,6 +516,7 @@ func (m *Monster) SeesLight(g *Game, p gruid.Point) bool {
 	return true
 }
 
+// Sees reports whether the monster can see the given position.
 func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 	var darkRange = 4
 	if m.Kind == MonsHazeCat {
@@ -538,6 +548,7 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 	return true
 }
 
+// ComputeMonsterFOV updates the field of view of all monsters.
 func (g *Game) ComputeMonsterFOV() {
 	for k := range g.MonsterFOV {
 		delete(g.MonsterFOV, k)
@@ -569,6 +580,7 @@ func (g *Game) ComputeMonsterFOV() {
 	}
 }
 
+// ComputeLights updates information about lighted terrain.
 func (g *Game) ComputeLights() {
 	if g.LightFOV == nil {
 		g.LightFOV = rl.NewFOV(gruid.NewRange(0, 0, MapWidth, MapHeight))
@@ -597,6 +609,8 @@ func (g *Game) ComputeLights() {
 	g.LightFOV.LightMap(lt, sources)
 }
 
+// ComputeMonsterCone updates information about a specific monster's cone of
+// view (for display purposes when examining a monster).
 func (g *Game) ComputeMonsterCone(m *Monster) {
 	g.MonsterTargFOV = make(map[gruid.Point]bool)
 	for p := range g.Player.AFOV {
