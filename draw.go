@@ -49,7 +49,16 @@ func (md *model) Draw() gruid.Grid {
 			md.drawPosInfo()
 		}
 	case modePager:
-		md.gd.Copy(md.pager.Draw())
+		pgd := md.pager.Draw()
+		rg := md.pager.View()
+		sz := pgd.Size()
+		if rg.Min.Y > 0 {
+			pgd.Set(gruid.Point{sz.X - 1, 1}, gruid.Cell{Rune: '↑'})
+		}
+		if rg.Max.Y < md.pager.Lines() {
+			pgd.Set(gruid.Point{sz.X - 1, sz.Y - 2}, gruid.Cell{Rune: '↓'})
+		}
+		md.gd.Copy(pgd)
 	case modeSmallPager:
 		md.gd.Slice(gruid.NewRange(10, 2, UIWidth, UIHeight-1)).Copy(md.smallPager.Draw())
 	case modeMenu:
