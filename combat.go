@@ -65,7 +65,7 @@ func (g *Game) MakeMonstersAware() {
 // MakeNoise makes a given amount of noise at the given position.
 func (g *Game) MakeNoise(noise int, at gruid.Point) {
 	dij := &noisePath{g: g}
-	g.PR.BreadthFirstMap(dij, []gruid.Point{at}, noise)
+	g.PRnoise.BreadthFirstMap(dij, []gruid.Point{at}, noise)
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -73,7 +73,7 @@ func (g *Game) MakeNoise(noise int, at gruid.Point) {
 		if m.State == Hunting {
 			continue
 		}
-		d := g.PR.BreadthFirstMapAt(m.P)
+		d := g.PRnoise.BreadthFirstMapAt(m.P)
 		if d > noise {
 			continue
 		}

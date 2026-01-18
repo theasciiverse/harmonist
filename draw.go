@@ -274,6 +274,9 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 }
 
 func (m *Monster) noiseColor() gruid.Color {
+	if m.State == Resting {
+		return ColorViolet
+	}
 	switch m.Kind {
 	case MonsSatowalgaPlant, MonsButterfly:
 		// Satowalga plants and kerejats don't make any

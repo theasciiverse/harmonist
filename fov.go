@@ -427,44 +427,87 @@ func (g *Game) Ray(p gruid.Point) []gruid.Point {
 // ComputeNoise updates monster noise information.
 func (g *Game) ComputeNoise() {
 	dij := &noisePath{g: g}
-	rg := DefaultFOVRange
-	nodes := g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, rg)
+	maxdist := DefaultFOVRange + 1
+	nodes := g.PRnoise.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, maxdist)
 	count := 0
 	for _, mons := range g.Monsters {
 		if mons != nil {
 			mons.Noise = false
 		}
 	}
-	rmax := 2
 	goodhearing := g.Player.Inventory.Body == CloakHear
 	for _, n := range nodes {
 		if g.Player.Sees(n.P) {
 			continue
 		}
 		mons := g.MonsterAt(n.P)
-		if mons.Exists() && mons.State != Resting && mons.State != Watching &&
-			(RandInt(rmax) > 0 || goodhearing || g.Map.At(mons.P) == QueenRockCell) {
-			switch mons.Kind {
-			case MonsSatowalgaPlant, MonsButterfly:
-				// Satowalga plants and kerejats don't make any
-				// noise.
-			case MonsMirrorSpecter:
-				if mons.Kind == MonsMirrorSpecter && goodhearing {
-					mons.Noise = true
+		if !mons.Exists() {
+			// Dead monsters make no perceptible noise.
+			continue
+		}
+		dist := g.PRnoise.BreadthFirstMapAt(n.P)
+		if dist > maxdist {
+			continue
+		}
+		queenrock := g.Map.At(mons.P) == QueenRockCell
+		if queenrock {
+			// Monster noise over queen rocks is easier to hear.
+			dist -= 4
+		}
+		if mons.State == Resting {
+			if !goodhearing {
+				// Resting monsters cannot be heard without
+				// cloak of hearing.
+				continue
+			}
+			// Even with good hearing, resting monsters are
+			// difficult to perceive from afar.
+			dist += 10
+		}
+		switch {
+		case goodhearing:
+			if mons.State == Watching {
+				if RandInt(3+dist/4) > 1 {
+					continue
 				}
-			case MonsWingedMilfid, MonsTinyHarpy:
-				mons.Noise = true
-			case MonsEarthDragon, MonsTreeMushroom, MonsYack:
-				mons.Noise = true
-			case MonsWorm, MonsAcidMound:
-				mons.Noise = true
-			case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
-				mons.Noise = true
-			default:
+			} else {
+				dist -= 2
+			}
+		case !queenrock && RandInt(3+dist/4) > 1 || mons.State == Watching:
+			// Without cloak of hearing, hearing is unreliable, and
+			// it doesn't catch small in-place footsteps from
+			// monsters watching around.
+			continue
+		}
+		switch mons.Kind {
+		case MonsSatowalgaPlant, MonsButterfly:
+			// Satowalga plants and kerejats don't make any
+			// noise.
+		case MonsMirrorSpecter, MonsSpider:
+			// Only cloak of hearing allows for hearing mirror
+			// specters and spiders.
+			if goodhearing && dist <= maxdist-4 {
 				mons.Noise = true
 			}
-			if mons.Noise {
-				count++
+		case MonsEarthDragon, MonsTreeMushroom, MonsYack:
+			// Heavy steps are easy to hear at full range.
+			mons.Noise = true
+		case MonsWorm, MonsAcidMound, MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp:
+			// Creeping noises and light footsteps are a bit harder
+			// to hear from afar.
+			if dist <= maxdist-4 {
+				mons.Noise = true
+			}
+		default:
+			if dist <= maxdist-2 {
+				mons.Noise = true
+			}
+		}
+		if mons.Noise {
+			count++
+			if mons.State == Resting {
+				g.Log("You hear some breathing.")
+			} else {
 				g.Logf("You hear %s.", monsterNoise(mons.Kind))
 			}
 		}

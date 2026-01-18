@@ -24,6 +24,12 @@ Improved and reworked content:
 * The “cloak of magic” has been removed, as it was a bit redundant with respect
   to the “cloak of conversion”. The latter is a bit more interesting and less
   quantitative.
+* Monster noise visual marking now uses different colors for different kinds of
+  noises, like in Shamogu. Also, it has been adjusted so that different kinds
+  of noises are heard at varied ranges. Also, cloak of hearing should now be a
+  more interesting, as it helps hear in-place footsteps of watching monsters
+  (except satowalga plants, which make no noise at all), and even resting
+  monsters at a short range.
 
 UI, graphics, QoL:
 

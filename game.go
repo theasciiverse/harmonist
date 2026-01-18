@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.12"
+var Version string = "v0.7.0-dev.13"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -47,8 +47,9 @@ type Game struct {
 	Version     string      // game version
 	Wizard      wizardMode  // wizard mode info
 
-	PR     *paths.PathRange // path range for pathfinding
-	PRauto *paths.PathRange // path range for auto-explore
+	PR      *paths.PathRange // path range for pathfinding
+	PRnoise *paths.PathRange // path range for noise
+	PRauto  *paths.PathRange // path range for auto-explore
 
 	autosources []gruid.Point        // cache for auto-explore sources
 	highlight   map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
@@ -208,9 +209,10 @@ func (g *Game) InitPlayer() {
 	g.Player.Inventory.Misc = MarevorMagara
 	g.Player.FOV = rl.NewFOV(visionRange(g.Player.P, TreeRange))
 	// Testing
-	//g.Player.Magaras[1] = magara{Kind: DispersalMagara, Charges: 10}
-	//g.Player.Magaras[2] = magara{Kind: DelayedOricExplosionMagara, Charges: 10}
-	//g.Player.Magaras[2] = ConfusionMagara
+	// g.Player.Inventory.Body = CloakHear
+	// g.Player.Magaras[1] = magara{Kind: DispersalMagara, Charges: 10}
+	// g.Player.Magaras[2] = magara{Kind: DelayedOricExplosionMagara, Charges: 10}
+	// g.Player.Magaras[2] = ConfusionMagara
 }
 
 // genFlavour represents special map flavours (amulet, cloak).
@@ -373,6 +375,7 @@ func (g *Game) InitFirstLevel() {
 	}
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
+	g.PRnoise = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 }
 

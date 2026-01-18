@@ -154,7 +154,12 @@ func (md *model) drawPosInfo() {
 	noiseBox := func() {
 		if mons := g.MonsterAt(info.P); mons.Exists() && mons.Noise {
 			fg := mons.noiseColor()
-			noiseMsg := fmt.Sprintf("You heard %s around there.", monsterNoise(mons.Kind))
+			var noiseMsg string
+			if mons.State == Resting {
+				noiseMsg = "You heard some breathing around there."
+			} else {
+				noiseMsg = fmt.Sprintf("You heard %s around there.", monsterNoise(mons.Kind))
+			}
 			formatBox("monster noise", noiseMsg, fg)
 		} else if g.Map.NoiseIllusion[info.P] {
 			formatBox("noise", "You heard noise around there.", ColorCyan)
