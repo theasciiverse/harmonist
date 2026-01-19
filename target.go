@@ -13,6 +13,7 @@ import (
 
 var invalidPos = gruid.Point{-1, -1}
 
+// examination holds all the targeting information.
 type examination struct {
 	p            gruid.Point
 	nmonster     int
@@ -82,6 +83,7 @@ func (md *model) KeyboardExamine() {
 	md.examine(p)
 }
 
+// posInfo gathers information about a target position.
 type posInfo struct {
 	P       gruid.Point
 	Unknown bool
@@ -204,19 +206,20 @@ func (md *model) drawPosInfo() {
 
 func (m *Monster) color(g *Game) gruid.Color {
 	var fg gruid.Color
-	if m.Status(MonsLignified) {
+	switch {
+	case m.Status(MonsLignified):
 		fg = ColorYellow
-	} else if m.Status(MonsConfused) {
+	case m.Status(MonsConfused):
 		fg = ColorGreen
-	} else if m.Status(MonsParalysed) {
+	case m.Status(MonsParalysed):
 		fg = ColorCyan
-	} else if m.State == Resting {
+	case m.State == Resting:
 		fg = ColorViolet
-	} else if m.State == Hunting {
+	case m.State == Hunting:
 		fg = ColorRed
-	} else if m.Peaceful(g) {
+	case m.Peaceful(g):
 		fg = ColorBlue
-	} else {
+	default:
 		fg = ColorOrange
 	}
 	return fg
