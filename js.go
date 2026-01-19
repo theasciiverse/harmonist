@@ -31,10 +31,6 @@ func clearCache() {
 	dr.ClearCache()
 }
 
-func (md *model) updateZoom() {
-	// do nothing
-}
-
 func main() {
 	initDriver()
 	mainMenu := newMainMenu()
@@ -42,6 +38,7 @@ func main() {
 	if err != nil {
 		mainMenu.err = err
 	}
+	log.SetPrefix("harmonist ")
 	for {
 		app := gruid.NewApp(gruid.AppConfig{
 			Driver: driver,
@@ -60,6 +57,7 @@ func main() {
 	}
 }
 
+// mainMenuAction represents the various kinds of actions in the main menu.
 type mainMenuAction int
 
 const (
@@ -68,6 +66,7 @@ const (
 	MainReplayGame
 )
 
+// mainMenu represents the gruid model for the main menu.
 type mainMenu struct {
 	grid   gruid.Grid
 	menu   *ui.Menu
@@ -132,6 +131,7 @@ func (md *mainMenu) Draw() gruid.Grid {
 const repit = "harmonistreplay"
 const replock = "harmonistreplock"
 
+// RunGame starts the game.
 func RunGame() error {
 	gd := gruid.NewGrid(UIWidth, UIHeight)
 	m := &model{gd: gd, g: &Game{}}
@@ -175,6 +175,7 @@ func RunGame() error {
 	return app.Start(context.Background())
 }
 
+// RunReplay runs a replay of a previous game saved in local storage.
 func RunReplay() error {
 	replay, err := GetItem(repit)
 	if err != nil {
@@ -203,6 +204,8 @@ func RunReplay() error {
 
 // io compatibility functions
 
+// DataDir returns is defined here only for build purposes, it is not used for
+// the js backend.
 func DataDir() (string, error) {
 	return "", nil
 }
@@ -251,6 +254,7 @@ func RemoveItem(item string) {
 const harmonistsave = "harmonistsave"
 const harmonistconfig = "harmonistconfig"
 
+// Save saves the game to local storage.
 func (g *Game) Save() error {
 	save, err := g.GameSave()
 	if err != nil {
@@ -263,6 +267,7 @@ func (g *Game) Save() error {
 	return nil
 }
 
+// SaveConfig saves the game's config to local storage.
 func SaveConfig() error {
 	conf, err := GameConfig.ConfigSave()
 	if err != nil {
@@ -275,16 +280,19 @@ func SaveConfig() error {
 	return nil
 }
 
+// RemoveSaveFile removes any save from local storage.
 func RemoveSaveFile() error {
 	RemoveItem(harmonistsave)
 	return nil
 }
 
+// RemoveReplay removes any replay from local storage.
 func RemoveReplay() {
 	RemoveItem(replock)
 	RemoveItem(repit)
 }
 
+// Load loads an existing game from a saved one in local storage.
 func (g *Game) Load() (bool, error) {
 	s, err := GetItem(harmonistsave)
 	if err != nil || s == nil {
@@ -301,6 +309,7 @@ func (g *Game) Load() (bool, error) {
 	return true, nil
 }
 
+// LoadConfig loads game's config from local storage.
 func LoadConfig() (bool, error) {
 	s, err := GetItem(harmonistconfig)
 	if err != nil || s == nil {
@@ -317,12 +326,16 @@ func LoadConfig() (bool, error) {
 	return true, nil
 }
 
+// WriteDump writes full game statistics (to element with "dump" id) and
+// returns a success log message or an error.
 func (g *Game) WriteDump() (string, error) {
 	pre := js.Global().Get("document").Call("getElementById", "dump")
 	pre.Set("innerHTML", g.Dump())
 	return "Full game statistics written below.", nil
 }
 
+// subSig is define here for build compatibility purposes, it is not used for
+// the js backend.
 func subSig(ctx context.Context, msgs chan<- gruid.Msg) {
 	// do nothing
 }
