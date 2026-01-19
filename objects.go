@@ -640,7 +640,7 @@ func (it item) Desc(g *Game) (desc string) {
 	case NoItem:
 		return "You do not have an item equipped on this slot yet."
 	case CloakHear:
-		desc = "Improves your hearing skills."
+		desc = "Improves hearing. Allows to sometimes hear monsters watching and turning around, as well as the breathing of nearby sleeping monsters."
 	case CloakVitality:
 		desc = "Improves your maximum health by 2."
 	case CloakAcrobat:

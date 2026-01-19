@@ -662,8 +662,9 @@ func (md *model) openIventory() {
 	md.mode = modeMenu
 	md.menuMode = modeInventory
 	it := items[0]
-	md.description.Content = ui.Text(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
-	md.description.Box = &ui.Box{Title: ui.Text(it.String())}
+	stt := ui.StyledText{}.WithMarkups(Markups)
+	md.description.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)
+	md.description.Box = &ui.Box{Title: stt.WithText(it.String())}
 }
 
 func (md *model) evokeMagaraMenu() {
@@ -834,7 +835,7 @@ In Harmonist, the player and the monsters do not share the same field of view.
 
 The player’s field of view is multi-directional and has longer range.
 
-All monsters, except for spiders, have a @Cdirectional@N conic field of view: they only look in a given direction. The game shows that area using @Oorange@N color. If you examine a specific monster, only its field of view will be shown.
+All monsters, except for spiders, have a @Cdirectional@N conic field of view: they only look in a given direction. The game shows that area using an @Oorange@N color. If you examine a specific monster, only its field of view will be shown.
 
 In both cases, visibility range is impacted by @Clighting@N: lighted @Yyellow@N tiles are visible from a greater range. Lighting may come from static campfires as well as kerejats: be careful when stepping into lighted terrain! Note that in various kinds of terrains, like when hiding under a table or at the top of a tree, the player can avoid the lighting. Also, tiles with a magical stone are always illuminated.
 
@@ -859,7 +860,7 @@ func (md *model) helpItems() {
 
 @CBarrels@N are found in every level. You can hide within them as long as nobody can see you while doing so. You can eat a banana and rest inside using the @MInteract Key@N(e) to recover both HP and MP.
 
-@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges. When all magara slots are filled, you’ll have to equip the new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
+@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
 
 @CCloaks@N are magical items found on some levels. They can be equipped using the @MInteract Key@N(e) and offer some kind of passive benefit.
 
@@ -867,7 +868,7 @@ func (md *model) helpItems() {
 
 @CMagical Stones@N are static items found in every level. Pressing the @MInteract Key@N(e) will activate them.
 
-@CStairs@N are found once on every level and lead to the next one when used with the @MInteract Key@N(e). They may sometimes be blocked and require the activation of a seal stone.
+@CStairs@N are found once on every level and lead to the next one when used with the @MInteract Key@N(e). They may sometimes be blocked and require the activation of a seal stone to unblock them.
 `)
 	md.helpTopic("Items (Help)", s)
 }
@@ -940,7 +941,7 @@ Magical stones can be useful for facilitating escape or incapacitating monsters 
 
 Monsters don’t look behind diagonally, so performing lateral evasion tactics in the open is a simple way to escape an adjacent monster’s field of view by getting into one of its blind corners.
 
-Watch out for @Ofootstep noise@N: while going through dense foliage or waiting in some hidden place, it can be very helpful to avoid unwanted encounters.
+Watch out for @Rfootstep noise@N: while going through dense foliage or waiting in some hidden place, it can be very helpful to avoid unwanted encounters.
 `)
 	md.helpTopic("Tips (Help)", s)
 }
