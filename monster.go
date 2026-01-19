@@ -1529,7 +1529,7 @@ func (m *Monster) AbsorbMana(g *Game) bool {
 	g.Player.MP -= 1
 	g.Logf("%s absorbs your mana.", m.Kind.Definite(true))
 	g.StoryPrintf("Mana absorbed by %s (MP: %d)", m.Kind, g.Player.MP)
-	m.ExhaustTime(g, 1+RandInt(2))
+	m.ExhaustTime(g, 3+RandInt(2))
 	return true
 }
 
