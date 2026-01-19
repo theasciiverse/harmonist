@@ -251,9 +251,9 @@ func (g *Game) OricExplosion(at gruid.Point) {
 	g.Player.Statuses[StatusDelay] = 0
 	g.Log(g.CrackSound())
 	g.Map.NoiseIllusion[at] = true
-	dij := &gridPath{dungeon: g.Map}
+	mp := &GridPath{}
 	g.MakeNoise(OricExplosionNoise, at)
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, 7)
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{at}, 7)
 	fogs := []gruid.Point{}
 	for _, n := range nodes {
 		t := g.Map.At(n.P)
@@ -278,8 +278,8 @@ func (g *Game) OricExplosion(at gruid.Point) {
 
 // PurpleMist produces purple mist around the given position.
 func (g *Game) PurpleMist(at gruid.Point, radius int) {
-	dij := &noisePath{g: g}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
+	mp := &NoisePath{g: g}
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok {

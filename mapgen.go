@@ -180,7 +180,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 		mg.genBarrel(g)
 	}
 	mg.addSpecialFeatures(g, ml)
-	mg.PR.CCMapAll(newPather(func(p gruid.Point) bool {
+	mg.PR.CCMapAll(NewMappingPath(func(p gruid.Point) bool {
 		return InMap(p) && Passable(g.Map.At(p))
 	}))
 	mg.GenMonsters(g)
@@ -349,7 +349,7 @@ func (mg *MapGen) connectRoomsShortestPath(i, j int) bool {
 	e1pos = r1.entries[e1i].p
 	e2i = r2.UnusedEntry()
 	e2pos = r2.entries[e2i].p
-	tp := &tunnelPath{dg: mg}
+	tp := &TunnelPath{dg: mg}
 	path := mg.PR.AstarPath(tp, e1pos, e2pos)
 	if len(path) == 0 {
 		log.Printf("no path from %v to %v", e1pos, e2pos)
@@ -546,7 +546,7 @@ func (mg *MapGen) putCavernCells() {
 // clearUnconnected ensures that no unconnected terrain remains.
 func (dg *MapGen) clearUnconnected(g *Game) {
 	d := dg.m
-	sp := newPather(func(p gruid.Point) bool { return IsPlayerPassable(d.At(p)) })
+	sp := NewMappingPath(func(p gruid.Point) bool { return IsPlayerPassable(d.At(p)) })
 	dg.PR.CCMap(sp, g.Player.P)
 	mg := rl.MapGen{Grid: dg.m.Terrain}
 	mg.KeepCC(dg.PR, g.Player.P, rl.Cell(WallCell))
@@ -1180,7 +1180,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 	}
 	for {
 		p := walls[RandInt(len(walls))]
-		sp := newPather(passable(p))
+		sp := NewMappingPath(passable(p))
 		size := len(mg.PR.CCMap(sp, p))
 		count++
 		if Abs(bestsize-90) > Abs(size-90) {
@@ -1191,7 +1191,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 			break
 		}
 	}
-	sp := newPather(passable(bestpos))
+	sp := NewMappingPath(passable(bestpos))
 	for _, p := range mg.PR.CCMap(sp, bestpos) {
 		d.Set(p, fillt)
 	}
@@ -1215,7 +1215,7 @@ func (mg *MapGen) genQueenRock() {
 		passable := func(q gruid.Point) bool {
 			return InMap(q) && mg.m.At(q) == CavernCell && distance(q, p) < 15+mg.rand.IntN(5)
 		}
-		cp := newPather(passable)
+		cp := NewMappingPath(passable)
 		for _, q := range mg.PR.CCMap(cp, p) {
 			mg.m.Set(q, QueenRockCell)
 		}

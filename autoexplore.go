@@ -28,7 +28,7 @@ func (g *Game) Autoexplore() (again bool, err error) {
 }
 
 func (g *Game) AllExplored() bool {
-	np := &noisePath{g: g}
+	np := &NoisePath{g: g}
 	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
@@ -47,7 +47,7 @@ func (g *Game) AllExplored() bool {
 
 func (g *Game) AutoexploreSources() []gruid.Point {
 	g.autosources = g.autosources[:0]
-	np := &noisePath{g: g}
+	np := &NoisePath{g: g}
 	it := g.Map.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
@@ -69,13 +69,13 @@ func (g *Game) AutoexploreSources() []gruid.Point {
 const unreachable = 9999
 
 func (g *Game) BuildAutoexploreMap(sources []gruid.Point) {
-	ap := &autoexplorePath{g: g}
+	ap := &AutoexplorePath{g: g}
 	g.PRauto.BreadthFirstMap(ap, sources, unreachable)
 	g.autoexploreMapRebuild = false
 }
 
 func (g *Game) NextAuto() (next *gruid.Point, finished bool) {
-	ap := &autoexplorePath{g: g}
+	ap := &AutoexplorePath{g: g}
 	if g.PRauto.BreadthFirstMapAt(g.Player.P) > unreachable {
 		return nil, false
 	}

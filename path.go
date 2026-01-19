@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"sort"
 
 	"codeberg.org/anaseto/gruid"
@@ -8,96 +9,60 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-type simplePath struct {
+// MappingPath implements the paths.Pather interface and is used to provide
+// pathing for connected components during map generation.
+type MappingPath struct {
 	passable  func(gruid.Point) bool
 	neighbors paths.Neighbors
 }
 
-func newPather(passable func(gruid.Point) bool) *simplePath {
-	return &simplePath{
-		passable: passable,
-	}
+// NewMappingPath returns a new mapping pather.
+func NewMappingPath(passable func(gruid.Point) bool) *MappingPath {
+	return &MappingPath{passable: passable}
 }
 
-func (sp *simplePath) Neighbors(p gruid.Point) []gruid.Point {
+func (sp *MappingPath) Neighbors(p gruid.Point) []gruid.Point {
 	if !sp.passable(p) {
 		return nil
 	}
+	// TODO: investigate that in all uses we really want sp.passable and
+	// not just InMap.
 	return sp.neighbors.Cardinal(p, sp.passable)
 }
 
-type dungeonPath struct {
-	dungeon *Map
-	nbs     paths.Neighbors
-	wcost   int
-}
-
-func (dp *dungeonPath) Neighbors(p gruid.Point) []gruid.Point {
-	return dp.nbs.Cardinal(p, InMap)
-}
-
-func (dp *dungeonPath) Cost(from, to gruid.Point) int {
-	if dp.dungeon.At(to) == WallCell {
-		if dp.wcost > 0 {
-			return dp.wcost
-		}
-		return 4
-	}
-	return 1
-}
-
-func (dp *dungeonPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
-}
-
-type gridPath struct {
-	dungeon *Map
-	nbs     paths.Neighbors
-}
-
-func (gp *gridPath) Neighbors(p gruid.Point) []gruid.Point {
-	return gp.nbs.Cardinal(p, InMap)
-}
-
-func (gp *gridPath) Cost(from, to gruid.Point) int {
-	return 1
-}
-
-func (gp *gridPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
-}
-
-type mappingPath struct {
-	g   *Game
+// GridPath is a pather for the grid (no obstacles).
+type GridPath struct {
 	nbs paths.Neighbors
 }
 
-func (dp *mappingPath) Neighbors(p gruid.Point) []gruid.Point {
-	d := dp.g.Map
-	if d.At(p) == WallCell {
+func (gp *GridPath) Neighbors(p gruid.Point) []gruid.Point {
+	return gp.nbs.Cardinal(p, InMap)
+}
+
+// EarthStonePath is used for earth stone.
+type EarthStonePath struct {
+	m   *Map
+	nbs paths.Neighbors
+}
+
+func (dp *EarthStonePath) Neighbors(p gruid.Point) []gruid.Point {
+	if dp.m.At(p) == WallCell {
 		return nil
 	}
 	return dp.nbs.Cardinal(p, InMap)
 }
 
-func (dp *mappingPath) Cost(from, to gruid.Point) int {
-	return 1
-}
-
-func (dp *mappingPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
-}
-
-type tunnelPath struct {
+// TunnelPath represents a pather for mapgen tunneling.
+type TunnelPath struct {
 	dg  *MapGen
 	nbs paths.Neighbors
 }
 
-func (tp *tunnelPath) Neighbors(p gruid.Point) []gruid.Point {
+func (tp *TunnelPath) Neighbors(p gruid.Point) []gruid.Point {
 	return tp.nbs.Cardinal(p, InMap)
 }
 
-func (tp *tunnelPath) Cost(from, to gruid.Point) int {
+func (tp *TunnelPath) Cost(from, to gruid.Point) int {
 	if tp.dg.room[from] && !tp.dg.tunnel[from] {
 		return 50
 	}
@@ -134,29 +99,17 @@ func countWalls(gd rl.Grid, p gruid.Point, radius int, countOut bool) int {
 	return count
 }
 
-func (tp *tunnelPath) Estimation(from, to gruid.Point) int {
+func (tp *TunnelPath) Estimation(from, to gruid.Point) int {
 	return distance(from, to)
 }
 
-func (g *Game) ppPassable(p gruid.Point) bool {
-	if cld, ok := g.Map.Clouds[p]; ok && cld == CloudFire && g.Player.Sees(p) {
-		return false
-	}
-	kt := g.Map.KnownTerrain.At(p)
-	if g.Wizard == WizardSeeAll {
-		kt = g.Map.Terrain.At(p)
-	}
-	return InMap(p) && IsKnown(kt) && (IsPlayerPassable(kt) ||
-		g.Player.HasStatus(StatusLevitation) && (kt == BarrierCell || kt == ChasmCell) ||
-		g.Player.HasStatus(StatusDig) && IsDiggable(kt))
-}
-
-type jumpPath struct {
+// JumpPath represents a pather for jump-target purposes.
+type JumpPath struct {
 	g   *Game
 	nbs paths.Neighbors
 }
 
-func (jp *jumpPath) Neighbors(p gruid.Point) []gruid.Point {
+func (jp *JumpPath) Neighbors(p gruid.Point) []gruid.Point {
 	keep := func(q gruid.Point) bool {
 		return jp.g.PlayerCanPass(q)
 	}
@@ -165,20 +118,14 @@ func (jp *jumpPath) Neighbors(p gruid.Point) []gruid.Point {
 	return nbs
 }
 
-func (jp *jumpPath) Cost(from, to gruid.Point) int {
-	return 1
-}
-
-func (jp *jumpPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
-}
-
-type noisePath struct {
+// NoisePath represents a pather for noise (which passes through everything
+// except plain walls).
+type NoisePath struct {
 	g   *Game
 	nbs paths.Neighbors
 }
 
-func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
+func (fp *NoisePath) Neighbors(p gruid.Point) []gruid.Point {
 	d := fp.g.Map
 	keep := func(q gruid.Point) bool {
 		return InMap(q) && d.At(q) != WallCell
@@ -186,16 +133,13 @@ func (fp *noisePath) Neighbors(p gruid.Point) []gruid.Point {
 	return fp.nbs.Cardinal(p, keep)
 }
 
-func (fp *noisePath) Cost(from, to gruid.Point) int {
-	return 1
-}
-
-type autoexplorePath struct {
+// AutoexplorePath is a pather for auto-exploring.
+type AutoexplorePath struct {
 	g   *Game
 	nbs paths.Neighbors
 }
 
-func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
+func (ap *AutoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 	d := ap.g.Map.KnownTerrain
 	keep := func(q gruid.Point) bool {
 		kt := d.At(q)
@@ -212,25 +156,18 @@ func (ap *autoexplorePath) Neighbors(p gruid.Point) []gruid.Point {
 	return nbs
 }
 
-func (ap *autoexplorePath) Cost(from, to gruid.Point) int {
+func (ap *AutoexplorePath) Cost(from, to gruid.Point) int {
 	return 1
 }
 
-type monPath struct {
+// MonPath represents a pather for monsters.
+type MonPath struct {
 	g       *Game
 	monster *Monster
 	nbs     paths.Neighbors
 }
 
-func (g *Game) ShufflePos(ps []gruid.Point) []gruid.Point {
-	for i := 0; i < len(ps); i++ {
-		j := i + g.randInt(len(ps)-i)
-		ps[i], ps[j] = ps[j], ps[i]
-	}
-	return ps
-}
-
-func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
+func (mp *MonPath) CanPassDestruct(p gruid.Point) bool {
 	m := mp.monster
 	if m.Kind != MonsEarthDragon {
 		return mp.CanPass(p)
@@ -243,7 +180,7 @@ func (mp *monPath) CanPassDestruct(p gruid.Point) bool {
 	return m.CanPass(g, p) || IsDestructible(t)
 }
 
-func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
+func (mp *MonPath) CanPatrolPass(p gruid.Point) bool {
 	m := mp.monster
 	if !m.CanPass(mp.g, p) {
 		return false
@@ -252,11 +189,11 @@ func (mp *monPath) CanPatrolPass(p gruid.Point) bool {
 	return IsNormalPatrolWay(t)
 }
 
-func (mp *monPath) CanPass(p gruid.Point) bool {
+func (mp *MonPath) CanPass(p gruid.Point) bool {
 	return mp.monster.CanPass(mp.g, p)
 }
 
-func (mp *monPath) Neighbors(p gruid.Point) []gruid.Point {
+func (mp *MonPath) Neighbors(p gruid.Point) []gruid.Point {
 	keep := func(q gruid.Point) bool {
 		return mp.CanPassDestruct(q)
 	}
@@ -266,7 +203,16 @@ func (mp *monPath) Neighbors(p gruid.Point) []gruid.Point {
 	return nbs
 }
 
-func (mp *monPath) Cost(from, to gruid.Point) int {
+// ShufflePos shuffles a slice of positions.
+func (g *Game) ShufflePos(ps []gruid.Point) []gruid.Point {
+	for i := range len(ps) {
+		j := i + g.randInt(len(ps)-i)
+		ps[i], ps[j] = ps[j], ps[i]
+	}
+	return ps
+}
+
+func (mp *MonPath) Cost(from, to gruid.Point) int {
 	g := mp.g
 	mons := g.MonsterAt(to)
 	if !mons.Exists() {
@@ -293,12 +239,13 @@ func (mp *monPath) Cost(from, to gruid.Point) int {
 	return 6
 }
 
-func (mp *monPath) Estimation(from, to gruid.Point) int {
+func (mp *MonPath) Estimation(from, to gruid.Point) int {
 	return distance(from, to)
 }
 
+// APath returns a monster path between two positions.
 func (m *Monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
-	mp := &monPath{g: g, monster: m}
+	mp := &MonPath{g: g, monster: m}
 	var path []gruid.Point
 	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterFOVRange &&
 		distance(from, to) > DefaultFOVRange && m.Kind != MonsEarthDragon {
@@ -317,6 +264,7 @@ func (m *Monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
 	return path
 }
 
+// PlayerPath returns a player-passable path between two positions.
 func (g *Game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	path := []gruid.Point{}
 	path = g.PR.JPSPath(path, from, to, g.ppPassable, false)
@@ -326,30 +274,24 @@ func (g *Game) PlayerPath(from, to gruid.Point) []gruid.Point {
 	return path
 }
 
+func (g *Game) ppPassable(p gruid.Point) bool {
+	if cld, ok := g.Map.Clouds[p]; ok && cld == CloudFire && g.Player.Sees(p) {
+		return false
+	}
+	kt := g.Map.KnownTerrain.At(p)
+	if g.Wizard == WizardSeeAll {
+		kt = g.Map.Terrain.At(p)
+	}
+	return InMap(p) && IsKnown(kt) && (IsPlayerPassable(kt) ||
+		g.Player.HasStatus(StatusLevitation) && (kt == BarrierCell || kt == ChasmCell) ||
+		g.Player.HasStatus(StatusDig) && IsDiggable(kt))
+}
+
+// SortedNearestTo sorts some positions by distance.
 func (g *Game) SortedNearestTo(cells []gruid.Point, to gruid.Point) []gruid.Point {
-	ps := posSlice{}
-	for _, p := range cells {
-		pp := &dungeonPath{dungeon: g.Map, wcost: unreachable}
-		path := g.PR.AstarPath(pp, p, to) // TODO: use JPS?
-		if len(path) > 0 {
-			ps = append(ps, posCost{p, len(path)})
-		}
-	}
-	sort.Sort(ps)
-	sorted := []gruid.Point{}
-	for _, pc := range ps {
-		sorted = append(sorted, pc.p)
-	}
-	return sorted
+	ps := slices.Clone(cells)
+	sort.Slice(ps, func(i, j int) bool {
+		return paths.DistanceManhattan(ps[i], to) < paths.DistanceManhattan(ps[j], to)
+	})
+	return ps
 }
-
-type posCost struct {
-	p    gruid.Point
-	cost int
-}
-
-type posSlice []posCost
-
-func (ps posSlice) Len() int           { return len(ps) }
-func (ps posSlice) Swap(i, j int)      { ps[i], ps[j] = ps[j], ps[i] }
-func (ps posSlice) Less(i, j int) bool { return ps[i].cost < ps[j].cost }

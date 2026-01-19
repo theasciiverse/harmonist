@@ -64,8 +64,8 @@ func (g *Game) MakeMonstersAware() {
 
 // MakeNoise makes a given amount of noise at the given position.
 func (g *Game) MakeNoise(noise int, at gruid.Point) {
-	dij := &noisePath{g: g}
-	g.PRnoise.BreadthFirstMap(dij, []gruid.Point{at}, noise)
+	mp := &NoisePath{g: g}
+	g.PRnoise.BreadthFirstMap(mp, []gruid.Point{at}, noise)
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -91,7 +91,7 @@ func (g *Game) MakeNoise(noise int, at gruid.Point) {
 
 // LeaveRoomForPlayer moves a peaceful monster to make room for the player.
 func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
-	dij := &monPath{g: g, monster: m}
+	dij := &MonPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
 	free := invalidPos
 	dist := unreachable
@@ -116,8 +116,8 @@ func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 }
 
 func (g *Game) FindJumpTarget(m *Monster) gruid.Point {
-	dij := &jumpPath{g: g}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{m.P}, 10)
+	mp := &JumpPath{g: g}
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{m.P}, 10)
 	free := invalidPos
 	dist := unreachable
 	for _, n := range nodes {

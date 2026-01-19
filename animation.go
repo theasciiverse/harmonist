@@ -267,14 +267,14 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 }
 
 func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
-	var dij paths.Dijkstra
+	var mp paths.Pather
 	switch ws {
 	case WaveMagicNoise:
-		dij = &gridPath{dungeon: g.Map}
+		mp = &GridPath{}
 	default:
-		dij = &noisePath{g: g}
+		mp = &NoisePath{g: g}
 	}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{center}, maxCost)
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{center}, maxCost)
 	cdists = make(map[int][]int)
 	for _, n := range nodes {
 		cdists[n.Cost] = append(cdists[n.Cost], idx(n.P))

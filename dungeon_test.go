@@ -33,7 +33,7 @@ func (m *Map) connex(pr *paths.PathRange) bool {
 	passable := func(p gruid.Point) bool {
 		return m.At(p) != WallCell
 	}
-	cp := newPather(passable)
+	cp := NewMappingPath(passable)
 	pr.CCMap(cp, pos)
 	it := m.Terrain.Iterator()
 	for it.Next() {

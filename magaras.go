@@ -607,8 +607,8 @@ func (g *Game) EvokeFog() error {
 
 // Fog generates fog around the given position.
 func (g *Game) Fog(at gruid.Point, radius int) {
-	dij := &noisePath{g: g}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{at}, radius)
+	mp := &NoisePath{g: g}
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{at}, radius)
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {
@@ -714,9 +714,9 @@ func (g *Game) EvokeLignification() error {
 }
 
 func (g *Game) EvokeNoise() error {
-	dij := &noisePath{g: g}
+	mp := &NoisePath{g: g}
 	const noiseDist = 23
-	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, noiseDist)
+	g.PR.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, noiseDist)
 	noises := []gruid.Point{}
 	g.Map.NoiseIllusion = map[gruid.Point]bool{}
 	for _, mons := range g.Monsters {
@@ -730,7 +730,7 @@ func (g *Game) EvokeNoise() error {
 		if mons.SeesPlayer(g) {
 			continue
 		}
-		mp := &monPath{g: g, monster: mons}
+		mp := &MonPath{g: g, monster: mons}
 		target := mons.P
 		best := c
 		for {

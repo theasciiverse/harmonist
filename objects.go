@@ -249,7 +249,7 @@ func (g *Game) ActivateEarthStone() {
 	g.Log("You activate the earth stone.")
 	pp := g.Player.P
 	g.OricExplosion(pp)
-	mp := &mappingPath{g: g}
+	mp := &EarthStonePath{m: g.Map}
 	draw, cost := false, 1
 	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{pp}, unreachable)
 	for _, n := range nodes {
@@ -304,8 +304,8 @@ func (m *Map) interiorWallAt(p gruid.Point) bool {
 
 func (g *Game) ActivateQueenStone() {
 	g.MakeNoise(QueenStoneNoise, g.Player.P)
-	dij := &noisePath{g: g}
-	g.PR.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, QueenStoneDistance)
+	mp := &NoisePath{g: g}
+	g.PR.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, QueenStoneDistance)
 	g.Log("The stone releases confusing sounds.")
 	g.md.FOVWavesAnimation(DefaultFOVRange, WaveMagicNoise, g.Player.P)
 	for _, m := range g.Monsters {

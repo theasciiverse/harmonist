@@ -665,7 +665,7 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 var SearchAroundCache []gruid.Point
 
 func (m *Monster) SearchAround(g *Game, p gruid.Point, radius int) gruid.Point {
-	dij := &monPath{g: g, monster: m}
+	dij := &MonPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{p}, radius)
 	SearchAroundCache = SearchAroundCache[:0]
 	for _, n := range nodes {
@@ -815,7 +815,7 @@ func (m *Monster) HandleWatching(g *Game) {
 		m.Alternate()
 		m.Watching++
 		if m.Kind == MonsDog {
-			dij := &monPath{g: g, monster: m}
+			dij := &MonPath{g: g, monster: m}
 			g.PR.DijkstraMap(dij, []gruid.Point{m.P}, DogSmellDist)
 			if c := g.PR.DijkstraMapAt(g.Player.P); c <= DogSmellDist {
 				m.Target = g.Player.P
@@ -1593,7 +1593,7 @@ func (m *Monster) GatherBand(g *Game) {
 	if !monsBands[g.MonsterBands[m.Band].Kind].Band {
 		return
 	}
-	dij := &noisePath{g: g}
+	dij := &NoisePath{g: g}
 	g.PR.BreadthFirstMap(dij, []gruid.Point{m.P}, 4)
 	for _, mons := range g.Monsters {
 		if mons.Band == m.Band {

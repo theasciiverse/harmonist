@@ -429,8 +429,8 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 }
 
 func (g *Game) SwiftFog() {
-	dij := &noisePath{g: g}
-	nodes := g.PR.DijkstraMap(dij, []gruid.Point{g.Player.P}, 2)
+	mp := &NoisePath{g: g}
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, 2)
 	for _, n := range nodes {
 		_, ok := g.Map.Clouds[n.P]
 		if !ok && AllowsFog(g.Map.At(n.P)) {

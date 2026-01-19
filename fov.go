@@ -304,8 +304,7 @@ func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 	switch t {
 	case MagaraCell:
 		mag := g.Objects.Magaras[p]
-		dp := &mappingPath{g: g}
-		path := g.PR.AstarPath(dp, g.Player.P, p)
+		path := g.PR.JPSPath(nil, g.Player.P, p, InMap, false)
 		if len(path) > 0 {
 			g.StoryPrintf("Spotted %s (distance: %d)", mag, len(path))
 		} else {
@@ -313,8 +312,7 @@ func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 		}
 	case ItemCell:
 		it := g.Objects.Items[p]
-		dp := &mappingPath{g: g}
-		path := g.PR.AstarPath(dp, g.Player.P, p)
+		path := g.PR.JPSPath(nil, g.Player.P, p, InMap, false)
 		if len(path) > 0 {
 			g.StoryPrintf("Spotted %s (distance: %d)", it.ShortDesc(g), len(path))
 		} else {
@@ -322,16 +320,14 @@ func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 		}
 	case StairCell:
 		st := g.Objects.Stairs[p]
-		dp := &mappingPath{g: g}
-		path := g.PR.AstarPath(dp, g.Player.P, p)
+		path := g.PR.JPSPath(nil, g.Player.P, p, InMap, false)
 		if len(path) > 0 {
 			g.StoryPrintf("Discovered %s (distance: %d)", st, len(path))
 		} else {
 			g.StoryPrintf("Discovered %s", st)
 		}
 	case FakeStairCell:
-		dp := &mappingPath{g: g}
-		path := g.PR.AstarPath(dp, g.Player.P, p)
+		path := g.PR.JPSPath(nil, g.Player.P, p, InMap, false)
 		if len(path) > 0 {
 			g.StoryPrintf("Discovered %s (distance: %d)", normalStairShortDesc, len(path))
 		} else {
@@ -340,8 +336,7 @@ func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 	case StoryCell:
 		st := g.Objects.Story[p]
 		if st == StoryArtifactSealed {
-			dp := &mappingPath{g: g}
-			path := g.PR.AstarPath(dp, g.Player.P, p)
+			path := g.PR.JPSPath(nil, g.Player.P, p, InMap, false)
 			if len(path) > 0 {
 				g.StoryPrintf("Discovered Portal Moon Gem Artifact (distance: %d)", len(path))
 			} else {
@@ -426,9 +421,9 @@ func (g *Game) Ray(p gruid.Point) []gruid.Point {
 
 // ComputeNoise updates monster noise information.
 func (g *Game) ComputeNoise() {
-	dij := &noisePath{g: g}
+	mp := &NoisePath{g: g}
 	maxdist := DefaultFOVRange + 1
-	nodes := g.PRnoise.BreadthFirstMap(dij, []gruid.Point{g.Player.P}, maxdist)
+	nodes := g.PRnoise.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, maxdist)
 	count := 0
 	for _, mons := range g.Monsters {
 		if mons != nil {
