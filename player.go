@@ -306,7 +306,7 @@ func (g *Game) CollectGround() {
 	} else if t == DoorCell {
 		g.Log("You stand at the door.")
 	}
-	if ReachNotable(t) {
+	if AchivementTerrain(t) {
 		g.Reach(p)
 	}
 }

@@ -5,7 +5,8 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-type stats struct {
+// Stats gathers various game statistics.
+type Stats struct {
 	Story             []string
 	Killed            int
 	KilledMons        map[monsterKind]int
@@ -23,7 +24,6 @@ type stats struct {
 	DDamage           [MaxDepth + 1]int
 	DExplPerc         [MaxDepth + 1]int
 	DSleepingPerc     [MaxDepth + 1]int
-	DKilledPerc       [MaxDepth + 1]int
 	Burns             int
 	Digs              int
 	Rest              int
@@ -37,7 +37,7 @@ type stats struct {
 	DSpotted          [MaxDepth + 1]int
 	DUSpotted         [MaxDepth + 1]int
 	DUSpottedPerc     [MaxDepth + 1]int
-	Achievements      map[achievement]int
+	Achievements      map[Achievement]int
 	AtNotablePos      map[gruid.Point]bool
 	HarmonicMagUse    int
 	OricMagUse        int
@@ -58,6 +58,7 @@ type stats struct {
 	TimesBlocked      int
 }
 
+// TurnStats computes some turn-specific stats.
 func (g *Game) TurnStats() {
 	g.Stats.Turns++
 	if g.Player.HP < g.Player.HPMax() {
@@ -71,6 +72,7 @@ func (g *Game) TurnStats() {
 	}
 }
 
+// LevelStats computes level-specific stats.
 func (g *Game) LevelStats() {
 	free := 0
 	exp := 0
@@ -110,60 +112,61 @@ func (g *Game) LevelStats() {
 		}
 	}
 	g.Stats.DSleepingPerc[g.Map.Depth] = smons * 100 / nmons
-	g.Stats.DKilledPerc[g.Map.Depth] = kmons * 100 / nmons
 	g.Stats.DUSpottedPerc[g.Map.Depth] = g.Stats.DUSpotted[g.Map.Depth] * 100 / nmons
 }
 
-type achievement string
+// Achievement represents an achievement.
+type Achievement string
 
-// Achievements.
+// List of achievements.
 const (
-	NoAchievement          achievement = "Pitiful Death"
-	AchBananaCollector     achievement = "Banana Collector"
-	AchHarmonistNovice     achievement = "Harmonist Novice"
-	AchHarmonistInitiate   achievement = "Harmonist Initiate"
-	AchHarmonistMaster     achievement = "Harmonist Master"
-	AchNoviceOricCelmist   achievement = "Oric Celmist Novice"
-	AchInitiateOricCelmist achievement = "Oric Celmist Initiate"
-	AchMasterOricCelmist   achievement = "Oric Celmist Master"
-	AchUnstealthy          achievement = "Unstealthy Gawalt"
-	AchStealthNovice       achievement = "Stealth Novice"
-	AchStealthInitiate     achievement = "Stealth Initiate"
-	AchStealthMaster       achievement = "Stealth Master"
-	AchPyromancerNovice    achievement = "Pyromancer Novice"
-	AchPyromancerInitiate  achievement = "Pyromancer Initiate"
-	AchPyromancerMaster    achievement = "Pyromancer Master"
-	AchDestructorNovice    achievement = "Destructor Novice"
-	AchDestructorInitiate  achievement = "Destructor Initiate"
-	AchDestructorMaster    achievement = "Destructor Master"
-	AchTeleport            achievement = "Oric Teleport Maniac"
-	AchCloak               achievement = "Dressed Gawalt"
-	AchAmulet              achievement = "Protective Charm"
-	AchRescuedShaedra      achievement = "Rescued Shaedra"
-	AchRetrievedArtifact   achievement = "Recovered Gem Portal Artifact"
-	AchAcrobat             achievement = "Acrobat"
-	AchTree                achievement = "Tree Climber"
-	AchTable               achievement = "Under Table Gawalt"
-	AchHole                achievement = "Hole Crawler"
-	AchDoors               achievement = "Door Opener"
-	AchBarrels             achievement = "Barrel Enthousiast"
-	AchExtinguisher        achievement = "Light Extinguisher"
-	AchLoreStudent         achievement = "Lore student"
-	AchLoremaster          achievement = "Loremaster"
-	AchNoviceExplorer      achievement = "Novice Explorer"
-	AchInitiateExplorer    achievement = "Initiate Explorer"
-	AchMasterExplorer      achievement = "Master Explorer"
-	AchAssassin            achievement = "Assassin"
-	AchInsomniaNovice      achievement = "Insomnia Novice"
-	AchInsomniaInitiate    achievement = "Insomnia Initiate"
-	AchInsomniaMaster      achievement = "Insomnia Master"
-	AchSleepy              achievement = "Sleepy Gawalt"
-	AchAntimagicNovice     achievement = "Antimagic Novice"
-	AchAntimagicInitiate   achievement = "Antimagic Initiate"
-	AchAntimagicMaster     achievement = "Antimagic Master"
+	NoAchievement          Achievement = "Pitiful Death"
+	AchBananaCollector     Achievement = "Banana Collector"
+	AchHarmonistNovice     Achievement = "Harmonist Novice"
+	AchHarmonistInitiate   Achievement = "Harmonist Initiate"
+	AchHarmonistMaster     Achievement = "Harmonist Master"
+	AchNoviceOricCelmist   Achievement = "Oric Celmist Novice"
+	AchInitiateOricCelmist Achievement = "Oric Celmist Initiate"
+	AchMasterOricCelmist   Achievement = "Oric Celmist Master"
+	AchUnstealthy          Achievement = "Unstealthy Gawalt"
+	AchStealthNovice       Achievement = "Stealth Novice"
+	AchStealthInitiate     Achievement = "Stealth Initiate"
+	AchStealthMaster       Achievement = "Stealth Master"
+	AchPyromancerNovice    Achievement = "Pyromancer Novice"
+	AchPyromancerInitiate  Achievement = "Pyromancer Initiate"
+	AchPyromancerMaster    Achievement = "Pyromancer Master"
+	AchDestructorNovice    Achievement = "Destructor Novice"
+	AchDestructorInitiate  Achievement = "Destructor Initiate"
+	AchDestructorMaster    Achievement = "Destructor Master"
+	AchTeleport            Achievement = "Oric Teleport Maniac"
+	AchCloak               Achievement = "Dressed Gawalt"
+	AchAmulet              Achievement = "Protective Charm"
+	AchRescuedShaedra      Achievement = "Rescued Shaedra"
+	AchRetrievedArtifact   Achievement = "Recovered Gem Portal Artifact"
+	AchAcrobat             Achievement = "Acrobat"
+	AchTree                Achievement = "Tree Climber"
+	AchTable               Achievement = "Under Table Gawalt"
+	AchHole                Achievement = "Hole Crawler"
+	AchDoors               Achievement = "Door Opener"
+	AchBarrels             Achievement = "Barrel Enthousiast"
+	AchExtinguisher        Achievement = "Light Extinguisher"
+	AchLoreStudent         Achievement = "Lore student"
+	AchLoremaster          Achievement = "Loremaster"
+	AchNoviceExplorer      Achievement = "Novice Explorer"
+	AchInitiateExplorer    Achievement = "Initiate Explorer"
+	AchMasterExplorer      Achievement = "Master Explorer"
+	AchAssassin            Achievement = "Assassin"
+	AchInsomniaNovice      Achievement = "Insomnia Novice"
+	AchInsomniaInitiate    Achievement = "Insomnia Initiate"
+	AchInsomniaMaster      Achievement = "Insomnia Master"
+	AchSleepy              Achievement = "Sleepy Gawalt"
+	AchAntimagicNovice     Achievement = "Antimagic Novice"
+	AchAntimagicInitiate   Achievement = "Antimagic Initiate"
+	AchAntimagicMaster     Achievement = "Antimagic Master"
 )
 
-func (ach achievement) Get(g *Game) {
+// Get makes you get the achievement.
+func (ach Achievement) Get(g *Game) {
 	if g.Stats.Achievements[ach] == 0 {
 		g.Stats.Achievements[ach] = g.Turn
 		g.LogfStyled("Achievement: %s.", logSpecial, ach)
@@ -171,7 +174,9 @@ func (ach achievement) Get(g *Game) {
 	}
 }
 
-func ReachNotable(t rl.Cell) bool {
+// AchivementTerrain reports whether reaching that terrain is notable for
+// achievement purposes.
+func AchivementTerrain(t rl.Cell) bool {
 	switch t {
 	case TreeCell, TableCell, HoledWallCell, DoorCell, BarrelCell:
 		return true
@@ -180,6 +185,7 @@ func ReachNotable(t rl.Cell) bool {
 	}
 }
 
+// Reach handles any achievement for reaching the given position.
 func (g *Game) Reach(p gruid.Point) {
 	if g.Stats.AtNotablePos[p] {
 		return

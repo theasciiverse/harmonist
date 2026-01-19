@@ -43,7 +43,7 @@ type Game struct {
 	Params      startParams // various procinfo params
 	Places      places      // special place placements
 	ProcInfo    *ProcInfo   // procedural generation information
-	Stats       stats       // game statistics
+	Stats       Stats       // game statistics
 	Version     string      // game version
 	Wizard      wizardMode  // wizard mode info
 
@@ -234,7 +234,7 @@ func (g *Game) InitFirstLevel() {
 	g.ProcInfo.GeneratedLore = map[int]bool{}
 	g.Stats.KilledMons = map[monsterKind]int{}
 	g.Stats.UsedMagaras = map[magaraKind]int{}
-	g.Stats.Achievements = map[achievement]int{}
+	g.Stats.Achievements = map[Achievement]int{}
 	g.Stats.Lore = map[int]bool{}
 	g.Stats.Statuses = map[status]int{}
 	g.ProcInfo.GenPlan = [MaxDepth + 1]genFlavour{
