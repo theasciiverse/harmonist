@@ -65,6 +65,7 @@ Fixes:
 
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
+* Fix old regression that broke the fire magara.
 * Prevent satowalga plants from ever being generated on top of a banana (that
   made swapping and teleport the only ways to get such banana, which was kind
   of fun, but it was a bit confusing).
