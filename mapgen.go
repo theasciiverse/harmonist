@@ -878,9 +878,8 @@ func (mg *MapGen) outsideCavernMiddleCell(g *Game) gruid.Point {
 // wall neighbors (excluding boundaries).
 func (mg *MapGen) hasTooManyWallNeighbors(p gruid.Point) bool {
 	m := mg.m
-	nbs := mg.neighbors.All(p, InMap)
-	count := 8 - len(nbs)
-	for _, q := range nbs {
+	count := 0
+	for q := range AllNeighbors(p) {
 		if !Passable(m.At(q)) {
 			count++
 		}
@@ -1290,7 +1289,7 @@ func (mg *MapGen) DigBlock(block []gruid.Point) []gruid.Point {
 			panic("infinite loop")
 		}
 		block = append(block, p)
-		if d.HasFreeNeighbor(&mg.neighbors, p) {
+		if d.HasFreeNeighbor(p) {
 			break
 		}
 		p = randomNeighbor(p)

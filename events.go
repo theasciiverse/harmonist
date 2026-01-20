@@ -197,7 +197,7 @@ func (cev *PosEvent) Handle(g *Game) {
 		for it.Next() {
 			p := it.P()
 			t := it.Cell()
-			if !IsDiggable(t) || !g.Map.HasFreeNeighbor(&g.nbs, p) {
+			if !IsDiggable(t) || !g.Map.HasFreeNeighbor(p) {
 				continue
 			}
 			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {

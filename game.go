@@ -55,7 +55,6 @@ type Game struct {
 	highlight   map[gruid.Point]bool // highlighted positions (e.g. targeted ray)
 	md          *model               // reference to the UI model
 	mfov        *rl.FOV              // monster field of view
-	nbs         paths.Neighbors
 	rand        *rand.Rand
 
 	autoDir               gruid.Point  // direction for auto-movement

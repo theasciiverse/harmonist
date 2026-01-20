@@ -62,6 +62,24 @@ func Neighbors(p gruid.Point) iter.Seq[gruid.Point] {
 	}
 }
 
+// AllNeighbors returns an iterator over cardinal and diagonal neighbors of the
+// given position.
+func AllNeighbors(p gruid.Point) iter.Seq[gruid.Point] {
+	return func(yield func(gruid.Point) bool) {
+		for y := -1; y <= 1; y++ {
+			for x := -1; x <= 1; x++ {
+				if x == 0 && y == 0 {
+					continue
+				}
+				q := p.Shift(x, y)
+				if InMap(q) && !yield(q) {
+					return
+				}
+			}
+		}
+	}
+}
+
 // NeighborsFunc returns an iterator over cardinal neighbors of the given
 // position that statisfy the given predicate.
 func NeighborsFunc(p gruid.Point, f func(gruid.Point) bool) iter.Seq[gruid.Point] {

@@ -4,7 +4,6 @@ package main
 
 import (
 	"codeberg.org/anaseto/gruid"
-	"codeberg.org/anaseto/gruid/paths"
 	"codeberg.org/anaseto/gruid/rl"
 )
 
@@ -34,9 +33,8 @@ func (m *Map) Set(p gruid.Point, t rl.Cell) {
 }
 
 // HasFreeNeighbor reports whether the given position has a free neighbor.
-func (m *Map) HasFreeNeighbor(nbs *paths.Neighbors, p gruid.Point) bool {
-	nb := nbs.Cardinal(p, InMap)
-	for _, q := range nb {
+func (m *Map) HasFreeNeighbor(p gruid.Point) bool {
+	for q := range Neighbors(p) {
 		if Passable(m.At(q)) {
 			return true
 		}
