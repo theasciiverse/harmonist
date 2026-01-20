@@ -61,3 +61,20 @@ func Neighbors(p gruid.Point) iter.Seq[gruid.Point] {
 		}
 	}
 }
+
+// NeighborsFunc returns an iterator over cardinal neighbors of the given
+// position that statisfy the given predicate.
+func NeighborsFunc(p gruid.Point, f func(gruid.Point) bool) iter.Seq[gruid.Point] {
+	return func(yield func(gruid.Point) bool) {
+		for i := -1; i <= 1; i += 2 {
+			q := p.Shift(i, 0)
+			if f(q) && !yield(q) {
+				return
+			}
+			q = p.Shift(0, i)
+			if f(q) && !yield(q) {
+				return
+			}
+		}
+	}
+}

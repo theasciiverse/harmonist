@@ -1,28 +1,32 @@
 package main
 
-import "codeberg.org/anaseto/gruid"
+import (
+	"slices"
+
+	"codeberg.org/anaseto/gruid"
+)
 
 func (g *Game) cardinalNeighbors(p gruid.Point) []gruid.Point {
-	return g.nbs.Cardinal(p, InMap)
+	return slices.Collect(Neighbors(p))
 }
 
 func (g *Game) playerPassableNeighbors(p gruid.Point) []gruid.Point {
 	d := g.Map
-	return g.nbs.All(p, func(q gruid.Point) bool {
+	return slices.Clone(g.nbs.All(p, func(q gruid.Point) bool {
 		return InMap(q) && IsPlayerPassable(d.At(q))
-	})
+	}))
 }
 
 func (g *Game) nonWallNeighbors(p gruid.Point) []gruid.Point {
-	return g.nbs.Cardinal(p, func(q gruid.Point) bool {
+	return slices.Collect(NeighborsFunc(p, func(q gruid.Point) bool {
 		return InMap(q) && g.Map.At(q) != WallCell
-	})
+	}))
 }
 
 func (g *Game) flammableNeighbors(p gruid.Point) []gruid.Point {
-	return g.nbs.Cardinal(p, func(q gruid.Point) bool {
+	return slices.Collect(NeighborsFunc(p, func(q gruid.Point) bool {
 		return InMap(q) && Flammable(g.Map.At(q))
-	})
+	}))
 }
 
 func randomNeighbor(p gruid.Point) gruid.Point {
