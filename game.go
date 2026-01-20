@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.13"
+var Version string = "v0.7.0-dev.14"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -507,7 +507,7 @@ func (g *Game) InitLevel() {
 func (g *Game) CleanEvents() {
 	g.Events.Filter(func(ev rl.Event) bool {
 		switch ev.(type) {
-		case *MonsterTurnEvent, *PosEvent, *MonsterStatusEvent, *PlayerEvent:
+		case *MonsterTurnEvent, *PosEvent, *MonsterStatusEvent, AbyssFallEvent:
 			return false
 		default:
 			// keep player statuses events
@@ -724,12 +724,14 @@ func (g *Game) EndTurn() {
 		ev, r := g.Events.PopR()
 		g.Turn = r
 		switch ev := ev.(type) {
-		case *PlayerEvent:
+		case AbyssFallEvent:
+			depth := g.Map.Depth
 			ev.Handle(g)
-			if ev.Action == AbyssFall {
+			if g.Map.Depth > depth {
 				return
 			}
 		case EndTurnEvent:
+			g.CheckForStorySequence()
 			return
 		case Event:
 			ev.Handle(g)
@@ -737,6 +739,42 @@ func (g *Game) EndTurn() {
 			log.Printf("bad event: %v", ev)
 		}
 	}
+}
+
+// CheckForStorySequence checks for Shaedra liberation conditions and
+// starts the story sequence if appropriate.
+func (g *Game) CheckForStorySequence() {
+	if g.Map.Depth != WinDepth || g.LiberatedShaedra {
+		return
+	}
+	p := g.Places.Shaedra
+	if distance(g.Player.P, p) > 1 &&
+		distance(g.Player.P, g.Places.Marevor) > 1 &&
+		distance(g.Player.P, g.Places.Monolith) > 1 {
+		// If the player is not adjacent to one of the important
+		// places, we cannot free Shaedra yet.
+		return
+	}
+	// We compute field of view again to ensure that it's up-to-date before
+	// checking whether we see Shaedra or not.
+	g.ComputeFOV()
+	if !g.Player.Sees(p) {
+		return
+	}
+	if g.Player.P == g.Places.Marevor {
+		// If somehow the player got on Marevor's tile, exchange
+		// positions of Marevor's tile and the portal's, so that
+		// Marevor is visible during story sequence.
+		g.Places.Marevor, g.Places.Monolith = g.Places.Monolith, g.Places.Marevor
+	}
+	// We liberate Shaedra and start story sequence.
+	g.LiberatedShaedra = true
+	g.LogStyled("You see Shaedra. She is wounded!", logNotable)
+	g.LogStyled("Shaedra: “Oh, it’s you, Syu! Let’s flee with Marevor’s magara!”", logSpecial)
+	g.LogStyled("[SPACE/ESC to continue]", logConfirm)
+	g.md.mode = modeStory
+	g.md.confirm = false
+	g.md.story = 1 // first part of the story sequence
 }
 
 // checks performs some sanity checks.

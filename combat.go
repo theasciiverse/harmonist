@@ -187,7 +187,7 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
 	if mons.Kind == MonsEarthDragon {
-		g.Confusion()
+		g.PutConfusion()
 	}
 	g.PlacePlayerAt(p)
 	g.Stats.Jumps++

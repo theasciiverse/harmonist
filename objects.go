@@ -321,7 +321,7 @@ func (g *Game) ActivateQueenStone() {
 			continue
 		}
 		// Confuse and reveal nearby monster.
-		m.EnterConfusion(g)
+		m.PutConfusion(g)
 		if m.Search == invalidPos {
 			m.Search = m.P
 		}

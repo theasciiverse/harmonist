@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	gob.Register(&PlayerEvent{})
+	gob.Register(AbyssFallEvent{})
 	gob.Register(&StatusEvent{})
 	gob.Register(&MonsterTurnEvent{})
 	gob.Register(&MonsterStatusEvent{})

@@ -94,17 +94,19 @@ func (mk monsterKind) String() string {
 	return MonsData[mk].name
 }
 
+// Letter returns the monster's letter.
 func (mk monsterKind) Letter() rune {
 	return MonsData[mk].letter
 }
 
+// Dangerousness returns the relative danger level (for generation purposes).
 func (mk monsterKind) Dangerousness() int {
 	return MonsData[mk].dangerousness
 }
 
+// Ranged reports whether the monster has a normal ranged attack.
 func (mk monsterKind) Ranged() bool {
 	switch mk {
-	//case MonsLich, MonsCyclop, MonsHighGuard, MonsSatowalgaPlant, MonsMadNixe, MonsVampire, MonsTreeMushroom:
 	case MonsHighGuard, MonsSatowalgaPlant, MonsMadNixe, MonsVampire, MonsTreeMushroom:
 		return true
 	default:
@@ -112,9 +114,9 @@ func (mk monsterKind) Ranged() bool {
 	}
 }
 
+// Smiting reports whether the monster has a ranged smiting attack.
 func (mk monsterKind) Smiting() bool {
 	switch mk {
-	//case MonsMirrorSpecter, MonsMindCelmist:
 	case MonsMirrorSpecter, MonsOricCelmist, MonsHarmonicCelmist:
 		return true
 	default:
@@ -122,6 +124,7 @@ func (mk monsterKind) Smiting() bool {
 	}
 }
 
+// Peaceful reports whether the monster is peaceful.
 func (mk monsterKind) Peaceful() bool {
 	switch mk {
 	case MonsButterfly, MonsEarthDragon, MonsCrazyImp:
@@ -131,6 +134,7 @@ func (mk monsterKind) Peaceful() bool {
 	}
 }
 
+// GoodSmell reports whether the monster has a good sense of smell.
 func (mk monsterKind) GoodSmell() bool {
 	switch mk {
 	case MonsDog, MonsHazeCat, MonsVampire, MonsExplosiveNadre:
@@ -140,6 +144,7 @@ func (mk monsterKind) GoodSmell() bool {
 	}
 }
 
+// Notable reports whether the monster is notable (for logging purposes).
 func (mk monsterKind) Notable() bool {
 	switch mk {
 	case MonsCrazyImp, MonsEarthDragon, MonsHazeCat:
@@ -149,6 +154,7 @@ func (mk monsterKind) Notable() bool {
 	}
 }
 
+// CanOpenDoors reports whether the monster can open doors.
 func (mk monsterKind) CanOpenDoors() bool {
 	switch mk {
 	case MonsGuard, MonsHighGuard, MonsMadNixe, MonsOricCelmist, MonsHarmonicCelmist, MonsVampire, MonsWingedMilfid:
@@ -158,6 +164,7 @@ func (mk monsterKind) CanOpenDoors() bool {
 	}
 }
 
+// Patrolling reports whether the monster is a patrolling monster.
 func (mk monsterKind) Patrolling() bool {
 	switch mk {
 	case MonsGuard, MonsHighGuard, MonsMadNixe, MonsOricCelmist, MonsHarmonicCelmist:
@@ -167,6 +174,7 @@ func (mk monsterKind) Patrolling() bool {
 	}
 }
 
+// CanFly reports whether the monster can fly.
 func (mk monsterKind) CanFly() bool {
 	switch mk {
 	case MonsWingedMilfid, MonsMirrorSpecter, MonsButterfly, MonsTinyHarpy:
@@ -176,6 +184,7 @@ func (mk monsterKind) CanFly() bool {
 	}
 }
 
+// CanSwim reports whether the monster can swim.
 func (mk monsterKind) CanSwim() bool {
 	switch mk {
 	case MonsBlinkingFrog, MonsVampire, MonsDog:
@@ -185,6 +194,8 @@ func (mk monsterKind) CanSwim() bool {
 	}
 }
 
+// CanAttackOnTree reports whether the monster can attack a player that's on
+// top of a banana tree.
 func (mk monsterKind) CanAttackOnTree() bool {
 	switch {
 	case mk.Size() == MonsLarge:
@@ -198,6 +209,8 @@ func (mk monsterKind) CanAttackOnTree() bool {
 	}
 }
 
+// ShallowSleep reports whether the monster has a shallow sleep (naturally
+// wakes up faster).
 func (mk monsterKind) ShallowSleep() bool {
 	switch mk {
 	case MonsCrazyImp, MonsHazeCat:
@@ -207,6 +220,7 @@ func (mk monsterKind) ShallowSleep() bool {
 	}
 }
 
+// ResistsLignification reports whether the monster resists lignification.
 func (mk monsterKind) ResistsLignification() bool {
 	switch mk {
 	case MonsSatowalgaPlant, MonsTreeMushroom:
@@ -216,6 +230,7 @@ func (mk monsterKind) ResistsLignification() bool {
 	}
 }
 
+// ReflectsTeleport reports whether the monster reflects any teleport effects.
 func (mk monsterKind) ReflectsTeleport() bool {
 	switch mk {
 	case MonsBlinkingFrog:
@@ -225,15 +240,19 @@ func (mk monsterKind) ReflectsTeleport() bool {
 	}
 }
 
+// Desc returns a description of the monster.
 func (mk monsterKind) Desc() string {
 	return MonsDesc[mk]
 }
 
+// Indefinite returns the name of the monster with an indefinite article
+// before.
 func (mk monsterKind) Indefinite(capital bool) (text string) {
 	text = Indefinite(mk.String(), capital)
 	return text
 }
 
+// Definite returns the name of the monster with a definite article before.
 func (mk monsterKind) Definite(capital bool) (text string) {
 	if capital {
 		text = fmt.Sprintf("The %s", mk.String())
@@ -243,6 +262,7 @@ func (mk monsterKind) Definite(capital bool) (text string) {
 	return text
 }
 
+// Size returns the size of the monster.
 func (mk monsterKind) Size() monsize {
 	return MonsData[mk].size
 }
@@ -371,6 +391,7 @@ func (m *Monster) Init() {
 	}
 }
 
+// CanPass report whether the monster can pass through the given position.
 func (m *Monster) CanPass(g *Game, p gruid.Point) bool {
 	if !InMap(p) {
 		return false
@@ -383,15 +404,18 @@ func (m *Monster) CanPass(g *Game, p gruid.Point) bool {
 		t == HoledWallCell && m.Kind.Size() == MonsSmall
 }
 
+// StartWatching makes a monster start watching around.
 func (m *Monster) StartWatching() {
 	m.State = Watching
 	m.Watching = 0
 }
 
+// Status reports whether the monster has the given status effect.
 func (m *Monster) Status(st monsterStatus) bool {
 	return m.Statuses[st] > 0
 }
 
+// Exists reports whether the monster exists and is alive.
 func (m *Monster) Exists() bool {
 	// NOTE: In harmonist, we assume the player always knows whether a
 	// known monster is alive or dead, which is ok, because the only source
@@ -399,6 +423,7 @@ func (m *Monster) Exists() bool {
 	return m != nil && !m.Dead
 }
 
+// Alternate makes the monster turn around.
 func (m *Monster) Alternate() {
 	if m.Left {
 		if RandInt(4) > 0 {
@@ -417,6 +442,7 @@ func (m *Monster) Alternate() {
 	}
 }
 
+// TeleportAway teleports the monster away.
 func (m *Monster) TeleportAway(g *Game) {
 	var p gruid.Point
 	i := 0
@@ -450,6 +476,7 @@ func (m *Monster) TeleportAway(g *Game) {
 	}
 }
 
+// MoveTo attemps to move the monster to the given target point.
 func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 	if g.Player.Sees(p) {
 		m.UpdateKnowledge(g, p)
@@ -491,6 +518,7 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 	}
 }
 
+// PlaceAtStart sets a monster at the given starting position.
 func (m *Monster) PlaceAtStart(g *Game, p gruid.Point) {
 	i := idx(p)
 	if g.MonstersPosCache[i] > 0 {
@@ -508,6 +536,7 @@ func (m *Monster) PlaceAtStart(g *Game, p gruid.Point) {
 	}
 }
 
+// PlaceAt puts a monster at the given position.
 func (m *Monster) PlaceAt(g *Game, p gruid.Point) {
 	if !InMap(m.P) {
 		log.Printf("monster place at: bad position %v", m.P)
@@ -543,6 +572,7 @@ func (m *Monster) PlaceAt(g *Game, p gruid.Point) {
 	m.Waiting = 0
 }
 
+// MonsterAt returns any monster at the given position.
 func (g *Game) MonsterAt(p gruid.Point) *Monster {
 	pi := idx(p)
 	if pi < 0 || pi >= len(g.MonstersPosCache) {
@@ -555,16 +585,15 @@ func (g *Game) MonsterAt(p gruid.Point) *Monster {
 		return nil
 	}
 	m := g.Monsters[i-1]
-	//if m.P != p {
-	//log.Printf("monster position mismatch: %v vs %v", m.P, p)
-	//}
 	return m
 }
 
+// EndTurn produces the next MonsterTurnEvent.
 func (m *Monster) EndTurn(g *Game) {
 	g.PushEventD(&MonsterTurnEvent{Index: m.Index}, 1)
 }
 
+// AttackAction handles an attack action from the monster.
 func (m *Monster) AttackAction(g *Game) bool {
 	m.Dir = dirnorm(m.P, g.Player.P)
 	switch m.Kind {
@@ -582,6 +611,7 @@ func (m *Monster) AttackAction(g *Game) bool {
 	return true
 }
 
+// Explode handles nadre explosions.
 func (m *Monster) Explode(g *Game) {
 	m.Dead = true
 	neighbors := g.cardinalNeighbors(m.P)
@@ -595,7 +625,7 @@ func (m *Monster) Explode(g *Game) {
 		}
 		mons := g.MonsterAt(p)
 		if mons.Exists() && !mons.Status(MonsConfused) {
-			mons.EnterConfusion(g)
+			mons.PutConfusion(g)
 			if mons.State != Hunting && mons.State != Watching {
 				mons.StartWatching()
 			}
@@ -621,6 +651,7 @@ func (m *Monster) Explode(g *Game) {
 	g.ComputeFOV()
 }
 
+// NaturalAwake handles natural monster awakening.
 func (m *Monster) NaturalAwake(g *Game) {
 	m.Target = m.NextTarget(g)
 	switch g.MonsterBands[m.Band].Beh {
@@ -632,6 +663,7 @@ func (m *Monster) NaturalAwake(g *Game) {
 	m.GatherBand(g)
 }
 
+// RandomFreeNeighbor returns a random free neighbor point.
 func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 	p := m.P
 	neighbors := [4]gruid.Point{p.Add(gruid.Point{1, 0}), p.Add(gruid.Point{-1, 0}), p.Add(gruid.Point{0, -1}), p.Add(gruid.Point{0, 1})}
@@ -662,8 +694,10 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 	return fnb[RandInt(len(fnb))]
 }
 
+// SearchAroundCache is a cache for monster searching.
 var SearchAroundCache []gruid.Point
 
+// SearchAround returns a search position.
 func (m *Monster) SearchAround(g *Game, p gruid.Point, radius int) gruid.Point {
 	dij := &MonPath{g: g, monster: m}
 	nodes := g.PR.DijkstraMap(dij, []gruid.Point{p}, radius)
@@ -678,6 +712,7 @@ func (m *Monster) SearchAround(g *Game, p gruid.Point, radius int) gruid.Point {
 	return invalidPos
 }
 
+// NextTarget returns a new target for the monster.
 func (m *Monster) NextTarget(g *Game) (p gruid.Point) {
 	band := g.MonsterBands[m.Band]
 	p = m.P
@@ -753,6 +788,7 @@ func (m *Monster) NextTarget(g *Game) (p gruid.Point) {
 	return p
 }
 
+// HandleMonsSpecifics handles monster-specific behaviors.
 func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 	switch m.Kind {
 	case MonsSatowalgaPlant:
@@ -803,9 +839,14 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 	return false
 }
 
+// DogSmellDist represents the distance at which dogs can smell you.
 const DogSmellDist = 5
+
+// DisguiseSmellDist represents the distance at which dogs can smell you when
+// you're disguised.
 const DisguiseSmellDist = 3
 
+// HandleWatching handles watching for a monster.
 func (m *Monster) HandleWatching(g *Game) {
 	turns := 4
 	if m.Kind == MonsHazeCat {
@@ -839,6 +880,7 @@ func (m *Monster) HandleWatching(g *Game) {
 	}
 }
 
+// ComputePath computes a new path to target for the monster.
 func (m *Monster) ComputePath(g *Game) {
 	if !(len(m.Path) > 0 && m.Path[len(m.Path)-1] == m.Target && m.Path[0] == m.P) {
 		m.Path = m.APath(g, m.P, m.Target)
@@ -855,6 +897,9 @@ func (m *Monster) ComputePath(g *Game) {
 	}
 }
 
+// Peaceful reports whether the monster is currently peaceful (like butterflies
+// or dragons, but including also satiated harpies or monsters that cannot see
+// through disguise).
 func (m *Monster) Peaceful(g *Game) bool {
 	if m.Kind.Peaceful() {
 		return true
@@ -871,6 +916,7 @@ func (m *Monster) Peaceful(g *Game) bool {
 	return false
 }
 
+// HandleEndPath handles behavior at the end of the path.
 func (m *Monster) HandleEndPath(g *Game) {
 	if len(m.Path) == 0 && m.Search != invalidPos && distance(m.Search, m.Target) < 10 && m.P != m.Target {
 		// the cell where the player was last noticed may not be recheable for the monster
@@ -889,6 +935,7 @@ func (m *Monster) HandleEndPath(g *Game) {
 	}
 }
 
+// MakeWanderAt makes a monster wander with the given target.
 func (m *Monster) MakeWanderAt(target gruid.Point) {
 	m.Target = target
 	if m.Kind == MonsSatowalgaPlant {
@@ -898,6 +945,7 @@ func (m *Monster) MakeWanderAt(target gruid.Point) {
 	}
 }
 
+// MakeWander makes a monster wander (or watch in satowalga's case).
 func (m *Monster) MakeWander() {
 	if m.Kind == MonsSatowalgaPlant {
 		m.State = Watching
@@ -906,6 +954,7 @@ func (m *Monster) MakeWander() {
 	}
 }
 
+// HandleMove handles movement for a monster.
 func (m *Monster) HandleMove(g *Game) bool {
 	target := m.Path[1]
 	mons := g.MonsterAt(target)
@@ -933,9 +982,10 @@ func (m *Monster) HandleMove(g *Game) bool {
 			g.Fog(m.P, 1)
 			if distance(g.Player.P, target) < 12 {
 				// XXX use dijkstra distance ?
-				if t == WallCell {
+				switch t {
+				case WallCell:
 					g.Logf("%s You hear an earth-splitting noise.", g.CrackSound())
-				} else if t == BarrelCell || t == DoorCell || t == TableCell {
+				case BarrelCell, DoorCell, TableCell:
 					g.Logf("%s You hear an wood-splitting noise.", g.CrackSound())
 				}
 				g.StopAuto()
@@ -985,6 +1035,7 @@ func (m *Monster) HandleMove(g *Game) bool {
 	return true
 }
 
+// HandleTurn handles a monster's turn and ends it.
 func (m *Monster) HandleTurn(g *Game) {
 	m.handleTurn(g)
 	if m.Exists() {
@@ -992,6 +1043,7 @@ func (m *Monster) HandleTurn(g *Game) {
 	}
 }
 
+// handleTurn handles a monster's turn.
 func (m *Monster) handleTurn(g *Game) {
 	if m.Status(MonsParalysed) {
 		return
@@ -1046,16 +1098,18 @@ func (m *Monster) handleTurn(g *Game) {
 	m.HandleMove(g)
 }
 
+// InvertFoliage inverts foliage (for worms).
 func (m *Monster) InvertFoliage(g *Game) {
 	if m.Kind != MonsWorm {
 		return
 	}
 	invert := false
 	t := g.Map.At(m.P)
-	if t == CavernCell {
+	switch t {
+	case CavernCell:
 		g.Map.Set(m.P, FoliageCell)
 		invert = true
-	} else if t == FoliageCell {
+	case FoliageCell:
 		g.Map.Set(m.P, CavernCell)
 		invert = true
 	}
@@ -1066,14 +1120,17 @@ func (m *Monster) InvertFoliage(g *Game) {
 	}
 }
 
+// Exhaust makes the monster exhausted for a default duration.
 func (m *Monster) Exhaust(g *Game) {
 	m.ExhaustTime(g, DurationExhaustionMonster+RandInt(DurationExhaustionMonster/2))
 }
 
+// ExhaustTime makes the monster exhausted for the given duration.
 func (m *Monster) ExhaustTime(g *Game, t int) {
 	m.PutStatus(g, MonsExhausted, t)
 }
 
+// HitPlayer makes the monster hit the player (if possible).
 func (m *Monster) HitPlayer(g *Game) {
 	if g.Player.HP <= 0 || distance(g.Player.P, m.P) > 1 {
 		return
@@ -1097,12 +1154,12 @@ func (m *Monster) HitPlayer(g *Game) {
 	}
 	switch g.Player.Inventory.Neck {
 	case AmuletConfusion:
-		m.EnterConfusion(g)
+		m.PutConfusion(g)
 		// XXX: maybe affect all monsters in sight?
 		g.LogfStyled("Your amulet releases confusing harmonies.", logNotable)
 	case AmuletFog:
 		g.LogStyled("Your amulet feels warm.", logNotable)
-		g.SwiftFog()
+		g.ActivateAmuletFog()
 	case AmuletObstruction:
 		opos := m.P
 		p := m.LeaveRoomForPlayer(g)
@@ -1131,6 +1188,7 @@ func (m *Monster) HitPlayer(g *Game) {
 	}
 }
 
+// PutStatus gives the monster a status effect with the given duration.
 func (m *Monster) PutStatus(g *Game, st monsterStatus, duration int) bool {
 	if m.Status(st) {
 		return false
@@ -1143,7 +1201,8 @@ func (m *Monster) PutStatus(g *Game, st monsterStatus, duration int) bool {
 	return true
 }
 
-func (m *Monster) EnterConfusion(g *Game) bool {
+// PutConfusion confuses the monster.
+func (m *Monster) PutConfusion(g *Game) bool {
 	if m.PutStatus(g, MonsConfused, DurationConfusionMonster) {
 		m.Path = m.Path[:0]
 		if g.Player.Sees(m.P) {
@@ -1154,6 +1213,7 @@ func (m *Monster) EnterConfusion(g *Game) bool {
 	return false
 }
 
+// EnterLignification gives lignification to the monster.
 func (m *Monster) EnterLignification(g *Game) {
 	if m.PutStatus(g, MonsLignified, DurationLignificationMonster) {
 		m.Path = m.Path[:0]
@@ -1163,6 +1223,7 @@ func (m *Monster) EnterLignification(g *Game) {
 	}
 }
 
+// HitSideEffects handles any monster-specific hit side effects.
 func (m *Monster) HitSideEffects(g *Game) {
 	switch m.Kind {
 	case MonsEarthDragon:
@@ -1171,7 +1232,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 		} else {
 			m.PushPlayer(g, 6)
 		}
-		g.Confusion()
+		g.PutConfusion()
 	case MonsBlinkingFrog:
 		if g.Blink() {
 			g.StoryPrintf("Blinked away by %s", m.Kind)
@@ -1182,7 +1243,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 	case MonsAcidMound:
 		m.Corrode(g)
 	case MonsSpider:
-		g.Confusion()
+		g.PutConfusion()
 	case MonsWingedMilfid:
 		if m.Status(MonsExhausted) || g.Player.HasStatus(StatusLignification) {
 			break
@@ -1196,7 +1257,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 		g.StoryPrintf("Position swap by %s", m.Kind)
 		m.ExhaustTime(g, 5+RandInt(5))
 		if g.Map.At(g.Player.P) == ChasmCell {
-			g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
+			g.PushEventFirst(AbyssFallEvent{}, g.Turn)
 		}
 	case MonsTinyHarpy:
 		if m.Status(MonsSatiated) {
@@ -1216,6 +1277,7 @@ func (m *Monster) HitSideEffects(g *Game) {
 	}
 }
 
+// PushPlayer pushes the player a given distance amount.
 func (m *Monster) PushPlayer(g *Game, dist int) {
 	if g.Player.HasStatus(StatusLignification) {
 		return
@@ -1260,10 +1322,11 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 	g.Logf("%s pushes you%s.", m.Kind.Definite(true), cs)
 	g.StoryPrintf("Pushed by %s%s", m.Kind.Definite(true), cs)
 	if t == ChasmCell {
-		g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
+		g.PushEventFirst(AbyssFallEvent{}, g.Turn)
 	}
 }
 
+// RangedAttack handles ranged attacks and reports whether there was one.
 func (m *Monster) RangedAttack(g *Game) bool {
 	if !m.Kind.Ranged() {
 		return false
@@ -1287,8 +1350,6 @@ func (m *Monster) RangedAttack(g *Game) bool {
 		return false
 	}
 	switch m.Kind {
-	//case MonsLich:
-	//return m.TormentBolt(g, ev)
 	case MonsHighGuard:
 		return m.ThrowJavelin(g)
 	case MonsSatowalgaPlant:
@@ -1303,6 +1364,8 @@ func (m *Monster) RangedAttack(g *Game) bool {
 	return false
 }
 
+// RangeBlockde reports whether the monster cannot perform a ranged attack from
+// its position due to some obstacle.
 func (m *Monster) RangeBlocked(g *Game) bool {
 	ray := g.Ray(m.P)
 	if len(ray) == 1 {
@@ -1325,6 +1388,8 @@ func (m *Monster) RangeBlocked(g *Game) bool {
 	return false
 }
 
+// BarrierCandidates returns the list of possible candidates for an oric
+// barrier.
 func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 	candidates := g.cardinalNeighbors(p)
 	bestpos := p.Add(dir)
@@ -1361,6 +1426,7 @@ func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 	return candidates
 }
 
+// CreateBarrier attemps to create a magical barrier.
 func (m *Monster) CreateBarrier(g *Game) bool {
 	dir := dirnorm(m.P, g.Player.P)
 	candidates := g.BarrierCandidates(g.Player.P, dir)
@@ -1385,6 +1451,7 @@ func (m *Monster) CreateBarrier(g *Game) bool {
 	return true
 }
 
+// Illuminate attemps to illuminate the player.
 func (m *Monster) Illuminate(g *Game) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
 		g.LogStyled("The harmonic celmist casts magical harmonies on you.", logNotable)
@@ -1396,6 +1463,7 @@ func (m *Monster) Illuminate(g *Game) bool {
 	return false
 }
 
+// VampireSpit attempts to spit at the player.
 func (m *Monster) VampireSpit(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusConfusion) {
@@ -1403,11 +1471,12 @@ func (m *Monster) VampireSpit(g *Game) bool {
 	}
 	g.LogStyled("The vampire spits at you.", logNotable)
 	g.StoryPrint("A vampire spitted at you.")
-	g.Confusion()
+	g.PutConfusion()
 	m.Exhaust(g)
 	return true
 }
 
+// ThrowSpores attempts to lignifying throw spores at the player.
 func (m *Monster) ThrowSpores(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked || g.Player.HasStatus(StatusLignification) {
@@ -1420,6 +1489,7 @@ func (m *Monster) ThrowSpores(g *Game) bool {
 	return true
 }
 
+// ThrowJaveling attemps to throw a javelin a the player.
 func (m *Monster) ThrowJavelin(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
@@ -1440,6 +1510,7 @@ func (m *Monster) ThrowJavelin(g *Game) bool {
 	return true
 }
 
+// Corrode makes the player lose some magara charges through corrosion.
 func (m *Monster) Corrode(g *Game) {
 	count := 0
 	for i := range g.Player.Magaras {
@@ -1457,6 +1528,7 @@ func (m *Monster) Corrode(g *Game) {
 	}
 }
 
+// ThrowAcid attemps to throw acid at the player.
 func (m *Monster) ThrowAcid(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
@@ -1472,6 +1544,7 @@ func (m *Monster) ThrowAcid(g *Game) bool {
 	return true
 }
 
+// NixeAttraction attemps to attract the player.
 func (m *Monster) NixeAttraction(g *Game) bool {
 	blocked := m.RangeBlocked(g)
 	if blocked {
@@ -1490,6 +1563,7 @@ func (m *Monster) NixeAttraction(g *Game) bool {
 	return true
 }
 
+// SmitingAttack attempts to perform a smiting attack against the player.
 func (m *Monster) SmitingAttack(g *Game) bool {
 	if !m.Kind.Smiting() {
 		return false
@@ -1522,6 +1596,7 @@ func (m *Monster) SmitingAttack(g *Game) bool {
 	return false
 }
 
+// AbsorbMana attempts to absorb mana from the player.
 func (m *Monster) AbsorbMana(g *Game) bool {
 	if g.Player.MP == 0 {
 		return false
@@ -1533,6 +1608,7 @@ func (m *Monster) AbsorbMana(g *Game) bool {
 	return true
 }
 
+// Blink attemps to make the monster blink away.
 func (m *Monster) Blink(g *Game) {
 	npos := g.BlinkPos(true)
 	if !InMap(npos) || npos == g.Player.P || npos == m.P {
@@ -1544,6 +1620,7 @@ func (m *Monster) Blink(g *Game) {
 	m.MoveTo(g, npos)
 }
 
+// MakeHunt makes the monster hunt the player.
 func (m *Monster) MakeHunt(g *Game) (noticed bool) {
 	if m.State != Hunting {
 		m.State = Hunting
@@ -1564,6 +1641,7 @@ func (m *Monster) MakeHunt(g *Game) (noticed bool) {
 	return noticed
 }
 
+// MakeAware makes the monster aware (if appropriate).
 func (m *Monster) MakeAware(g *Game) {
 	if m.Peaceful(g) || m.Status(MonsSatiated) {
 		if m.State == Resting && distance(m.P, g.Player.P) == 1 {
@@ -1589,6 +1667,7 @@ func (m *Monster) MakeAware(g *Game) {
 	}
 }
 
+// GatherBand makes the monster call for any fellow monsters.
 func (m *Monster) GatherBand(g *Game) {
 	if !monsBands[g.MonsterBands[m.Band].Kind].Band {
 		return
@@ -1612,6 +1691,7 @@ func (m *Monster) GatherBand(g *Game) {
 	}
 }
 
+// MonsterInFOV returns the first monster in FOV (if any).
 func (g *Game) MonsterInFOV() *Monster {
 	for _, mons := range g.Monsters {
 		if mons.Exists() && g.Player.Sees(mons.P) {

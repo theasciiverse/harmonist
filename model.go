@@ -102,7 +102,7 @@ type model struct {
 	finished    bool
 	statusFocus bool
 	anims       Animations
-	story       int
+	story       int // part of story sequence (0 no story, 1 first part, and so on)
 	critical    bool
 	auto        bool
 	confirm     bool
@@ -368,7 +368,7 @@ func (md *model) update(msg gruid.Msg) gruid.Effect {
 		eff = md.updateNormal(msg)
 	case modeStory:
 		if md.more(msg) {
-			md.Story()
+			md.NextStoryPart()
 		}
 	case modePager:
 		eff = md.updatePager(msg)

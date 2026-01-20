@@ -356,15 +356,6 @@ func (g *Game) SeePosition(p gruid.Point) {
 		}
 	}
 	delete(g.Map.NoiseIllusion, p)
-	if g.Objects.Story[p] == StoryShaedra && !g.LiberatedShaedra &&
-		(distance(g.Player.P, p) <= 1 ||
-			distance(g.Player.P, g.Places.Marevor) <= 1 ||
-			distance(g.Player.P, g.Places.Monolith) <= 1) &&
-		g.Player.P != g.Places.Marevor &&
-		g.Player.P != g.Places.Monolith {
-		g.PushEventFirst(&PlayerEvent{Action: StorySequence}, g.Turn)
-		g.LiberatedShaedra = true
-	}
 }
 
 // SeeTerrainAt reveals terrain at position p to the player.

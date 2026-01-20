@@ -315,8 +315,20 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 			err = g.ExtinguishFire()
 		case StoryCell:
 			if g.Objects.Story[g.Player.P] == StoryArtifact && !g.LiberatedArtifact {
-				g.PushEventFirst(&PlayerEvent{Action: StorySequence}, g.Turn)
+				// We liberate the artifact and proceed to story
+				// sequence.
+				g.LogStyled("You quickly take and activate the artifact!", logSpecial)
+				g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 				g.LiberatedArtifact = true
+				g.md.mode = modeStory
+				g.md.story = 1
+				// We make the action instant to avoid any
+				// surprises and to make the logs easier to
+				// follow, even if it is a little bit less
+				// realistic. There's still a chance of dying
+				// in the next turn, so it doesn't completely
+				// guarantee a win.
+				again = true
 			} else if g.Objects.Story[g.Player.P] == StoryArtifactSealed {
 				err = errors.New("The artifact is protected by a magical stone barrier.")
 			} else {

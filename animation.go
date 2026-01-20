@@ -10,6 +10,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
+// These constants represent various common durations for animation frames.
 const (
 	AnimDurExtremelyShort = 15 * time.Millisecond
 	AnimDurShort          = 25 * time.Millisecond
@@ -18,6 +19,7 @@ const (
 	AnimDurMediumLong     = 100 * time.Millisecond
 )
 
+// Animations provides support for animations.
 type Animations struct {
 	frames []AnimFrame
 	grid   gruid.Grid
@@ -26,6 +28,7 @@ type Animations struct {
 	draw   bool
 }
 
+// AnimFrame represents an animation frame.
 type AnimFrame struct {
 	Cells    []gruid.FrameCell
 	Duration time.Duration
@@ -84,15 +87,18 @@ func (md *model) resetAnimations() {
 	md.anims.pgrid.Copy(gd)
 }
 
+// Finish clears the frame queue.
 func (a *Animations) Finish() {
 	a.idx++
 	a.frames = nil
 }
 
+// Done reports whether there are no more animations in the queue.
 func (a *Animations) Done() bool {
 	return len(a.frames) == 0
 }
 
+// Draw sets a given rune and foreground color at a given position.
 func (a *Animations) Draw(p gruid.Point, r rune, fg, bg gruid.Color) {
 	c := a.grid.At(p)
 	c.Rune = r
@@ -110,6 +116,7 @@ func (a *Animations) DrawReverse(p gruid.Point, r rune, fg, bg gruid.Color) {
 	a.grid.Set(p, c)
 }
 
+// Frame emits a new animation frame with given duration.
 func (a *Animations) Frame(d time.Duration) {
 	frame := AnimFrame{}
 	frame.Duration = d
@@ -551,7 +558,8 @@ func (md *model) AbyssFallAnimation() {
 	}
 }
 
-func (md *model) Story() {
+// NextStoryPart makes a story sequence progress.
+func (md *model) NextStoryPart() {
 	switch md.g.Map.Depth {
 	case WinDepth:
 		md.FreeingShaedra()
@@ -562,14 +570,10 @@ func (md *model) Story() {
 	}
 }
 
+// FreeingShaedra handles Shaedra's liberation story sequence.
 func (md *model) FreeingShaedra() {
 	g := md.g
 	switch md.story {
-	case 0:
-		md.mode = modeStory
-		g.Log("You see Shaedra. She is wounded!")
-		g.LogStyled("Shaedra: “Oh, it’s you, Syu! Let’s flee with Marevor’s magara!”", logSpecial)
-		md.confirm = true
 	case 1:
 		if !DisableAnimations {
 			md.startAnimSeq()
@@ -590,7 +594,9 @@ func (md *model) FreeingShaedra() {
 		g.LogStyled("Marevor: “And what about the mission? Take that magara!”", logSpecial)
 		g.LogStyled("Shaedra: “Pff, don’t be reckless!”", logSpecial)
 		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
-	case 2:
+		// Progress to next story part.
+		md.story++
+	default:
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
@@ -602,13 +608,14 @@ func (md *model) FreeingShaedra() {
 		g.Map.Set(g.Places.Marevor, ScrollCell)
 		g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
 		g.RescuedShaedra()
+		// We're done with the story sequence.
 		md.story = 0
 		md.mode = modeNormal
-		return
 	}
-	md.story++
 }
 
+// RescuedShaedra finalizes Shaedra's liberation, including Marevor giving the
+// player a special magara.
 func (g *Game) RescuedShaedra() {
 	g.Player.Magaras = append(g.Player.Magaras, Magara{})
 	g.Player.Inventory.Misc = NoItem
@@ -621,13 +628,10 @@ func (g *Game) RescuedShaedra() {
 	AchRescuedShaedra.Get(g)
 }
 
+// TakingArtifact handles the artifact's activation final story sequence.
 func (md *model) TakingArtifact() {
 	g := md.g
 	switch md.story {
-	case 0:
-		md.mode = modeStory
-		g.LogStyled("You take and use the artifact.", logSpecial)
-		md.confirm = true
 	case 1:
 		g.Map.Set(g.Places.Artifact, GroundCell)
 		if !DisableAnimations {
@@ -648,12 +652,13 @@ func (md *model) TakingArtifact() {
 		g.LogStyled("Marevor: “Great! Let’s escape and find some bones to celebrate!”", logSpecial)
 		g.LogStyled("Syu: “Sorry, but I prefer bananas!”", logSpecial)
 		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
-	case 2:
+		// Progress to next story part.
+		md.story++
+	default:
 		g.Map.Set(g.Places.Marevor, GroundCell)
 		AchRetrievedArtifact.Get(g)
+		// We're done with the story sequence.
 		md.story = 0
 		md.mode = modeNormal
-		return
 	}
-	md.story++
 }

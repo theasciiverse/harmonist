@@ -557,7 +557,7 @@ func (g *Game) swapWithMonster(mons *Monster) {
 	g.md.SwappingAnimation(mons.P, g.Player.P)
 	g.PlacePlayerAt(mons.P)
 	if g.Map.At(g.Player.P) == ChasmCell {
-		g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
+		g.PushEventFirst(AbyssFallEvent{}, g.Turn)
 	}
 }
 
@@ -768,7 +768,7 @@ func (g *Game) EvokeConfusion() error {
 	ms := g.MonstersInFOV()
 	count := 0
 	for _, mons := range ms {
-		if mons.EnterConfusion(g) {
+		if mons.PutConfusion(g) {
 			count++
 			if mons.Search == invalidPos {
 				mons.Search = mons.P

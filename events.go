@@ -30,29 +30,11 @@ func (g *Game) PushEventFirst(ev Event, r int) {
 // turn.
 type EndTurnEvent struct{}
 
-// PlayerEvent represents a player-related event.
-type PlayerEvent struct {
-	Action PlayerEventAction
-}
+// AbyssFallEvent represents an abyss fall event for the player.
+type AbyssFallEvent struct{}
 
-// PlayerEventAction represents special kinds of player-related events.
-type PlayerEventAction int
-
-const (
-	StorySequence PlayerEventAction = iota
-	AbyssFall
-)
-
-func (ev *PlayerEvent) Handle(g *Game) {
-	switch ev.Action {
-	case StorySequence:
-		g.ComputeFOV()
-		g.md.Story()
-	case AbyssFall:
-		if g.Map.At(g.Player.P) == ChasmCell {
-			g.FallAbyss(DescendFall)
-		}
-	}
+func (ev AbyssFallEvent) Handle(g *Game) {
+	g.FallAbyss(DescendFall)
 }
 
 // StatusEvent represents a status progression event.
@@ -85,7 +67,7 @@ func (sev *StatusEvent) Handle(g *Game) {
 		switch st {
 		case StatusLevitation:
 			if g.Map.At(g.Player.P) == ChasmCell {
-				g.PushEventFirst(&PlayerEvent{Action: AbyssFall}, g.Turn)
+				g.PushEventFirst(AbyssFallEvent{}, g.Turn)
 			}
 		case StatusLignification:
 			g.Player.HPbonus -= LignificationHPbonus
@@ -305,7 +287,7 @@ func (g *Game) applyPurpleMistEffectsAt(p gruid.Point) {
 		// do not always make already exhausted monsters sleep (they were probably awaken)
 		return
 	}
-	mons.EnterConfusion(g)
+	mons.PutConfusion(g)
 	if mons.State != Resting && g.Player.Sees(mons.P) {
 		g.Logf("%s falls asleep.", mons.Kind.Definite(true))
 	}
