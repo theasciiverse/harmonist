@@ -12,46 +12,54 @@ Improved and reworked content:
   merged with the sensing stone. The other stones are still the same but now
   provide some kind of partial information about the map, in addition to their
   usual tactical effect (revealing barrels for barrel stone, lights for night
-  stone, doors for queenstone, magaras for teleport stone, stairs for sealing
-  stone, trees and partially foliage for tree stone). To compensate for the
-  extra strategic buff, there are somewhat less stones on the maps than before.
+  stone, magaras for teleport stone, stairs for seal stone, trees and partially
+  foliage for tree stone). To compensate for the extra strategic buff, there
+  are somewhat less stones on the maps than before.
 * The tile where a magical stone is present is now always lighted, due to
   magical stones producing a very small light. This change mostly intends to
   make stone coloring independent from lighting and not require the player to
   manually examine the stone to see if the tile is lighted. It's a quite
   thematic and minor change that may help further make magical stones more
   interesting and different from other kinds of items.
-* The “cloak of magic” has been removed, as it was a bit redundant with respect
-  to the “cloak of conversion”. The latter is a bit more interesting and less
-  quantitative.
 * Monster noise visual marking now uses different colors for different kinds of
   noises, like in Shamogu. Also, it has been adjusted so that different kinds
-  of noises are heard at varied ranges. Also, cloak of hearing should now be a
+  of noises are heard at varied ranges. Also, cloak of hearing should now be
   more interesting, as it helps hear in-place footsteps of watching monsters
   (except satowalga plants, which make no noise at all), and even resting
   monsters at a short range.
+* The “cloak of magic” has been removed, as it was a bit redundant with respect
+  to the “cloak of conversion”. The latter is a bit more interesting and less
+  quantitative.
+* Mirror specter monsters now absorb the player's mana at a somewhat slower
+  rate than before.
 
 UI, graphics, QoL:
 
-* Update to latest Gruid version and require Go 1.24 or later.
-* In native builds, rename game statistic's dump file to `dump.txt`
-  so that it's clearer that the file is text, unlike the other ones.
-* Change color of out-of-view monster memory to light grey unless the monster
-  was resting, to make it clearer that it's out of view (inspired from a
-  similar change in Shamogu).
+* Update to latest Gruid version and require Go 1.24 or later, bringing various
+  improvements (including SDL2 version improvements, see further below).
 * Simplified controls taking inspiration from Shamogu. In particular, there's
   no longer a separate *targeting mode help*. Non-movement targeting keys now
   work in normal mode, too, without any conflicts.
+* New help menu providing help about various topics: basics of core stealth
+  mechanics, items, statuses, and various tips.
+* Various small improvements in magara and item descriptions.
+* Change color of out-of-view monster memory to light grey unless the monster
+  was resting, to make it clearer that it's out of view (inspired from a
+  similar change in Shamogu).
 * Some tile drawings have been improved, including some improvements from
   Shamogu, like a more visible `?` sign on the exploration frontier.
-* Various small improvements in magara and item descriptions.
-* New help menu providing help about various topics.
 * Many other small UI improvements and fixes inspired from Shamogu, including
-  scaling command-line options for SDL2 version, true color `-t` option for the
-  terminal version, and updated/fixed titles in messages and end of game
-  summary pager windows.
+  status bar and menu improvements, as well as updated/fixed titles in messages
+  and end of game summary pager windows.
+* ASCII version (gruid-tcell): new `-t` option for terminals supporting “true
+  color” to use the same selenized color palette as the tiles version.
 * SDL2 version (gruid-sdl): it now enables graphic acceleration and uses new
-  custom bindings for SDL2 that are much smaller and compile much faster.
+  custom bindings for SDL2 that are much smaller and compile much faster. There
+  are also now new command-line `-h` and `-w` options for adjusting the
+  scaling, and fullscreen `-F` should work better.
+* In native builds, rename game statistic's dump file to `dump.txt`
+  so that it's clearer that the file is text, unlike the other ones (save and
+  replay are stored compactly as compressed binary files).
 
 Fixes:
 
@@ -60,6 +68,11 @@ Fixes:
 * Prevent satowalga plants from ever being generated on top of a banana (that
   made swapping and teleport the only ways to get such banana, which was kind
   of fun, but it was a bit confusing).
+* Minor fix in story sequence when liberating Shaedra: half of the story
+  sequence animation could happen out of view if a nixe or some other monsters
+  moved you away during the same turn you reached Shaedra. Now the story
+  sequence only starts if you end up at the right place after the whole turn
+  ends.
 
 # v0.6.0 2025-03-05
 
