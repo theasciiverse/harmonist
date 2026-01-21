@@ -755,7 +755,7 @@ func (md *model) KeysHelp() {
 	entries := []string{
 		"Basic Game Actions", "",
 		"Move/Jump", "arrows or hjkl or mouse left",
-		"Wait a turn", "“.” or 5 or enter or mouse left on @",
+		"Wait a turn", "“.” or ENTER or mouse left on @",
 		"Interact (Equip/Descend/Rest...)", "e",
 		"Evoke/Zap magara", "v or z",
 		"Inventory", "i",
