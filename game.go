@@ -491,7 +491,6 @@ func (g *Game) InitLevel() {
 		g.LogStyled("This the bottom floor, you now have to look for the artifact.", logSpecial)
 	}
 	g.ComputeFOV()
-	g.MakeMonstersAware()
 	g.ComputeMonsterFOV()
 	if !Testing { // disable when testing
 		g.md.updateStatusInfo()

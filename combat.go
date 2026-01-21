@@ -47,21 +47,6 @@ func (md *model) criticalHPWarning() {
 	md.critical = true
 }
 
-// MakeMonstersAware handles monster awareness of the player.
-func (g *Game) MakeMonstersAware() {
-	for _, m := range g.Monsters {
-		if m.Dead {
-			continue
-		}
-		if g.Player.Sees(m.P) {
-			m.MakeAware(g)
-			if m.State != Resting {
-				m.GatherBand(g)
-			}
-		}
-	}
-}
-
 // MakeNoise makes a given amount of noise at the given position.
 func (g *Game) MakeNoise(noise int, at gruid.Point) {
 	mp := &NoisePath{g: g}
@@ -80,11 +65,7 @@ func (g *Game) MakeNoise(noise int, at gruid.Point) {
 		if m.State == Resting && 3*d > 2*noise || m.Status(MonsExhausted) && m.State == Resting && 3*d > noise {
 			continue
 		}
-		if m.SeesPlayer(g) {
-			m.MakeAware(g)
-		} else {
-			m.MakeWanderAt(at)
-		}
+		m.MakeWanderAt(at)
 		m.GatherBand(g)
 	}
 }

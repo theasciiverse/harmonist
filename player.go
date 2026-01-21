@@ -31,7 +31,7 @@ type Inventory struct {
 }
 
 // DefaultHealth represents the starting max HP.
-const DefaultHealth = 5
+const DefaultHealth = 4
 
 func (pl *Player) HPMax() int {
 	hpmax := DefaultHealth
@@ -45,7 +45,7 @@ func (pl *Player) HPMax() int {
 }
 
 // DefaultMPmax represents the starting max MP.
-const DefaultMPmax = 6
+const DefaultMPmax = 5
 
 // MPMax returns the maximum MP.
 func (pl *Player) MPMax() int {
@@ -498,7 +498,6 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 	}
 	g.CollectGround()
 	g.ComputeFOV()
-	g.MakeMonstersAware()
 }
 
 // LignificationHPbonus represents the amount of extra temporary HP granted by

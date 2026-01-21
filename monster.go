@@ -361,7 +361,6 @@ type Monster struct {
 	LastKnownPos   gruid.Point          // known position (for the player)
 	Target         gruid.Point          // target destination for pathfinding
 	Path           []gruid.Point        // cache
-	FireReady      bool                 // ready to fire (a javelin, for example)
 	Seen           bool                 // already seen by the player
 	Noise          bool                 // made footstep noise on last turn
 	FOV            map[gruid.Point]bool // field of view of the monster
@@ -938,6 +937,9 @@ func (m *Monster) HandleEndPath(g *Game) {
 // MakeWanderAt makes a monster wander with the given target.
 func (m *Monster) MakeWanderAt(target gruid.Point) {
 	m.Target = target
+	if m.State == Hunting {
+		return
+	}
 	if m.Kind == MonsSatowalgaPlant {
 		m.State = Hunting
 	} else {
@@ -997,9 +999,6 @@ func (m *Monster) HandleMove(g *Game) bool {
 		} else {
 			m.InvertFoliage(g)
 			m.MoveTo(g, target)
-			if (m.Kind.Ranged() || m.Kind.Smiting()) && !m.FireReady && m.SeesPlayer(g) {
-				m.FireReady = true
-			}
 			m.Path = m.Path[1:]
 		}
 	case (mons.P == target && m.P == monstarget || m.Waiting > 5+RandInt(2)) && !mons.Status(MonsLignified):
@@ -1050,11 +1049,16 @@ func (m *Monster) handleTurn(g *Game) {
 	}
 	if m.Swapped {
 		m.Swapped = false
+		m.MakeAware(g)
 		return
 	}
 	ppos := g.Player.P
 	mpos := m.P
-	m.MakeAware(g)
+	if m.MakeAware(g) {
+		// Make monsters lose a turn when they notice you, unless
+		// you're adjacent to them.
+		return
+	}
 	if m.State == Resting {
 		if RandInt(3000) == 0 || m.Kind.ShallowSleep() && RandInt(10) == 0 {
 			m.NaturalAwake(g)
@@ -1339,12 +1343,7 @@ func (m *Monster) RangedAttack(g *Game) bool {
 		return false
 	}
 	if !m.SeesPlayer(g) {
-		m.FireReady = false
 		return false
-	}
-	if !m.FireReady {
-		m.FireReady = true
-		return Distance(m.P, g.Player.P) <= 3
 	}
 	if m.Status(MonsExhausted) {
 		return false
@@ -1573,12 +1572,7 @@ func (m *Monster) SmitingAttack(g *Game) bool {
 		return false
 	}
 	if !m.SeesPlayer(g) {
-		m.FireReady = false
 		return false
-	}
-	if !m.FireReady {
-		m.FireReady = true
-		return Distance(m.P, g.Player.P) <= 3
 	}
 	if m.Status(MonsExhausted) {
 		return false
@@ -1588,8 +1582,6 @@ func (m *Monster) SmitingAttack(g *Game) bool {
 		return m.AbsorbMana(g)
 	case MonsOricCelmist:
 		return m.CreateBarrier(g)
-		//case MonsMindCelmist:
-		//return m.MindAttack(g, ev)
 	case MonsHarmonicCelmist:
 		return m.Illuminate(g)
 	}
@@ -1642,16 +1634,16 @@ func (m *Monster) MakeHunt(g *Game) (noticed bool) {
 }
 
 // MakeAware makes the monster aware (if appropriate).
-func (m *Monster) MakeAware(g *Game) {
+func (m *Monster) MakeAware(g *Game) bool {
 	if m.Peaceful(g) || m.Status(MonsSatiated) {
 		if m.State == Resting && Distance(m.P, g.Player.P) == 1 {
 			g.Logf("%s awakens.", m.Kind.Definite(true))
 			m.MakeWander()
 		}
-		return
+		return false
 	}
 	if !m.SeesPlayer(g) {
-		return
+		return false
 	}
 	switch m.State {
 	case Resting:
@@ -1665,6 +1657,7 @@ func (m *Monster) MakeAware(g *Game) {
 		g.StoryPrintf("Barked at by %s", m.Kind)
 		g.MakeNoise(BarkNoise, m.P)
 	}
+	return noticed
 }
 
 // GatherBand makes the monster call for any fellow monsters.

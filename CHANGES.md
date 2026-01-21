@@ -21,6 +21,12 @@ Improved and reworked content:
   manually examine the stone to see if the tile is lighted. It's a quite
   thematic and minor change that may help further make magical stones more
   interesting and different from other kinds of items.
+* Monsters now always lose a turn noticing the player. Previously, some actions
+  (like throwing a javelin) were disabled on the turn a monster noticed the
+  player, but the monster would still move or even attack you (if adjacent).
+  That wasn't very intuitive from an UI perspective (a non-red monster
+  normally shouldn't attack you). To compensate for this buff, the player now
+  has 1 less maximum HP and MP.
 * Monster noise visual marking now uses different colors for different kinds of
   noises, like in Shamogu. Also, it has been adjusted so that different kinds
   of noises are heard at varied ranges. Also, cloak of hearing should now be
