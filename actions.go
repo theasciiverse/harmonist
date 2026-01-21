@@ -170,7 +170,7 @@ func (k Action) String() (text string) {
 	case ActionSetKeys:
 		text = "Change key bindings"
 	case ActionInvertTheme:
-		text = "Toggle dark/light theme"
+		text = "Toggle dark/light color theme"
 	case ActionToggleTiles:
 		text = "Toggle tiles/ASCII display"
 	case ActionToggleShowNumbers:
@@ -550,15 +550,16 @@ var settingsActions = []Action{
 	ActionToggleShowNumbers,
 }
 
+var settingsKeys = []rune{':', 'c', 'n'}
+
 func (md *model) openSettings() {
 	entries := []ui.MenuEntry{}
-	r := 'a'
-	for _, it := range settingsActions {
+	for i, it := range settingsActions {
+		r := settingsKeys[i]
 		entries = append(entries, ui.MenuEntry{
 			Text: ui.Textf("%c - %s", r, it),
 			Keys: []gruid.Key{gruid.Key(r)},
 		})
-		r++
 	}
 	altBgEntries(entries)
 	md.menu.SetBox(&ui.Box{Title: ui.Text("Settings").WithStyle(gruid.Style{Fg: ColorYellow})})
@@ -596,14 +597,12 @@ func (md *model) keysForAction(a Action) string {
 
 func (md *model) openKeyBindings() {
 	entries := []ui.MenuEntry{}
-	r := 'a'
 	for _, it := range ConfigurableKeyActions {
 		desc := it.String()
 		desc = fmt.Sprintf(" %-36s %s", desc, md.keysForAction(it))
 		entries = append(entries, ui.MenuEntry{
 			Text: ui.Text(desc),
 		})
-		r++
 	}
 	altBgEntries(entries)
 	md.keysMenu.SetBox(&ui.Box{Title: ui.Text("Key Bindings").WithStyle(gruid.Style{Fg: ColorYellow})})

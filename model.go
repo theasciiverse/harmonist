@@ -153,6 +153,7 @@ func (md *model) initKeys() {
 		"»":                 ActionWizardDescend,
 		"C":                 ActionSettings,
 		gruid.KeyTab:        ActionSettings,
+		":":                 ActionSetKeys,
 	}
 	md.keysTarget = map[gruid.Key]Action{
 		".":             ActionTarget,
@@ -728,13 +729,12 @@ func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
 		return nil
 	}
 	key := mkd.Key
-	switch {
-	case key == gruid.KeyEscape:
+	switch key {
+	case gruid.KeyEscape, gruid.KeySpace:
 		md.openKeyBindings()
 		return nil
-	case key.IsRune():
+	default:
 		action := ConfigurableKeyActions[md.keysMenu.Active()]
-		//log.Printf("active %v, action %v", md.keysMenu.Active(), action)
 		if action.ExamineModeAction() {
 			md.keysTarget[key] = action
 		} else {
@@ -749,7 +749,6 @@ func (md *model) updateKeysChange(msg gruid.Msg) gruid.Effect {
 		md.openKeyBindings()
 		return nil
 	}
-	return nil
 }
 
 func (md *model) updateKeysMenu(msg gruid.Msg) gruid.Effect {
@@ -921,7 +920,7 @@ func (md *model) dump(msg string, err error) {
 func (md *model) applyConfig() {
 	if GameConfig.NormalModeKeys != nil {
 		md.keysNormal = GameConfig.NormalModeKeys
-		// For ensuring menu access and esc functionality.
+		// For ensuring menu access functionality.
 		md.keysNormal[gruid.KeySpace] = ActionMenu
 	}
 	if GameConfig.TargetModeKeys != nil {

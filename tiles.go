@@ -19,6 +19,7 @@ const Tiles = true
 
 func init() {
 	settingsActions = append(settingsActions, ActionToggleTiles)
+	settingsKeys = append(settingsKeys, 't')
 }
 
 func (md *model) ApplyToggleTiles() {
