@@ -329,7 +329,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case FireMagara:
 		desc = "Throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce purple mist inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
 	case FogMagara:
-		desc = "Creates a dense fog cloud in a 2-range radius using harmonic energies. The cloud will dissipate with time."
+		desc = "Creates a dense fog cloud in a 3-range radius using harmonic energies. The cloud will dissipate with time."
 	case ShadowsMagara:
 		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusShadows.String(), DurationShadows, StatusShadows.Desc())
 	case NoiseMagara:
@@ -347,7 +347,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case ObstructionMagara:
 		desc = fmt.Sprintf("Creates temporal barriers with oric energy between you and monsters in sight. They last at least %d turns.", DurationMagicalBarrier)
 	case LignificationMagara:
-		desc = fmt.Sprintf("Liberates magical spores that lignify up to 2 monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
+		desc = fmt.Sprintf("Liberates magical spores that lignify up to three monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
 	case EnergyMagara:
 		desc = "Replenishes your MP and HP."
 	case TransparencyMagara:
@@ -688,7 +688,7 @@ func (g *Game) EvokeLignification() error {
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
 	}
-	ma := min(2, len(ms))
+	ma := min(3, len(ms))
 	targets := []gruid.Point{}
 	for i := range ma {
 		mons := ms[i]

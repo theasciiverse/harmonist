@@ -209,9 +209,8 @@ func (g *Game) InitPlayer() {
 	g.Player.FOV = rl.NewFOV(visionRange(g.Player.P, TreeRange))
 	// Testing
 	// g.Player.Inventory.Body = CloakHear
-	// g.Player.Magaras[1] = magara{Kind: DispersalMagara, Charges: 10}
-	// g.Player.Magaras[2] = magara{Kind: DelayedOricExplosionMagara, Charges: 10}
-	// g.Player.Magaras[2] = ConfusionMagara
+	// g.Player.Magaras[1] = Magara{Kind: SwiftnessMagara, Charges: 10}
+	// g.Player.Magaras[2] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}
 }
 
 // genFlavour represents special map flavours (amulet, cloak).

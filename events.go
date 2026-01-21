@@ -327,7 +327,7 @@ func (g *Game) Burn(p gruid.Point) {
 
 // The following constants represent various kinds of durations.
 const (
-	DurationSwiftness              = 4
+	DurationSwiftness              = 5
 	DurationShadows                = 15
 	DurationLevitation             = 18
 	DurationShortSwiftness         = 3

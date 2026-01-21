@@ -440,7 +440,7 @@ func (g *Game) ComputeNoise() {
 			// Monster noise over queen rocks is easier to hear.
 			dist -= 4
 		}
-		if mons.State == Resting {
+		if mons.State == Resting || mons.Status(MonsParalysed) || mons.Status(MonsLignified) {
 			if !goodhearing {
 				// Resting monsters cannot be heard without
 				// cloak of hearing.
