@@ -100,7 +100,7 @@ func countWalls(gd rl.Grid, p gruid.Point, radius int, countOut bool) int {
 }
 
 func (tp *TunnelPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
+	return Distance(from, to)
 }
 
 // JumpPath represents a pather for jump-target purposes.
@@ -240,15 +240,15 @@ func (mp *MonPath) Cost(from, to gruid.Point) int {
 }
 
 func (mp *MonPath) Estimation(from, to gruid.Point) int {
-	return distance(from, to)
+	return Distance(from, to)
 }
 
 // APath returns a monster path between two positions.
 func (m *Monster) APath(g *Game, from, to gruid.Point) []gruid.Point {
 	mp := &MonPath{g: g, monster: m}
 	var path []gruid.Point
-	if mp.monster.State != Hunting && distance(from, mp.g.Player.P) > DefaultMonsterFOVRange &&
-		distance(from, to) > DefaultFOVRange && m.Kind != MonsEarthDragon {
+	if mp.monster.State != Hunting && Distance(from, mp.g.Player.P) > DefaultMonsterFOVRange &&
+		Distance(from, to) > DefaultFOVRange && m.Kind != MonsEarthDragon {
 		if mp.monster.Kind.Patrolling() {
 			path = g.PR.JPSPath(m.Path, from, to, mp.CanPatrolPass, false)
 		} else {

@@ -284,7 +284,7 @@ func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int
 	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{center}, maxCost)
 	cdists = make(map[int][]int)
 	for _, n := range nodes {
-		cdists[n.Cost] = append(cdists[n.Cost], idx(n.P))
+		cdists[n.Cost] = append(cdists[n.Cost], Pos2Idx(n.P))
 	}
 	for dist := range cdists {
 		dists = append(dists, dist)
@@ -321,7 +321,7 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 	}
 	md.startAnimSeq()
 	for _, i := range wave {
-		p := idxtopos(i)
+		p := Idx2Pos(i)
 		switch ws {
 		case WaveConfusion:
 			fg := ColorGreen
@@ -452,7 +452,7 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 	for i := range len(ray) {
 		p := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(p)
-		md.anims.Draw(p, md.ProjectileSymbol(dirnorm(g.Player.P, p)), ColorRed, bgColor)
+		md.anims.Draw(p, md.ProjectileSymbol(DirNorm(g.Player.P, p)), ColorRed, bgColor)
 		md.anims.Frame(AnimDurShort)
 		md.anims.Draw(p, r, fgColor, bgColor)
 	}

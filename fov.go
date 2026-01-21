@@ -36,7 +36,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 				return wallcost - 1
 			}
 		}
-		return distance(to, from)
+		return Distance(to, from)
 	}
 	// from terrain specific costs
 	t := g.Map.Terrain.AtU(from)
@@ -67,17 +67,17 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 			}
 			fallthrough
 		default:
-			return wallcost + distance(to, from) - 3
+			return wallcost + Distance(to, from) - 3
 		}
 	}
 	if rs != TreePlayerRay && vis == Fuzzy {
-		cost := max(1, wallcost-distance(from, src)-1)
+		cost := max(1, wallcost-Distance(from, src)-1)
 		return cost
 	}
-	if rs == TreePlayerRay && t == WindowCell && distance(src, from) >= DefaultFOVRange {
-		return wallcost - distance(src, from) - 1
+	if rs == TreePlayerRay && t == WindowCell && Distance(src, from) >= DefaultFOVRange {
+		return wallcost - Distance(src, from) - 1
 	}
-	return distance(to, from)
+	return Distance(to, from)
 }
 
 func (lt *lighter) MaxCost(src gruid.Point) int {
@@ -536,10 +536,10 @@ func (m *Monster) SeesPlayer(g *Game) bool {
 // SeesLight reports whether the monster (a guard in practice) would see a
 // campfire at the given position.
 func (m *Monster) SeesLight(g *Game, p gruid.Point) bool {
-	if !(m.FOV[p] && inViewCone(m.Dir, m.P, p)) {
+	if !(m.FOV[p] && InViewCone(m.Dir, m.P, p)) {
 		return false
 	}
-	if m.State == Resting && distance(m.P, p) > 1 {
+	if m.State == Resting && Distance(m.P, p) > 1 {
 		return false
 	}
 	return true
@@ -558,20 +558,20 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 		darkRange = 1
 	}
 	const tableRange = 1
-	if !(m.FOV[p] && (inViewCone(m.Dir, m.P, p) || m.Kind == MonsSpider)) {
+	if !(m.FOV[p] && (InViewCone(m.Dir, m.P, p) || m.Kind == MonsSpider)) {
 		return false
 	}
-	if m.State == Resting && distance(m.P, p) > 1 {
+	if m.State == Resting && Distance(m.P, p) > 1 {
 		return false
 	}
 	t := g.Map.At(p)
-	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !IsIlluminable(t)) && distance(m.P, p) > darkRange {
+	if (!g.Illuminated(p) && !g.Player.HasStatus(StatusIlluminated) || !IsIlluminable(t)) && Distance(m.P, p) > darkRange {
 		return false
 	}
-	if t == TableCell && distance(m.P, p) > tableRange {
+	if t == TableCell && Distance(m.P, p) > tableRange {
 		return false
 	}
-	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(p) && distance(m.P, p) > 1 {
+	if g.Player.HasStatus(StatusTransparent) && g.Illuminated(p) && Distance(m.P, p) > 1 {
 		return false
 	}
 	return true
@@ -620,7 +620,7 @@ func (g *Game) ComputeLights() {
 		if !on {
 			continue
 		}
-		if distance(lpos, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {
+		if Distance(lpos, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {
 			continue
 		}
 		sources = append(sources, lpos)
@@ -629,7 +629,7 @@ func (g *Game) ComputeLights() {
 		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
 			continue
 		}
-		if distance(mons.P, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {
+		if Distance(mons.P, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {
 			continue
 		}
 		sources = append(sources, mons.P)

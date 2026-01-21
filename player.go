@@ -25,9 +25,9 @@ type Player struct {
 
 // Inventory represents the inventory.
 type Inventory struct {
-	Body item // cloak
-	Neck item // amulet
-	Misc item // artifact
+	Body Item // cloak
+	Neck Item // amulet
+	Misc Item // artifact
 }
 
 // DefaultHealth represents the starting max HP.
@@ -82,11 +82,11 @@ func (g *Game) AutoToDir() bool {
 		// player moved in the direction
 		g.autoDirChanged = false
 		if blocked && nbs > 0 {
-			if g.PlayerCanPass(left(p, g.autoDir)) {
-				g.autoDir = left(p, g.autoDir).Sub(p)
+			if g.PlayerCanPass(Left(p, g.autoDir)) {
+				g.autoDir = Left(p, g.autoDir).Sub(p)
 				g.autoDirChanged = true
-			} else if g.PlayerCanPass(right(p, g.autoDir)) {
-				g.autoDir = right(p, g.autoDir).Sub(p)
+			} else if g.PlayerCanPass(Right(p, g.autoDir)) {
+				g.autoDir = Right(p, g.autoDir).Sub(p)
 				g.autoDirChanged = true
 			}
 			g.autoDirNeighbors = g.dirNeighbors(p, g.autoDir)
@@ -109,10 +109,10 @@ const (
 )
 
 func (g *Game) dirNeighbors(p, dir gruid.Point) (dn dirNeighbors) {
-	if !g.PlayerCanPass(left(p, dir)) {
+	if !g.PlayerCanPass(Left(p, dir)) {
 		dn += dirBlockedLeft
 	}
-	if !g.PlayerCanPass(right(p, dir)) {
+	if !g.PlayerCanPass(Right(p, dir)) {
 		dn += dirBlockedRight
 	}
 	return dn
@@ -141,11 +141,11 @@ func (g *Game) GoToDir(dir gruid.Point) (again bool, err error) {
 	g.autoDirChanged = false
 	blocked := g.dirBlocked(p, dir)
 	if blocked && nbs > 0 {
-		if g.PlayerCanPass(left(p, dir)) {
-			g.autoDir = left(p, dir).Sub(p)
+		if g.PlayerCanPass(Left(p, dir)) {
+			g.autoDir = Left(p, dir).Sub(p)
 			g.autoDirChanged = true
-		} else if g.PlayerCanPass(right(p, dir)) {
-			g.autoDir = right(p, dir).Sub(p)
+		} else if g.PlayerCanPass(Right(p, dir)) {
+			g.autoDir = Right(p, dir).Sub(p)
 			g.autoDirChanged = true
 		}
 		g.autoDirNeighbors = g.dirNeighbors(p, g.autoDir)
@@ -253,7 +253,7 @@ func (g *Game) Teleportation() {
 			panic("Teleportation")
 		}
 		p = g.FreePassableCell()
-		if distance(p, g.Player.P) < 15 && i < maxIterations {
+		if Distance(p, g.Player.P) < 15 && i < maxIterations {
 			i++
 			continue
 		}

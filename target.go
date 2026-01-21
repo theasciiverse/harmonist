@@ -15,14 +15,14 @@ var invalidPos = gruid.Point{-1, -1}
 
 // examination holds all the targeting information.
 type examination struct {
-	p            gruid.Point
-	nmonster     int
-	objects      []gruid.Point
-	nobject      int
-	sortedStairs []gruid.Point
-	stairIndex   int
-	info         posInfo
-	scroll       bool
+	p            gruid.Point   // position
+	nmonster     int           // index of current monster
+	objects      []gruid.Point // points for next object
+	nobject      int           // index of current object
+	sortedStairs []gruid.Point // sorted stair points
+	stairIndex   int           // index of stair
+	info         posInfo       // extra examine information
+	scroll       bool          // whether scrolling once (descriptions)
 }
 
 // HideCursor hides the target cursor.
@@ -49,6 +49,7 @@ func (md *model) CancelExamine() {
 // Examine targets a given position with the cursor.
 func (md *model) Examine(p gruid.Point) {
 	if md.targ.ex.p == p {
+		// Avoid re-examining the same position.
 		return
 	}
 	md.examine(p)
@@ -173,7 +174,7 @@ func (md *model) drawPosInfo() {
 		noiseBox()
 		return
 	}
-	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, dirString(mons.Dir))
+	title := fmt.Sprintf("%s (%s %s)", mons.Kind, mons.State, DirString(mons.Dir))
 	if !info.Sees {
 		title = fmt.Sprint(mons.Kind)
 	}
@@ -181,7 +182,7 @@ func (md *model) drawPosInfo() {
 	if g.Player.Sees(mons.P) || g.Wizard == WizardSeeAll {
 		mfg = mons.color(g)
 	} else {
-		_, mfg = mons.StyleKnowledge()
+		_, mfg = mons.memoryStyle()
 	}
 	var mdesc []string
 
@@ -315,10 +316,8 @@ func (md *model) updatePosInfo() {
 }
 
 func (md *model) computeHighlight() {
-	md.g.computePathHighlight(md.targ.ex.p)
-}
-
-func (g *Game) computePathHighlight(p gruid.Point) {
+	g := md.g
+	p := md.targ.ex.p
 	path := g.PlayerPath(g.Player.P, p)
 	g.highlight = map[gruid.Point]bool{}
 	for _, p := range path {
@@ -326,7 +325,8 @@ func (g *Game) computePathHighlight(p gruid.Point) {
 	}
 }
 
-func (md *model) target() error {
+// UpdateTarget updates travel target.
+func (md *model) UpdateTarget() error {
 	g := md.g
 	p := md.targ.ex.p
 	t := g.Map.KnownTerrain.At(p)
@@ -351,7 +351,10 @@ func (md *model) target() error {
 	return errors.New("Invalid destination.")
 }
 
-func (md *model) nextMonster(key gruid.Key, data *examination) {
+// NextMonster examines next/previous known monster (depending on key).
+// Visible monsters get priority.
+func (md *model) NextMonster(key gruid.Key) {
+	data := md.targ.ex
 	ms := md.targetMonsters()
 	if len(ms) == 0 {
 		return
@@ -407,12 +410,14 @@ func (md *model) targetMonsters() []*Monster {
 		if !md.g.Player.Sees(mi.P) && md.g.Player.Sees(mj.P) {
 			return false
 		}
-		return distance(md.g.Player.P, mi.P) < distance(md.g.Player.P, mj.P)
+		return Distance(md.g.Player.P, mi.P) < Distance(md.g.Player.P, mj.P)
 	})
 	return tms
 }
 
-func (md *model) nextStair(data *examination) {
+// NextStair examines the next known stair.
+func (md *model) NextStair() {
+	data := md.targ.ex
 	g := md.g
 	if data.sortedStairs == nil {
 		stairs := g.getStairs()
@@ -451,7 +456,9 @@ func (g *Game) getStairs() []gruid.Point {
 	return stairs
 }
 
-func (md *model) nextObject(np gruid.Point, data *examination) {
+// NextObject examines the next magical object (stone, magara, item).
+func (md *model) NextObject(np gruid.Point) {
+	data := md.targ.ex
 	g := md.g
 	nobject := data.nobject
 	if len(data.objects) == 0 {

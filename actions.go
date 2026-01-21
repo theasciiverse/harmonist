@@ -6,7 +6,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-	//"time"
 
 	"codeberg.org/anaseto/gruid"
 	"codeberg.org/anaseto/gruid/ui"
@@ -56,7 +55,7 @@ const (
 	ActionPreviousMonster
 	ActionNextMonster
 	ActionNextObject
-	ActionTarget
+	ActionTravel
 
 	ActionSettings
 	ActionMenu
@@ -90,7 +89,7 @@ var ConfigurableKeyActions = [...]Action{
 	ActionNextMonster,
 	ActionNextObject,
 	ActionNextStairs,
-	ActionTarget,
+	ActionTravel,
 	ActionExplore,
 	ActionDump,
 	ActionSave,
@@ -139,7 +138,7 @@ func (k Action) String() (text string) {
 		text = "Target next stone/magara/item"
 	case ActionNextStairs:
 		text = "Target next stairs"
-	case ActionTarget:
+	case ActionTravel:
 		text = "Go to"
 	case ActionExplore:
 		text = "Autoexplore"
@@ -184,7 +183,7 @@ func (k Action) String() (text string) {
 // ExamineModeAction reports whether the action is specific to examine mode.
 func (k Action) ExamineModeAction() bool {
 	switch k {
-	case ActionTarget:
+	case ActionTravel:
 		return true
 	default:
 		return false
@@ -223,8 +222,10 @@ func (md *model) CanInteract() (string, bool) {
 
 // DoAction performs the given action. It reports whether the turn wasn't spent
 // (again), and may return an in-game error that needs to be logged.
+//
 // TODO: We probably would want to just return a string message instead of an
-// error and adjust again, as in-game errors aren't really errors.
+// error and adjust again, as in-game errors aren't really errors. Maybe not
+// worth the effort, though.
 func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err error) {
 	g := md.g
 	switch action {
@@ -233,9 +234,9 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		err = actionErrorUnknown{}
 	case ActionW, ActionS, ActionN, ActionE:
 		if !md.targ.kbTargeting {
-			again, err = g.PlayerBump(g.Player.P.Add(keyToDir(action)))
+			again, err = g.PlayerBump(g.Player.P.Add(KeyToDir(action)))
 		} else {
-			p := md.targ.ex.p.Add(keyToDir(action))
+			p := md.targ.ex.p.Add(KeyToDir(action))
 			if InMap(p) {
 				md.Examine(p)
 			}
@@ -243,12 +244,12 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 	case ActionRunW, ActionRunS, ActionRunN, ActionRunE:
 		if !md.targ.kbTargeting {
-			again, err = g.GoToDir(keyToDir(action))
+			again, err = g.GoToDir(KeyToDir(action))
 		} else {
 			q := invalidPos
 			p := md.targ.ex.p
 			for range 5 {
-				p = p.Add(keyToDir(action))
+				p = p.Add(KeyToDir(action))
 				if !InMap(p) {
 					break
 				}
@@ -261,19 +262,19 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		}
 	case ActionPreviousMonster:
 		again = true
-		md.nextMonster("-", md.targ.ex)
+		md.NextMonster("-")
 	case ActionNextMonster:
 		again = true
-		md.nextMonster("+", md.targ.ex)
+		md.NextMonster("+")
 	case ActionNextObject:
 		again = true
-		md.nextObject(md.targ.ex.p, md.targ.ex)
+		md.NextObject(md.targ.ex.p)
 	case ActionNextStairs:
 		again = true
-		md.nextStair(md.targ.ex)
-	case ActionTarget:
+		md.NextStair()
+	case ActionTravel:
 		again = true
-		err = md.target()
+		err = md.UpdateTarget()
 		if err != nil {
 			break
 		}
@@ -360,7 +361,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		md.openMenu()
 	case ActionHelpKeybindings:
 		again = true
-		md.KeysHelp()
+		md.keysHelp()
 	case ActionHelpBasics:
 		again = true
 		md.helpBasics()
@@ -409,6 +410,7 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		md.mode = modeNormal
 	case ActionWizardDescend:
 		if g.Wizard != WizardNone && g.Map.Depth == WinDepth && !g.LiberatedShaedra {
+			g.LiberatedShaedra = true
 			g.RescuedShaedra()
 		}
 		if g.Wizard != WizardNone && g.Map.Depth < MaxDepth {
@@ -656,7 +658,7 @@ func (md *model) openMenu() {
 
 func (md *model) openIventory() {
 	entries := []ui.MenuEntry{}
-	items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
+	items := []Item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 	parts := []string{"body", "neck", "backpack"}
 	r := 'a'
 	for i, it := range items {
@@ -751,7 +753,7 @@ func (md *model) openHelp() {
 	md.menuMode = modeHelpMenu
 }
 
-func (md *model) KeysHelp() {
+func (md *model) keysHelp() {
 	entries := []string{
 		"Basic Game Actions", "",
 		"Move/Jump", "arrows or hjkl or mouse left",
@@ -959,7 +961,7 @@ Watch out for @Rfootstep noise@N: while going through dense foliage or waiting i
 
 // checkShaedra checks whether we already rescued Shaedra or not, to prevent
 // going to optional levels before.
-func (md *model) checkShaedra(st stair) (err error) {
+func (md *model) checkShaedra(st Stair) (err error) {
 	g := md.g
 	if g.Map.Depth == WinDepth && st == NormalStair && g.Map.At(g.Places.Shaedra) == StoryCell {
 		err = errors.New("You have to rescue Shaedra first!")

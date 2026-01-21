@@ -182,7 +182,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			fgColor = ColorForegroundSecondary
 		}
 		if mons := g.KnownMonsterAt(p); mons.Exists() {
-			r, fgColor = mons.StyleKnowledge()
+			r, fgColor = mons.memoryStyle()
 		}
 		if mons := g.MonsterAt(p); mons.Exists() && mons.Noise {
 			r = '♫'
@@ -264,7 +264,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 			r = '♪'
 			fgColor = ColorCyan
 		} else if mons := g.KnownMonsterAt(p); mons.Exists() {
-			r, fgColor = mons.StyleKnowledge()
+			r, fgColor = mons.memoryStyle()
 		}
 		if g.Player.Sees(p) && fgColor == ColorForeground && g.Illuminated(p) && IsIlluminable(t) && t != StoneCell {
 			fgColor = ColorYellow
@@ -298,7 +298,7 @@ func (m *Monster) noiseColor() gruid.Color {
 
 }
 
-func (m *Monster) StyleKnowledge() (r rune, fg gruid.Color) {
+func (m *Monster) memoryStyle() (r rune, fg gruid.Color) {
 	if !m.Seen {
 		r = '☻'
 	} else {

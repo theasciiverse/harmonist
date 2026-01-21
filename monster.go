@@ -427,16 +427,16 @@ func (m *Monster) Exists() bool {
 func (m *Monster) Alternate() {
 	if m.Left {
 		if RandInt(4) > 0 {
-			m.Dir = leftDir(m.Dir)
+			m.Dir = LeftDir(m.Dir)
 		} else {
-			m.Dir = rightDir(m.Dir)
+			m.Dir = RightDir(m.Dir)
 			m.Left = false
 		}
 	} else {
 		if RandInt(3) > 0 {
-			m.Dir = rightDir(m.Dir)
+			m.Dir = RightDir(m.Dir)
 		} else {
-			m.Dir = leftDir(m.Dir)
+			m.Dir = LeftDir(m.Dir)
 			m.Left = true
 		}
 	}
@@ -453,7 +453,7 @@ func (m *Monster) TeleportAway(g *Game) {
 			panic("TeleportOther")
 		}
 		p = g.FreePassableCell()
-		if distance(p, m.P) < 15 && i < maxIterations {
+		if Distance(p, m.P) < 15 && i < maxIterations {
 			i++
 			continue
 		}
@@ -481,7 +481,7 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 	if g.Player.Sees(p) {
 		m.UpdateKnowledge(g, p)
 	} else if g.Player.Sees(m.P) {
-		if distance(m.P, p) == 1 {
+		if Distance(m.P, p) == 1 {
 			// You know the direction, so you know where the
 			// monster should be.
 			m.UpdateKnowledge(g, p)
@@ -520,7 +520,7 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 
 // PlaceAtStart sets a monster at the given starting position.
 func (m *Monster) PlaceAtStart(g *Game, p gruid.Point) {
-	i := idx(p)
+	i := Pos2Idx(p)
 	if g.MonstersPosCache[i] > 0 {
 		log.Printf("used monster starting position: %v", p)
 		// should not happen
@@ -530,7 +530,7 @@ func (m *Monster) PlaceAtStart(g *Game, p gruid.Point) {
 	g.MonstersPosCache[i] = m.Index + 1
 	npos := m.RandomFreeNeighbor(g)
 	if npos != m.P {
-		m.Dir = dirnorm(m.P, npos)
+		m.Dir = DirNorm(m.P, npos)
 	} else {
 		m.Dir = gruid.Point{1, 0}
 	}
@@ -558,9 +558,9 @@ func (m *Monster) PlaceAt(g *Game, p gruid.Point) {
 		// should not happen
 		return
 	}
-	i := idx(p)
-	j := idx(m.P)
-	m.Dir = dirnorm(m.P, p)
+	i := Pos2Idx(p)
+	j := Pos2Idx(m.P)
+	m.Dir = DirNorm(m.P, p)
 	mons := g.MonsterAt(p)
 	g.MonstersPosCache[i], g.MonstersPosCache[j] = g.MonstersPosCache[j], g.MonstersPosCache[i]
 	if mons.Exists() {
@@ -574,7 +574,7 @@ func (m *Monster) PlaceAt(g *Game, p gruid.Point) {
 
 // MonsterAt returns any monster at the given position.
 func (g *Game) MonsterAt(p gruid.Point) *Monster {
-	pi := idx(p)
+	pi := Pos2Idx(p)
 	if pi < 0 || pi >= len(g.MonstersPosCache) {
 		log.Printf("monster at: bad index %v for pos %v", pi, p)
 		// should not happen
@@ -595,7 +595,7 @@ func (m *Monster) EndTurn(g *Game) {
 
 // AttackAction handles an attack action from the monster.
 func (m *Monster) AttackAction(g *Game) bool {
-	m.Dir = dirnorm(m.P, g.Player.P)
+	m.Dir = DirNorm(m.P, g.Player.P)
 	switch m.Kind {
 	case MonsExplosiveNadre:
 		g.StoryPrint("Nadre explosion")
@@ -683,7 +683,7 @@ func (m *Monster) RandomFreeNeighbor(g *Game) gruid.Point {
 	samedir := fnb[RandInt(len(fnb))]
 	for _, p := range fnb {
 		// invariant: pos != m.Pos
-		if inViewCone(m.Dir, m.P, m.P.Add(p)) {
+		if InViewCone(m.Dir, m.P, m.P.Add(p)) {
 			samedir = p
 			break
 		}
@@ -718,7 +718,7 @@ func (m *Monster) NextTarget(g *Game) (p gruid.Point) {
 	p = m.P
 	switch band.Beh {
 	case BehWander:
-		if distance(m.P, band.Path[0]) < 8+RandInt(8) {
+		if Distance(m.P, band.Path[0]) < 8+RandInt(8) {
 			p = m.SearchAround(g, m.P, 4)
 			if p != invalidPos {
 				break
@@ -748,7 +748,7 @@ func (m *Monster) NextTarget(g *Game) (p gruid.Point) {
 		}
 		p = band.Path[RandInt(len(band.Path))]
 	case BehGuard:
-		if m.Search != invalidPos && distance(m.Search, m.P) < 5 && RandInt(2) == 0 {
+		if m.Search != invalidPos && Distance(m.Search, m.P) < 5 && RandInt(2) == 0 {
 			p = m.SearchAround(g, m.Search, 3)
 			if p != invalidPos {
 				break
@@ -766,7 +766,7 @@ func (m *Monster) NextTarget(g *Game) (p gruid.Point) {
 			p = band.Path[1]
 		} else if band.Path[1] == m.Target {
 			p = band.Path[0]
-		} else if distance(band.Path[0], m.P) < distance(band.Path[1], m.P) {
+		} else if Distance(band.Path[0], m.P) < Distance(band.Path[1], m.P) {
 			p = band.Path[0]
 			if RandInt(4) == 0 {
 				p = band.Path[1]
@@ -795,7 +795,7 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 		switch m.State {
 		case Hunting:
 			if m.Target != invalidPos && m.Target != m.P {
-				m.Dir = dirnorm(m.P, m.Target)
+				m.Dir = DirNorm(m.P, m.Target)
 			}
 			if !m.SeesPlayer(g) {
 				m.StartWatching()
@@ -812,7 +812,7 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 			break
 		}
 		for p, on := range g.Objects.Lights {
-			if !on && distance(p, m.P) <= DefaultMonsterFOVRange {
+			if !on && Distance(p, m.P) <= DefaultMonsterFOVRange {
 				m.ComputeFOV(g)
 				break
 			}
@@ -904,7 +904,7 @@ func (m *Monster) Peaceful(g *Game) bool {
 	if m.Kind.Peaceful() {
 		return true
 	}
-	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && (!m.Kind.GoodSmell() || distance(m.P, g.Player.P) > DisguiseSmellDist) {
+	if m.State != Hunting && g.Player.HasStatus(StatusDisguised) && (!m.Kind.GoodSmell() || Distance(m.P, g.Player.P) > DisguiseSmellDist) {
 		return true
 	}
 	switch m.Kind {
@@ -918,7 +918,7 @@ func (m *Monster) Peaceful(g *Game) bool {
 
 // HandleEndPath handles behavior at the end of the path.
 func (m *Monster) HandleEndPath(g *Game) {
-	if len(m.Path) == 0 && m.Search != invalidPos && distance(m.Search, m.Target) < 10 && m.P != m.Target {
+	if len(m.Path) == 0 && m.Search != invalidPos && Distance(m.Search, m.Target) < 10 && m.P != m.Target {
 		// the cell where the player was last noticed may not be recheable for the monster
 		m.Search = invalidPos
 	}
@@ -980,7 +980,7 @@ func (m *Monster) HandleMove(g *Game) bool {
 			g.Stats.Digs++
 			g.MakeNoise(WallNoise, m.P)
 			g.Fog(m.P, 1)
-			if distance(g.Player.P, target) < 12 {
+			if Distance(g.Player.P, target) < 12 {
 				// XXX use dijkstra distance ?
 				switch t {
 				case WallCell:
@@ -1070,7 +1070,7 @@ func (m *Monster) handleTurn(g *Game) {
 	if m.HandleMonsSpecifics(g) {
 		return
 	}
-	if distance(mpos, ppos) == 1 && g.Map.At(ppos) != BarrelCell && !m.Peaceful(g) {
+	if Distance(mpos, ppos) == 1 && g.Map.At(ppos) != BarrelCell && !m.Peaceful(g) {
 		if m.Status(MonsConfused) {
 			g.Logf("%s appears too confused to attack.", m.Kind.Definite(true))
 			return
@@ -1132,7 +1132,7 @@ func (m *Monster) ExhaustTime(g *Game, t int) {
 
 // HitPlayer makes the monster hit the player (if possible).
 func (m *Monster) HitPlayer(g *Game) {
-	if g.Player.HP <= 0 || distance(g.Player.P, m.P) > 1 {
+	if g.Player.HP <= 0 || Distance(g.Player.P, m.P) > 1 {
 		return
 	}
 	clang := RandInt(4) == 0
@@ -1282,7 +1282,7 @@ func (m *Monster) PushPlayer(g *Game, dist int) {
 	if g.Player.HasStatus(StatusLignification) {
 		return
 	}
-	dir := dirnorm(m.P, g.Player.P)
+	dir := DirNorm(m.P, g.Player.P)
 	p := g.Player.P
 	q := p
 	path := []gruid.Point{p}
@@ -1335,7 +1335,7 @@ func (m *Monster) RangedAttack(g *Game) bool {
 		g.Logf("%s appears too confused to attack.", m.Kind.Definite(true))
 		return false
 	}
-	if distance(m.P, g.Player.P) <= 1 && m.Kind != MonsSatowalgaPlant {
+	if Distance(m.P, g.Player.P) <= 1 && m.Kind != MonsSatowalgaPlant {
 		return false
 	}
 	if !m.SeesPlayer(g) {
@@ -1344,7 +1344,7 @@ func (m *Monster) RangedAttack(g *Game) bool {
 	}
 	if !m.FireReady {
 		m.FireReady = true
-		return distance(m.P, g.Player.P) <= 3
+		return Distance(m.P, g.Player.P) <= 3
 	}
 	if m.Status(MonsExhausted) {
 		return false
@@ -1393,10 +1393,10 @@ func (m *Monster) RangeBlocked(g *Game) bool {
 func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 	candidates := g.cardinalNeighbors(p)
 	bestpos := p.Add(dir)
-	if distance(bestpos, p) > 1 {
+	if Distance(bestpos, p) > 1 {
 		j := 0
 		for i := 0; i < len(candidates); i++ {
-			if distance(candidates[i], bestpos) == 1 {
+			if Distance(candidates[i], bestpos) == 1 {
 				candidates[j] = candidates[i]
 				j++
 			}
@@ -1406,7 +1406,7 @@ func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 		}
 		return candidates
 	}
-	worstpos := p.Add(dirnorm(bestpos, p))
+	worstpos := p.Add(DirNorm(bestpos, p))
 	for i := 1; i < len(candidates); i++ {
 		if candidates[i] == bestpos {
 			candidates[0], candidates[i] = candidates[i], candidates[0]
@@ -1428,7 +1428,7 @@ func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
 
 // CreateBarrier attemps to create a magical barrier.
 func (m *Monster) CreateBarrier(g *Game) bool {
-	dir := dirnorm(m.P, g.Player.P)
+	dir := DirNorm(m.P, g.Player.P)
 	candidates := g.BarrierCandidates(g.Player.P, dir)
 	done := false
 	for _, p := range candidates {
@@ -1578,7 +1578,7 @@ func (m *Monster) SmitingAttack(g *Game) bool {
 	}
 	if !m.FireReady {
 		m.FireReady = true
-		return distance(m.P, g.Player.P) <= 3
+		return Distance(m.P, g.Player.P) <= 3
 	}
 	if m.Status(MonsExhausted) {
 		return false
@@ -1644,7 +1644,7 @@ func (m *Monster) MakeHunt(g *Game) (noticed bool) {
 // MakeAware makes the monster aware (if appropriate).
 func (m *Monster) MakeAware(g *Game) {
 	if m.Peaceful(g) || m.Status(MonsSatiated) {
-		if m.State == Resting && distance(m.P, g.Player.P) == 1 {
+		if m.State == Resting && Distance(m.P, g.Player.P) == 1 {
 			g.Logf("%s awakens.", m.Kind.Definite(true))
 			m.MakeWander()
 		}

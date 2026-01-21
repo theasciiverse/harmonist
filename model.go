@@ -156,8 +156,8 @@ func (md *model) initKeys() {
 		":":                 ActionSetKeys,
 	}
 	md.keysTarget = map[gruid.Key]Action{
-		".":             ActionTarget,
-		gruid.KeyEnter:  ActionTarget,
+		".":             ActionTravel,
+		gruid.KeyEnter:  ActionTravel,
 		gruid.KeyEscape: ActionExamineToggle,
 	}
 	CustomKeys = false
@@ -513,10 +513,10 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 			md.Examine(p)
 			return nil
 		}
-		if distance(p, md.g.Player.P) == 1 {
+		if Distance(p, md.g.Player.P) == 1 {
 			again, err = md.g.PlayerBump(p)
 		} else {
-			again, eff, err = md.DoAction(ActionTarget)
+			again, eff, err = md.DoAction(ActionTravel)
 		}
 		if err != nil {
 			again = true
@@ -785,7 +785,7 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 	case ui.MenuMove, ui.MenuInvoke:
 		switch md.menuMode {
 		case modeInventory:
-			items := []item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
+			items := []Item{md.g.Player.Inventory.Body, md.g.Player.Inventory.Neck, md.g.Player.Inventory.Misc}
 			it := items[md.menu.Active()]
 			stt := ui.StyledText{}.WithMarkups(Markups)
 			md.description.Content = stt.WithText(it.Desc(md.g)).Format(UIWidth/2 - 1 - 2)

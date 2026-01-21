@@ -200,7 +200,7 @@ func (cev *PosEvent) Handle(g *Game) {
 			if !IsDiggable(t) || !g.Map.HasFreeNeighbor(p) {
 				continue
 			}
-			if distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
+			if Distance(cev.P, p) > RandInt(35) || RandInt(2) == 0 {
 				continue
 			}
 			g.Map.Set(p, RubbleCell)

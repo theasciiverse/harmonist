@@ -2,17 +2,19 @@ package main
 
 import (
 	"codeberg.org/anaseto/gruid"
+	"codeberg.org/anaseto/gruid/paths"
 )
 
-func distance(from, to gruid.Point) int {
-	delta := to.Sub(from)
-	return Abs(delta.X) + Abs(delta.Y)
+// Distance is an abbreviation for paths.DistanceManhattan.
+func Distance(from, to gruid.Point) int {
+	return paths.DistanceManhattan(from, to)
 }
 
 // ZP is the zero value for gruid.Point.
 var ZP gruid.Point = gruid.Point{}
 
-func dirString(dir gruid.Point) (s string) {
+// DirString returns the string representation of the given delta direction.
+func DirString(dir gruid.Point) (s string) {
 	switch dir {
 	case ZP:
 		s = ""
@@ -36,7 +38,8 @@ func dirString(dir gruid.Point) (s string) {
 	return s
 }
 
-func keyToDir(k Action) (p gruid.Point) {
+// KeyToDir maps directional action to delta direction.
+func KeyToDir(k Action) (p gruid.Point) {
 	switch k {
 	case ActionW, ActionRunW:
 		p = gruid.Point{-1, 0}
@@ -50,22 +53,11 @@ func keyToDir(k Action) (p gruid.Point) {
 	return p
 }
 
-func sign(n int) int {
-	var i int
-	switch {
-	case n > 0:
-		i = 1
-	case n < 0:
-		i = -1
-	}
-	return i
-}
-
-// dirnorm returns a normalized direction between two points, so that
+// DirNorm returns a normalized direction between two points, so that
 // directions that aren't cardinal nor diagonal are transformed into the
 // cardinal part (this corresponds to pruned intermediate nodes in diagonal
 // jump).
-func dirnorm(p, q gruid.Point) gruid.Point {
+func DirNorm(p, q gruid.Point) gruid.Point {
 	dir := q.Sub(p)
 	dx := Abs(dir.X)
 	dy := Abs(dir.Y)
@@ -80,11 +72,24 @@ func dirnorm(p, q gruid.Point) gruid.Point {
 	return dir
 }
 
-func idxtopos(i int) gruid.Point {
+func sign(n int) int {
+	var i int
+	switch {
+	case n > 0:
+		i = 1
+	case n < 0:
+		i = -1
+	}
+	return i
+}
+
+// Idx2Pos transforms a flat index into a map point.
+func Idx2Pos(i int) gruid.Point {
 	return gruid.Point{i % MapWidth, i / MapWidth}
 }
 
-func idx(p gruid.Point) int {
+// Pos2Idx transfors a map point into a flat index.
+func Pos2Idx(p gruid.Point) int {
 	return p.Y*MapWidth + p.X
 }
 
@@ -93,36 +98,42 @@ func InMap(p gruid.Point) bool {
 	return p.Y >= 0 && p.Y < MapHeight && p.X >= 0 && p.X < MapWidth
 }
 
-func inViewCone(dir, from, to gruid.Point) bool {
-	if to == from || distance(from, to) <= 1 {
+// InVieCone reports whether a given position is visible from another one
+// following a direction.
+func InViewCone(dir, from, to gruid.Point) bool {
+	if to == from || Distance(from, to) <= 1 {
 		return true
 	}
-	d := dirnorm(from, to)
-	return d == dir || leftDir(d) == dir || rightDir(d) == dir
+	d := DirNorm(from, to)
+	return d == dir || LeftDir(d) == dir || RightDir(d) == dir
 }
 
-func leftDir(dir gruid.Point) gruid.Point {
+// LeftDir returns the direction to the left (counter-clockwise).
+func LeftDir(dir gruid.Point) gruid.Point {
 	switch {
 	case dir.X == 0 || dir.Y == 0:
-		return left(dir, dir)
+		return Left(dir, dir)
 	default:
 		return gruid.Point{(dir.Y + dir.X) / 2, (dir.Y - dir.X) / 2}
 	}
 }
 
-func rightDir(dir gruid.Point) gruid.Point {
+// RightDir returns the direction to the right (clockwise).
+func RightDir(dir gruid.Point) gruid.Point {
 	switch {
 	case dir.X == 0 || dir.Y == 0:
-		return right(dir, dir)
+		return Right(dir, dir)
 	default:
 		return gruid.Point{(dir.X - dir.Y) / 2, (dir.Y + dir.X) / 2}
 	}
 }
 
-func right(p gruid.Point, dir gruid.Point) gruid.Point {
+// Right returns the position to the Right (according to direction).
+func Right(p gruid.Point, dir gruid.Point) gruid.Point {
 	return gruid.Point{p.X - dir.Y, p.Y + dir.X}
 }
 
-func left(p gruid.Point, dir gruid.Point) gruid.Point {
+// Left returns the position to the Left (according to direction).
+func Left(p gruid.Point, dir gruid.Point) gruid.Point {
 	return gruid.Point{p.X + dir.Y, p.Y - dir.X}
 }

@@ -428,7 +428,7 @@ func (g *Game) BlinkPos(mpassable bool) gruid.Point {
 	q := losPos[RandInt(len(losPos))]
 	for range 4 {
 		p := losPos[RandInt(len(losPos))]
-		if distance(q, g.Player.P) < distance(p, g.Player.P) {
+		if Distance(q, g.Player.P) < Distance(p, g.Player.P) {
 			q = p
 		}
 	}
@@ -536,8 +536,8 @@ func (g *Game) EvokeSwapping() error {
 		if m.Status(MonsLignified) {
 			continue
 		}
-		if distance(m.P, g.Player.P) > best {
-			best = distance(m.P, g.Player.P)
+		if Distance(m.P, g.Player.P) > best {
+			best = Distance(m.P, g.Player.P)
 			mons = m
 		}
 	}

@@ -72,8 +72,8 @@ type Game struct {
 type ProcInfo struct {
 	GeneratedLore    map[int]bool             // whether there's a lore text
 	GeneratedMagaras []magaraKind             // magara kind
-	GeneratedCloaks  []item                   // cloak kind
-	GeneratedAmulets []item                   // amulet kind
+	GeneratedCloaks  []Item                   // cloak kind
+	GeneratedAmulets []Item                   // amulet kind
 	GenPlan          [MaxDepth + 1]genFlavour // cloak/amulet generation
 }
 
@@ -399,14 +399,14 @@ func (g *Game) InitLevelStructures() {
 	g.MonsterFOV = map[gruid.Point]bool{}
 	g.Objects.Magaras = map[gruid.Point]Magara{}
 	g.Objects.Lore = map[gruid.Point]int{}
-	g.Objects.Items = map[gruid.Point]item{}
-	g.Objects.Scrolls = map[gruid.Point]scroll{}
-	g.Objects.Stairs = map[gruid.Point]stair{}
+	g.Objects.Items = map[gruid.Point]Item{}
+	g.Objects.Scrolls = map[gruid.Point]Scroll{}
+	g.Objects.Stairs = map[gruid.Point]Stair{}
 	g.Objects.Bananas = make(map[gruid.Point]bool, 2)
 	g.Objects.Barrels = map[gruid.Point]bool{}
 	g.Objects.Lights = map[gruid.Point]bool{}
 	g.Objects.FakeStairs = map[gruid.Point]bool{}
-	g.Objects.Potions = map[gruid.Point]potion{}
+	g.Objects.Potions = map[gruid.Point]Potion{}
 	g.Stats.AtNotablePos = map[gruid.Point]bool{}
 }
 
@@ -444,7 +444,6 @@ func (g *Game) InitLevel() {
 	if g.Map.Depth == 1 {
 		g.StoryPrintf("Started with %s", g.Player.Magaras[0])
 		g.Events = rl.NewEventQueue()
-		//g.PushEvent(&simpleEvent{ERank: 0, EAction: PlayerTurn})
 	} else {
 		g.CleanEvents()
 		for st := range g.Player.Statuses {
@@ -747,9 +746,9 @@ func (g *Game) CheckForStorySequence() {
 		return
 	}
 	p := g.Places.Shaedra
-	if distance(g.Player.P, p) > 1 &&
-		distance(g.Player.P, g.Places.Marevor) > 1 &&
-		distance(g.Player.P, g.Places.Monolith) > 1 {
+	if Distance(g.Player.P, p) > 1 &&
+		Distance(g.Player.P, g.Places.Marevor) > 1 &&
+		Distance(g.Player.P, g.Places.Monolith) > 1 {
 		// If the player is not adjacent to one of the important
 		// places, we cannot free Shaedra yet.
 		return

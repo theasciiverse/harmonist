@@ -385,7 +385,7 @@ func (rs roomSlice) Less(i, j int) bool {
 	jpos := rs[j].p
 	jpos.X += rs[j].w / 2
 	jpos.Y += rs[j].h / 2
-	return rs[i].special || !rs[j].special && distance(ipos, center) <= distance(jpos, center)
+	return rs[i].special || !rs[j].special && Distance(ipos, center) <= Distance(jpos, center)
 }
 
 func (mg *MapGen) nearestConnectedRoom(i int) (k int) {
@@ -498,7 +498,7 @@ func (g *Game) holedWallCandidate(p gruid.Point) bool {
 
 // genShaedraCell places Shaedra, Marevor, and the monolith.
 func (mg *MapGen) genShaedraCell(g *Game) {
-	g.Objects.Story = map[gruid.Point]story{}
+	g.Objects.Story = map[gruid.Point]Story{}
 	g.Places.Shaedra = mg.spl.Shaedra
 	g.Objects.Story[g.Places.Shaedra] = StoryShaedra
 	g.Places.Monolith = mg.spl.Monolith
@@ -509,7 +509,7 @@ func (mg *MapGen) genShaedraCell(g *Game) {
 
 // genArtifactPlace places the artifact and the monolith.
 func (mg *MapGen) genArtifactPlace(g *Game) {
-	g.Objects.Story = map[gruid.Point]story{}
+	g.Objects.Story = map[gruid.Point]Story{}
 	g.Places.Artifact = mg.spl.Artifact
 	g.Objects.Story[g.Places.Artifact] = StoryArtifactSealed
 	g.Places.Monolith = mg.spl.Monolith
@@ -555,7 +555,7 @@ func (dg *MapGen) clearUnconnected(g *Game) {
 // addSpecialFeatures handles placement of stones, bananas, potions, tables,
 // lights, trees, holed walls, windows, and lore.
 func (mg *MapGen) addSpecialFeatures(g *Game, ml maplayout) {
-	g.Objects.Stones = map[gruid.Point]stone{}
+	g.Objects.Stones = map[gruid.Point]Stone{}
 	if g.Params.Blocked[g.Map.Depth] || g.Map.Depth == MaxDepth {
 		mg.genSealStone(g)
 	}
@@ -741,7 +741,7 @@ func (mg *MapGen) playerStart(g *Game, places []gruid.Point) {
 loop:
 	for i := len(mg.rooms) - 2; i >= 0; i-- {
 		for _, p := range places {
-			if distance(r.p, p) < far && distance(mg.rooms[i].p, p) >= far {
+			if Distance(r.p, p) < far && Distance(mg.rooms[i].p, p) >= far {
 				r = mg.rooms[i]
 				mg.rooms[len(mg.rooms)-1], mg.rooms[i] = mg.rooms[i], mg.rooms[len(mg.rooms)-1]
 				break loop
@@ -812,7 +812,7 @@ func (mg *MapGen) genBanana(g *Game) {
 }
 
 // genPotion places a potion at a suitable vault location.
-func (mg *MapGen) genPotion(g *Game, ptn potion) {
+func (mg *MapGen) genPotion(g *Game, ptn Potion) {
 	count := 0
 	p := invalidPos
 	for p == invalidPos {
@@ -903,7 +903,7 @@ func (mg *MapGen) genItem(g *Game) {
 		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
 	}
 	g.Map.Set(p, ItemCell)
-	var it item
+	var it Item
 	switch plan {
 	case GenCloak:
 		it = g.RandomCloak()
@@ -948,16 +948,16 @@ func (mg *MapGen) genMagara(g *Game) {
 }
 
 // genStairs generates real stairs (possibly sealed).
-func (mg *MapGen) genStairs(g *Game, st stair) {
+func (mg *MapGen) genStairs(g *Game, st Stair) {
 	var ri, pj int
 	best := 0
 	for i, r := range mg.rooms {
 		for j, pl := range r.places {
-			score := distance(pl.p, g.Player.P) + mg.rand.IntN(20)
+			score := Distance(pl.p, g.Player.P) + mg.rand.IntN(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
-				best = distance(pl.p, g.Player.P)
+				best = Distance(pl.p, g.Player.P)
 			}
 		}
 	}
@@ -984,11 +984,11 @@ loop:
 			}
 		}
 		for j, pl := range r.places {
-			score := distance(pl.p, g.Player.P) + mg.rand.IntN(20)
+			score := Distance(pl.p, g.Player.P) + mg.rand.IntN(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
 				ri = i
 				pj = j
-				best = distance(pl.p, g.Player.P)
+				best = Distance(pl.p, g.Player.P)
 			}
 		}
 	}
@@ -1056,10 +1056,10 @@ func (mg *MapGen) genStones(g *Game) {
 			outside++
 		}
 	}
-	genStones := []stone{}
+	genStones := []Stone{}
 	for i := range nstones {
 		p := invalidPos
-		var st stone
+		var st Stone
 		if i < outside {
 			// The map contains a magical stone outside from a
 			// vault.
@@ -1101,8 +1101,8 @@ func (mg *MapGen) caveGroundCell() gruid.Point {
 	}
 }
 
-func (mg *MapGen) randomInStone(sts []stone) stone {
-	instones := []stone{
+func (mg *MapGen) randomInStone(sts []Stone) Stone {
+	instones := []Stone{
 		BarrelStone,
 		EarthStone,
 		QueenStone,
@@ -1116,8 +1116,8 @@ func (mg *MapGen) randomInStone(sts []stone) stone {
 	}
 }
 
-func (mg *MapGen) randomOutStone(sts []stone) stone {
-	instones := []stone{
+func (mg *MapGen) randomOutStone(sts []Stone) Stone {
+	instones := []Stone{
 		BarrelStone,
 		EarthStone,
 		QueenStone,
@@ -1174,7 +1174,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 	d := mg.m
 	passable := func(p gruid.Point) func(q gruid.Point) bool {
 		return func(q gruid.Point) bool {
-			return InMap(q) && mg.m.At(q) == WallCell && !mg.room[q] && distance(p, q) < 10+mg.rand.IntN(10)
+			return InMap(q) && mg.m.At(q) == WallCell && !mg.room[q] && Distance(p, q) < 10+mg.rand.IntN(10)
 		}
 	}
 	for {
@@ -1200,7 +1200,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 func (mg *MapGen) genQueenRock() {
 	cavern := []gruid.Point{}
 	for i := range MapSize {
-		p := idxtopos(i)
+		p := Idx2Pos(i)
 		t := mg.m.At(p)
 		if t == CavernCell {
 			cavern = append(cavern, p)
@@ -1212,7 +1212,7 @@ func (mg *MapGen) genQueenRock() {
 	for i := 0; i < 1+mg.rand.IntN(2); i++ {
 		p := cavern[RandInt(len(cavern))]
 		passable := func(q gruid.Point) bool {
-			return InMap(q) && mg.m.At(q) == CavernCell && distance(q, p) < 15+mg.rand.IntN(5)
+			return InMap(q) && mg.m.At(q) == CavernCell && Distance(q, p) < 15+mg.rand.IntN(5)
 		}
 		cp := NewMappingPath(passable)
 		for _, q := range mg.PR.CCMap(cp, p) {

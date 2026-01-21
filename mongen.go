@@ -747,7 +747,7 @@ func (mg *MapGen) insideCell(g *Game) gruid.Point {
 		if mons.Exists() {
 			continue
 		}
-		if distance(p, g.Player.P) < DefaultFOVRange {
+		if Distance(p, g.Player.P) < DefaultFOVRange {
 			continue
 		}
 		t := mg.m.At(p)
@@ -871,7 +871,7 @@ func (mg *MapGen) foliageCell(g *Game) gruid.Point {
 		x := mg.rand.IntN(MapWidth)
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
-		if distance(p, g.Player.P) < DefaultFOVRange {
+		if Distance(p, g.Player.P) < DefaultFOVRange {
 			continue
 		}
 		mons := g.MonsterAt(p)
@@ -901,7 +901,7 @@ func (g *Game) freeCellForMonster() gruid.Point {
 		if !Passable(t) {
 			continue
 		}
-		if g.Player != nil && distance(g.Player.P, p) < 8 {
+		if g.Player != nil && Distance(g.Player.P, p) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(p)
@@ -928,7 +928,7 @@ func (g *Game) freeCellForBandMonster(p gruid.Point) gruid.Point {
 		}
 		r := RandInt(len(neighbors))
 		p = neighbors[r]
-		if g.Player != nil && distance(g.Player.P, p) < 8 {
+		if g.Player != nil && Distance(g.Player.P, p) < 8 {
 			continue
 		}
 		mons := g.MonsterAt(p)
