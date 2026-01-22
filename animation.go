@@ -583,6 +583,7 @@ func (md *model) FreeingShaedra() {
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
 		g.Map.Set(g.Places.Monolith, StairCell)
+		g.Map.KnownTerrain.Set(g.Places.Monolith, StairCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
 			md.anims.Frame(AnimDurMediumLong)
@@ -605,7 +606,9 @@ func (md *model) FreeingShaedra() {
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Map.Set(g.Places.Shaedra, GroundCell)
+		g.Map.KnownTerrain.Set(g.Places.Shaedra, GroundCell)
 		g.Map.Set(g.Places.Marevor, ScrollCell)
+		g.Map.KnownTerrain.Set(g.Places.Marevor, ScrollCell)
 		g.Objects.Scrolls[g.Places.Marevor] = ScrollExtended
 		g.RescuedShaedra()
 		// We're done with the story sequence.
@@ -634,6 +637,7 @@ func (md *model) TakingArtifact() {
 	switch md.story {
 	case 1:
 		g.Map.Set(g.Places.Artifact, GroundCell)
+		g.Map.KnownTerrain.Set(g.Places.Artifact, GroundCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Monolith)
@@ -642,6 +646,7 @@ func (md *model) TakingArtifact() {
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
 		g.Map.Set(g.Places.Monolith, StairCell)
+		g.Map.KnownTerrain.Set(g.Places.Monolith, StairCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
 			_, _, bg := md.positionDrawing(g.Places.Marevor)
@@ -649,13 +654,21 @@ func (md *model) TakingArtifact() {
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
+		g.Map.KnownTerrain.Set(g.Places.Marevor, StoryCell)
 		g.LogStyled("Marevor: “Great! Let’s escape and find some bones to celebrate!”", logSpecial)
 		g.LogStyled("Syu: “Sorry, but I prefer bananas!”", logSpecial)
 		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 		// Progress to next story part.
 		md.story++
 	default:
+		if !DisableAnimations {
+			md.startAnimSeq()
+			_, _, bg := md.positionDrawing(g.Places.Marevor)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
+			md.anims.Frame(AnimDurMediumLong)
+		}
 		g.Map.Set(g.Places.Marevor, GroundCell)
+		g.Map.KnownTerrain.Set(g.Places.Marevor, GroundCell)
 		AchRetrievedArtifact.Get(g)
 		// We're done with the story sequence.
 		md.story = 0
