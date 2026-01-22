@@ -211,7 +211,10 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 	var fgTerrain gruid.Color
 	switch {
 	case kt == WallCell || kt == WindowCell:
-		r, fgColor = g.TerrainStyle(kt, p)
+		r, fgTerrain = g.TerrainStyle(kt, p)
+		if fgTerrain != ColorForeground {
+			fgColor = fgTerrain
+		}
 	case CoversPlayer(kt):
 		r, fgTerrain = g.TerrainStyle(kt, p)
 		if p == g.Player.P {
