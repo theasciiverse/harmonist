@@ -83,6 +83,7 @@ func (r *vault) Dig(dg *MapGen) {
 		if InMap(q) && c != '?' {
 			dg.vault[q] = true
 		}
+		// Draw terrain.
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
 			if InMap(q) {
@@ -118,6 +119,40 @@ func (r *vault) Dig(dg *MapGen) {
 			if InMap(q) {
 				dg.m.Set(q, WallCell)
 			}
+		case ':':
+			if InMap(q) {
+				switch dg.rand.IntN(4) {
+				case 0:
+					dg.m.Set(q, FoliageCell)
+				case 1:
+					dg.m.Set(q, RubbleCell)
+				default:
+					dg.m.Set(q, GroundCell)
+				}
+			}
+		case '"':
+			if InMap(q) {
+				dg.m.Set(q, FoliageCell)
+			}
+			if dg.rand.IntN(10) == 0 {
+				dg.m.Set(q, GroundCell)
+			}
+		case ',':
+			if InMap(q) {
+				dg.m.Set(q, CavernCell)
+			}
+		case '~':
+			if InMap(q) {
+				dg.m.Set(q, WaterCell)
+			}
+		case 'c':
+			if InMap(q) {
+				dg.m.Set(q, ChasmCell)
+			}
+		case 'q':
+			if InMap(q) {
+				dg.m.Set(q, QueenRockCell)
+			}
 		case 'T':
 			if InMap(q) {
 				dg.m.Set(q, TreeCell)
@@ -126,27 +161,49 @@ func (r *vault) Dig(dg *MapGen) {
 			if InMap(q) {
 				dg.m.Set(q, TableCell)
 			}
+			if dg.rand.IntN(7) == 0 {
+				dg.m.Set(q, GroundCell)
+			}
 		case 'l':
 			if InMap(q) {
 				dg.m.Set(q, LightCell)
 			}
+			if dg.rand.IntN(7) == 0 {
+				dg.m.Set(q, GroundCell)
+			}
+		case '%':
+			if InMap(q) {
+				switch dg.rand.IntN(10) {
+				case 0:
+					dg.m.Set(q, WindowCell)
+				case 1:
+					dg.m.Set(q, HoledWallCell)
+				case 2:
+					dg.m.Set(q, RubbleCell)
+				default:
+					dg.m.Set(q, WallCell)
+				}
+			}
 		case 'W':
 			if InMap(q) {
-				dg.m.Set(q, WindowCell)
+				switch dg.rand.IntN(10) {
+				case 0:
+					dg.m.Set(q, WallCell)
+				case 1:
+					dg.m.Set(q, HoledWallCell)
+				case 2:
+					dg.m.Set(q, RubbleCell)
+				default:
+					dg.m.Set(q, WindowCell)
+				}
 			}
-		case '"',
-			'?',
-			',',
-			'~',
-			'c',
-			'q',
-			'S',
-			'M',
-			'Δ',
-			'A':
+		case '?':
+		case 'S', 'M', 'Δ', 'A':
+			dg.m.Set(q, StoryCell)
 		default:
 			log.Fatalf("Invalid terrain: %c for vault w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.p, r.vault.Content())
 		}
+		// Record special places.
 		switch c {
 		case '>':
 			r.places = append(r.places, place{p: q, kind: PlaceSpecialStatic})
@@ -170,42 +227,18 @@ func (r *vault) Dig(dg *MapGen) {
 				e.nodoor = true
 			}
 			r.entries = append(r.entries, e)
-		case '"':
-			if InMap(q) {
-				dg.m.Set(q, FoliageCell)
-			}
-		case ',':
-			if InMap(q) {
-				dg.m.Set(q, CavernCell)
-			}
-		case '~':
-			if InMap(q) {
-				dg.m.Set(q, WaterCell)
-			}
-		case 'c':
-			if InMap(q) {
-				dg.m.Set(q, ChasmCell)
-			}
-		case 'q':
-			if InMap(q) {
-				dg.m.Set(q, QueenRockCell)
-			}
 		case 'S':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Shaedra = q
-			dg.m.Set(q, StoryCell)
 		case 'M':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Marevor = q
-			dg.m.Set(q, StoryCell)
 		case 'Δ':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Monolith = q
-			dg.m.Set(q, StoryCell)
 		case 'A':
 			r.places = append(r.places, place{p: q, kind: PlaceStory})
 			dg.spl.Artifact = q
-			dg.m.Set(q, StoryCell)
 		}
 	}
 	r.vault.Iter(runedraw)
@@ -326,7 +359,7 @@ const (
 ?####?#++#?####?
 #!.._##..##!..>#
 ##.P........P.##
-+...._####._...+
++...._##%#._...+
 ##.P........P.##
 #!..>##..##>..!#
 ?####?#++#?####?`
@@ -366,7 +399,7 @@ const (
 #>.P..|..P!#
 #...B.#....#
 #!...!#_...#
-###|######|#
+#%#|#%####|#
 #...P...|..#
 #>.....!#P.#
 ?########+#?`
@@ -375,7 +408,7 @@ const (
 +...#....>#?
 #.P.|..P...#
 ##|###..._.#
-#...>#!...!#
+#...>%!...!#
 #....##|####
 #!P..|..P..+
 ?########+##`
@@ -383,9 +416,9 @@ const (
 ?#############?
 #>P.|.........#
 #..!##|##!.P..+
-####!...!#_...#
+##%#!...!#_...#
 +..|.P>._###|##
-####!...!#!...#
+##%#!...!#!...#
 #!.>##|##..P..+
 #.P.....|...B.#
 ?#......#....#?
@@ -403,7 +436,7 @@ const (
 ????##########?
 ??###!...>#..!#
 ?###>.....!#..#
-#..#...P.B.#.P+
+#..%...P.B.%.P+
 +P.#_......#..+
 #..####|####..#
 #!.....P....._#
@@ -421,11 +454,11 @@ const (
 	VaultCaban = `
 ???????-??????
 ?????""""?????
-???""""""""???
-??"""###."""??
-?"""#>!|PP"""?
--""""###.""""-
-??""""""""""??
+???"":"""""???
+??"":###."""??
+?"":#>!|PP"""?
+-""":###.""""-
+??""":""""""??
 ????"""""?????
 ???????-??????`
 	VaultDolmen = `
@@ -444,9 +477,9 @@ const (
 ?????????????
 ?????...?????
 ????..#..????
-???..#>#..???
+???.:#>#..???
 ??..#>._#..??
-??..#...#..??
+??..%...%..??
 ?...#!P!#...?
 -.P..#|#..P.-
 ?..#.....#..?
@@ -459,7 +492,7 @@ const (
 ?..##!>!##..?
 ..#_....._#..
 .#....B....#.
-.#.##.P.##.#.
+.%.##.P.##.%.
 .#.>#...#>.#.
 -#..P...P..#.
 ..###|||###..
@@ -477,7 +510,7 @@ const (
 .#........#..#
 -W.π.π..π.#P.#
 .#l...P...|._#
-..####||#####-
+..##%#||#####-
 ?.....--P.....`
 	VaultShop = `
 ??????###???
@@ -489,7 +522,7 @@ const (
 -W.π.π..π.#?
 .#...π.P..l#
 .#l!..qq_!#?
-..####||##.-
+..##%#||##.-
 ?.....--P..?`
 	VaultTavern = `
 ??##########??
@@ -512,7 +545,7 @@ const (
 .#.π..##|#.
 .W.!.....W-
 .#l..Pq._#.
--.####|##..
+-.##%#|##..
 ?.....-.P.?`
 	VaultRuins = `
 ????????-????
@@ -528,7 +561,7 @@ const (
 ??????-??????`
 	VaultPillars = `
 ???????-?????
-???.......???
+???:......???
 ?...#!#P#...?
 ?.#!......#.?
 -.P.B>B>B.P.-
@@ -556,30 +589,30 @@ const (
 	VaultSpiraling = `
 ?#####+#
 #!.P...+
-#.>#####
+#.>##%##
 #!.P..!#
-#####>.#
+##%##>.#
 +...P.!#
 #+#####?`
 	VaultSpiralingCircle = `
 ??##+#?##??
-##.P.!#.>#?
+##.P.!#:>#?
 +.P.##....#
 #._#...#_.#
 #....##!P.+
-?#.>#.P..##
+?#.>#.P.:##
 ??###+###??`
 	VaultCircleDouble = `
 ???####+#???
 ??#""..P#???
-?#""..#|#???
+?#":..#|#???
 #"""!#!P!#??
 #.._#.....#?
 #..#..>#>..#
 +.P|P.###.P#
 #..#.._#>..#
 #"._#.....##
-#"""!#!P!#!#
+#"":!#!P!#!#
 ?#""..#|#..#
 ??#"...P..#?
 ???####+##??`
@@ -589,11 +622,11 @@ const (
 ?#!...P...!#?
 #...#._.#...#
 #_........._#
-######|######
+##%###|###%##
 +.....P..#_>#
 +.......#!..#
 #######|#...#
-#""""..P|.P.#
+#":""..P|.P.#
 ?#"T"...#...+
 ??#""".!#!..#
 ???#######+#?`
@@ -601,7 +634,7 @@ const (
 #+#??#######??#+#
 +P_##>..!..>##_P+
 #...#..#>#..#...#
-?##.#!..P..!#.##?
+?##.#!:.P..!#.##?
 ??#..P.....P..#??
 ???#####+#####???`
 	VaultRoundGarden = `
@@ -654,13 +687,13 @@ const (
 	VaultSnake = `
 ?????#####???###
 ?#?##!..._#?##.+
-#B#........#.|.#
-#...######.P.###
+#B#...:....#.|.#
+#...###%##.P.###
 #..##....###..#?
 -P.#...#.!#>#.#?
 -..#..##>P..#.#?
-#π#"...!####..#?
-?##"""T.P....#??
+#π#":..!##%#..#?
+?##"""T.P:...#??
 ???#"""....!#???
 ????########????`
 )
@@ -789,7 +822,7 @@ const (
 ~|q.!#.G.|.G-
 ~####>...|.~-
 ~#>G|....##~P
-~~###.π.!#~~.
+~~###.π.!%~~.
 ?~~~##W###~~.
 ???~~~~~~~~-.`
 	VaultSpecialFrogs = `
@@ -806,7 +839,7 @@ const (
 	VaultSpecialMilfids = `
 ?????????-???
 ???......P.??
-??..!?G._?..?
+??.:!?G._?..?
 ?.?.?#>c.?.??
 -P.G.>#>G...?
 ?.?._c>c.??.?
@@ -819,23 +852,23 @@ const (
 ?c.G..cc..cc
 ??ccc._G..>c
 ?ccc>....!cc
-??c!....>ccc
+??c!...:>ccc
 ??cc.G.cccc?
 ???c.....???
 ?????P-.????`
 	VaultSpecialTreeMushrooms = `
 ????"--.???????
 ??"""..G."""???
-??""?....!"""??
+??""?....!:""??
 ??....T>T..G..?
 ?.G.T..!..T..P-
 -..!..T>T._"".-
--P???..G..""""?
+-P???..G.."":"?
 .-??????.-?????`
 	VaultSpecialTreeMushrooms2 = `
 ???""-???????
 ??""?.."""???
-??""..G..""??
+??"":.G..""??
 ?""?....!..??
 ?".T.T.T.T..?
 ?.G..>!>.G.P-
@@ -848,7 +881,7 @@ const (
 ?P???#..#?????
 ?.???#G.>####?
 ?.??#...##.>#?
-?.?#.._....G.#
+?.?#.._:...G.#
 -G........!..#
 ??.#.G._._#>#?
 ??P?#.>###?#??
@@ -857,7 +890,7 @@ const (
 ?-#????##..P
 -P.####...#-
 ?#.G.#..G.!#
-?##..._....#
+?##..:_....#
 ?#.G.....!##
 #>.#_.G.##??
 ?##?###.>#??
@@ -869,7 +902,7 @@ const (
 #....###...|...P+
 #_...###...|...P+
 ##..G!#!G.##....#
-#>........>#.P._#
+#>........>%.P._#
 ?############+##?`
 	VaultSpecialCelmists2 = `
 ?##?##########
@@ -885,7 +918,7 @@ const (
 ?###???.-.??????
 #...#..P...?????
 +.P.|....P.....-
-##|##W#|||#W####
+##|##W#|||#W#%##
 ?#....G...G....#
 ??#!._#._.#_.!#?
 ???#..G...G..#??
