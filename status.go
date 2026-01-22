@@ -198,10 +198,16 @@ func (md *model) statusHPColor() rune {
 	g := md.g
 	hpColor := 'G'
 	switch g.Player.HP + g.Player.HPbonus {
-	case 1, 2:
+	case 1:
 		hpColor = 'R'
-	case 3, 4:
+	case 2:
+		hpColor = 'O'
+	case 3:
 		hpColor = 'Y'
+	case 4:
+		if g.Player.HPMax() > 4 {
+			hpColor = 'Y'
+		}
 	}
 	return hpColor
 }
@@ -212,8 +218,10 @@ func (md *model) statusMPColor() rune {
 	switch g.Player.MP {
 	case 1, 2:
 		mpColor = 'M'
-	case 3, 4:
+	case 3:
 		mpColor = 'V'
+	case 4:
+		mpColor = 'C'
 	}
 	return mpColor
 }
