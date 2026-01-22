@@ -26,7 +26,8 @@ Improved and reworked content:
   player, but the monster would still move or even attack you (if adjacent).
   That wasn't very intuitive and could lead to instant surprise-attacks behind
   doors. To compensate for this buff, the player now has 1 less maximum HP and
-  MP.
+  MP, though you get +1 MP after liberating Shaedra when returning Marevor's
+  artifact in exchange for a new special magara.
 * Monster noise visual marking now uses different colors for different kinds of
   noises, like in Shamogu. Also, it has been adjusted so that different kinds
   of noises are heard at varied ranges. Also, cloak of hearing should now be

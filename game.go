@@ -190,7 +190,6 @@ func (g *Game) GenMap() {
 func (g *Game) InitPlayer() {
 	g.Player = &Player{
 		HP:      DefaultHealth,
-		MP:      DefaultMPmax,
 		Bananas: 1,
 	}
 	g.Player.AFOV = map[gruid.Point]bool{}
@@ -202,6 +201,7 @@ func (g *Game) InitPlayer() {
 		{},
 		{},
 	}
+	g.Player.MP = g.Player.MPMax()
 	g.ProcInfo.GeneratedMagaras = []magaraKind{}
 	g.Player.Magaras[0] = g.RandomStartingMagara()
 	g.ProcInfo.GeneratedMagaras = append(g.ProcInfo.GeneratedMagaras, g.Player.Magaras[0].Kind)

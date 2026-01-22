@@ -44,12 +44,10 @@ func (pl *Player) HPMax() int {
 	return hpmax
 }
 
-// DefaultMPmax represents the starting max MP.
-const DefaultMPmax = 5
-
-// MPMax returns the maximum MP.
+// MPMax returns the maximum MP. It's the number of magaras increased by one,
+// so that it increases by one once you liberate Shaedra.
 func (pl *Player) MPMax() int {
-	return DefaultMPmax
+	return len(pl.Magaras) + 1
 }
 
 // HasStatus reports whether the player has the given status effect.
