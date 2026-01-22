@@ -161,7 +161,7 @@ func (cev *PosEvent) Handle(g *Game) {
 		if _, ok := g.Map.Clouds[cev.P]; !ok {
 			break
 		}
-		for _, p := range g.playerPassableNeighbors(cev.P) {
+		for _, p := range g.PlayerPassableNeighbors(cev.P) {
 			if RandInt(10) == 0 {
 				continue
 			}

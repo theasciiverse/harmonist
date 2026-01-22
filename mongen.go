@@ -919,7 +919,7 @@ func (g *Game) freeCellForBandMonster(p gruid.Point) gruid.Point {
 		if count > maxIterations {
 			return g.freeCellForMonster()
 		}
-		neighbors := g.playerPassableNeighbors(p)
+		neighbors := g.PlayerPassableNeighbors(p)
 		if len(neighbors) == 0 {
 			// should not happen
 			log.Printf("no neighbors for %v", p)

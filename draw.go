@@ -165,7 +165,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 	}
 	if g.Wizard == WizardMap {
 		fgColor, bgColor = ColorForeground, ColorBackgroundSecondary
-		if len(g.nonWallNeighbors(p)) == 0 {
+		if !g.HasNonWallNeighbors(p) {
 			r = ' '
 			bgColor = ColorBackground
 			return
@@ -195,7 +195,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 	}
 	if g.Wizard == WizardSeeAll {
 		if t == WallCell {
-			if len(g.nonWallNeighbors(p)) == 0 {
+			if !g.HasNonWallNeighbors(p) {
 				r = ' '
 				return
 			}
@@ -210,6 +210,8 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 	}
 	var fgTerrain gruid.Color
 	switch {
+	case kt == WallCell || kt == WindowCell:
+		r, fgColor = g.TerrainStyle(kt, p)
 	case CoversPlayer(kt):
 		r, fgTerrain = g.TerrainStyle(kt, p)
 		if p == g.Player.P {

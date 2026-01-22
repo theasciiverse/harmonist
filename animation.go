@@ -258,7 +258,7 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 		colors[1] = ColorMagenta
 	}
 	for range 3 {
-		nb := g.playerPassableNeighbors(p)
+		nb := g.PlayerPassableNeighbors(p)
 		if es != AroundWallExplosion {
 			nb = append(nb, p)
 		}

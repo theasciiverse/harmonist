@@ -784,7 +784,7 @@ func (g *Game) EvokeConfusion() error {
 }
 
 func (g *Game) EvokeFire() error {
-	burnpos := g.flammableNeighbors(g.Player.P)
+	burnpos := g.FlammableNeighbors(g.Player.P)
 	if len(burnpos) == 0 {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}

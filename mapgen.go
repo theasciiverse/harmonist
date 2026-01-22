@@ -35,19 +35,6 @@ func (mg *MapGen) WallCell() gruid.Point {
 	}
 }
 
-// HasNonWallExploredNeighbor reports whether the given point is at the
-// exploration frontier.
-func (g *Game) HasNonWallExploredNeighbor(p gruid.Point) bool {
-	neighbors := g.cardinalNeighbors(p)
-	for _, q := range neighbors {
-		kt := g.Map.KnownTerrain.At(q)
-		if IsKnown(kt) && kt != WallCell {
-			return true
-		}
-	}
-	return false
-}
-
 // MapGen is used for map generation.
 type MapGen struct {
 	m         *Map
@@ -755,7 +742,7 @@ loop:
 		return
 	}
 	itpos := invalidPos
-	neighbors := g.playerPassableNeighbors(g.Player.P)
+	neighbors := g.PlayerPassableNeighbors(g.Player.P)
 	for i := range len(neighbors) {
 		j := RandInt(len(neighbors) - i)
 		neighbors[i], neighbors[j] = neighbors[j], neighbors[i]
@@ -1292,7 +1279,7 @@ func (mg *MapGen) DigBlock(block []gruid.Point) []gruid.Point {
 		if d.HasFreeNeighbor(p) {
 			break
 		}
-		p = randomNeighbor(p)
+		p = RandomNeighbor(p)
 		if !InMap(p) {
 			block = block[:0]
 			p = mg.WallCell()

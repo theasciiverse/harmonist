@@ -136,7 +136,7 @@ func AllowsFog(t rl.Cell) bool {
 // CoversPlayer reports whether the terrain covers for the player (drawn on top).
 func CoversPlayer(t rl.Cell) bool {
 	switch t {
-	case WallCell, BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell, WindowCell:
+	case BarrelCell, TableCell, TreeCell, HoledWallCell, BarrierCell:
 		return true
 	default:
 		return false

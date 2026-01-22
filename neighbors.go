@@ -7,14 +7,14 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
-// cardinalNeighbors returns cardinal neighbors as a slice.
-func (g *Game) cardinalNeighbors(p gruid.Point) []gruid.Point {
+// CardinalNeighbors returns cardinal neighbors as a slice.
+func (g *Game) CardinalNeighbors(p gruid.Point) []gruid.Point {
 	return slices.Collect(Neighbors(p))
 }
 
-// playerPassableNeighbors returns all neighbors (including diagonal ones) that
+// PlayerPassableNeighbors returns all neighbors (including diagonal ones) that
 // are passable for the player.
-func (g *Game) playerPassableNeighbors(p gruid.Point) []gruid.Point {
+func (g *Game) PlayerPassableNeighbors(p gruid.Point) []gruid.Point {
 	var ps []gruid.Point
 	for q := range AllNeighbors(p) {
 		if InMap(q) && IsPlayerPassable(g.Map.At(q)) {
@@ -24,23 +24,41 @@ func (g *Game) playerPassableNeighbors(p gruid.Point) []gruid.Point {
 	return ps
 }
 
-// nonWallNeighbors returns all non-wall cardinal neighbors as a slice.
-func (g *Game) nonWallNeighbors(p gruid.Point) []gruid.Point {
-	return slices.Collect(NeighborsFunc(p, func(q gruid.Point) bool {
+// HasNonWallNeighbors returns all non-wall cardinal neighbors as a slice.
+func (g *Game) HasNonWallNeighbors(p gruid.Point) bool {
+	for range NeighborsFunc(p, func(q gruid.Point) bool {
 		return InMap(q) && g.Map.At(q) != WallCell
-	}))
+	}) {
+		return true
+	}
+	return false
 }
 
-// flammableNeighbors returns all flammable neighbors.
-func (g *Game) flammableNeighbors(p gruid.Point) []gruid.Point {
+// HasNonWallExploredNeighbor reports whether the given point is at the
+// exploration frontier.
+func (g *Game) HasNonWallExploredNeighbor(p gruid.Point) bool {
+	for range NeighborsFunc(p, func(q gruid.Point) bool {
+		if !InMap(q) {
+			return false
+		}
+		kt := g.Map.KnownTerrain.At(q)
+		return IsKnown(kt) && kt != WallCell
+	}) {
+		return true
+	}
+	return false
+}
+
+// FlammableNeighbors returns all flammable neighbors.
+func (g *Game) FlammableNeighbors(p gruid.Point) []gruid.Point {
 	return slices.Collect(NeighborsFunc(p, func(q gruid.Point) bool {
 		return InMap(q) && Flammable(g.Map.At(q))
 	}))
 }
 
-// randomNeighbor returns a random neighbor with some bias toward horizontal
+// RandomNeighbor returns a random neighbor with some bias toward horizontal
 // directions.
-func randomNeighbor(p gruid.Point) gruid.Point {
+func RandomNeighbor(p gruid.Point) gruid.Point {
 	switch RandInt(6) {
 	case 0, 1:
 		return p.Add(gruid.Point{1, 0})

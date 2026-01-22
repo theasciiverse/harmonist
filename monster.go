@@ -613,7 +613,7 @@ func (m *Monster) AttackAction(g *Game) bool {
 // Explode handles nadre explosions.
 func (m *Monster) Explode(g *Game) {
 	m.Dead = true
-	neighbors := g.cardinalNeighbors(m.P)
+	neighbors := g.CardinalNeighbors(m.P)
 	g.Logf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
 	g.md.ExplosionAnimation(FireExplosion, m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
@@ -885,7 +885,7 @@ func (m *Monster) ComputePath(g *Game) {
 		m.Path = m.APath(g, m.P, m.Target)
 		if len(m.Path) == 0 && !m.Status(MonsConfused) {
 			// if target is not accessible, try free neighbor cells
-			for _, npos := range g.playerPassableNeighbors(m.Target) {
+			for _, npos := range g.PlayerPassableNeighbors(m.Target) {
 				m.Path = m.APath(g, m.P, npos)
 				if len(m.Path) > 0 {
 					m.Target = npos
@@ -1390,7 +1390,7 @@ func (m *Monster) RangeBlocked(g *Game) bool {
 // BarrierCandidates returns the list of possible candidates for an oric
 // barrier.
 func (g *Game) BarrierCandidates(p gruid.Point, dir gruid.Point) []gruid.Point {
-	candidates := g.cardinalNeighbors(p)
+	candidates := g.CardinalNeighbors(p)
 	bestpos := p.Add(dir)
 	if Distance(bestpos, p) > 1 {
 		j := 0
