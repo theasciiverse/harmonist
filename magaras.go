@@ -72,9 +72,9 @@ func (mag Magara) Oric() bool {
 // DefaultCharges returns the default number of charges for a magara kind.
 func (m magaraKind) DefaultCharges() int {
 	switch m {
-	case LevitationMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
+	case LevitationMagara, ShadowsMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
 		return 6
-	case ParalysisMagara, ShadowsMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, DelayedOricExplosionMagara:
+	case ParalysisMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, DelayedOricExplosionMagara:
 		return 5
 	case EnergyMagara:
 		return 1
