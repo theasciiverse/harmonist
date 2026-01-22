@@ -327,7 +327,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case LevitationMagara:
 		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusLevitation.String(), DurationLevitation, StatusLevitation.Desc())
 	case FireMagara:
-		desc = "Throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures. Then smoke will produce purple mist inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
+		desc = "Throws small magical sparks at flammable terrain adjacent to you. Flammable terrain is first consumed by magical flames that are by themselves harmless to creatures, and then smoke will produce purple mist around, inducing sleep and confusion in monsters. As a gawalt monkey, you resist sleepiness, but you will still feel confused. The fire does often expand to other adjacent flammable terrain."
 	case FogMagara:
 		desc = "Creates a dense fog cloud in a 3-range radius using harmonic energies. The cloud will dissipate with time."
 	case ShadowsMagara:
@@ -335,9 +335,9 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case NoiseMagara:
 		desc = "Tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. The possible monster destinations will be marked with noise symbols in the map. It only works on monsters that are not already seeing you."
 	case ConfusionMagara:
-		desc = fmt.Sprintf("Confuses monsters in sight with harmonic light and sounds, leaving them unable to attack you for %d turns.", DurationConfusionMonster)
+		desc = fmt.Sprintf("Confuses monsters in sight with harmonic light, leaving them unable to attack you for %d turns.", DurationConfusionMonster)
 	case ParalysisMagara:
-		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with sound and light illusions for %d turns.", DurationParalysisMonster)
+		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with harmonic illusions for %d turns.", DurationParalysisMonster)
 	case SleepingMagara:
 		desc = "Induces deep sleeping and exhaustion for up to three random monsters you see in cardinal directions using hypnotic illusions."
 	case TeleportOtherMagara:
@@ -347,7 +347,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case ObstructionMagara:
 		desc = fmt.Sprintf("Creates temporal barriers with oric energy between you and monsters in sight. They last at least %d turns.", DurationMagicalBarrier)
 	case LignificationMagara:
-		desc = fmt.Sprintf("Liberates magical spores that lignify up to three monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
+		desc = fmt.Sprintf("Liberates magical spores that lignify up to three random monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
 	case EnergyMagara:
 		desc = "Replenishes your MP and HP."
 	case TransparencyMagara:
@@ -651,6 +651,10 @@ func (g *Game) EvokeParalysis() error {
 }
 
 func (g *Game) EvokeSleeping() error {
+	// TODO: The limitation of number of monsters is a bit arbitrary.
+	// Same for teleport magara. Either remove the limitation (and adjust
+	// number of charges if necessary to compensate) or use a different
+	// kind of limitation (like only one monster in each direction).
 	ms := g.MonstersInCardinalFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
@@ -684,6 +688,10 @@ func (g *Game) EvokeSleeping() error {
 }
 
 func (g *Game) EvokeLignification() error {
+	// TODO: for lignification spores, we probably want a different kind of
+	// targeting. Maybe path-propagating based with some maximal distance,
+	// usable out of view. The same can probably be said for the tree
+	// stone. The limitation on number of monsters is not very nice.
 	ms := g.MonstersInFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
