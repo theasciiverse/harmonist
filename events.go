@@ -192,7 +192,7 @@ func (cev *PosEvent) Handle(g *Game) {
 		g.LogStyled("Craack!", logSpecial)
 		g.StoryPrint("Special event: earthquake!")
 		g.MakeNoise(EarthquakeNoise, cev.P)
-		g.Map.NoiseIllusion[cev.P] = true
+		g.Map.Noise[cev.P] = true
 		it := g.Map.Terrain.Iterator()
 		for it.Next() {
 			p := it.P()
@@ -210,7 +210,7 @@ func (cev *PosEvent) Handle(g *Game) {
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.Log("Pop!")
-			g.Map.NoiseIllusion[cev.P] = true
+			g.Map.Noise[cev.P] = true
 			g.MakeNoise(DelayedHarmonicNoise, cev.P)
 		} else {
 			cev.Timer--
@@ -232,7 +232,7 @@ func (cev *PosEvent) Handle(g *Game) {
 func (g *Game) OricExplosion(at gruid.Point) {
 	g.Player.Statuses[StatusDelay] = 0
 	g.Log(g.CrackSound())
-	g.Map.NoiseIllusion[at] = true
+	g.Map.Noise[at] = true
 	mp := &GridPath{}
 	g.MakeNoise(OricExplosionNoise, at)
 	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{at}, 7)

@@ -14,6 +14,7 @@ type Map struct {
 	KnownTerrain    rl.Grid                 // player's terrain knowledge
 	MagicalBarriers map[gruid.Point]rl.Cell // original terrain (under the barrier)
 	Clouds          map[gruid.Point]Cloud
+	Noise           map[gruid.Point]bool
 	NoiseIllusion   map[gruid.Point]bool
 }
 

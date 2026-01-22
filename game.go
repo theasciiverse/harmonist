@@ -210,7 +210,8 @@ func (g *Game) InitPlayer() {
 	// Testing
 	// g.Player.Inventory.Body = CloakHear
 	// g.Player.Magaras[1] = Magara{Kind: SwiftnessMagara, Charges: 10}
-	// g.Player.Magaras[2] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}
+	// g.Player.Magaras[2] = Magara{Kind: NoiseMagara, Charges: 10}
+	// g.Player.Magaras[3] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}
 }
 
 // genFlavour represents special map flavours (amulet, cloak).
@@ -390,6 +391,7 @@ func putRandomLevels(m map[int]bool, n int) {
 
 // InitLevelStructures (re-)initializes various level-specific structures.
 func (g *Game) InitLevelStructures() {
+	g.Map.Noise = map[gruid.Point]bool{}
 	g.Map.NoiseIllusion = map[gruid.Point]bool{}
 	g.Map.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.Map.Clouds = map[gruid.Point]Cloud{}
@@ -709,6 +711,7 @@ func (g *Game) Died() bool {
 
 // EndTurn finalizes a turn.
 func (g *Game) EndTurn() {
+	clear(g.Map.Noise)
 	g.Events.Push(EndTurnEvent{}, g.Turn+DurationTurn)
 	for {
 		if g.Died() {

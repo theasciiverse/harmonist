@@ -355,6 +355,7 @@ func (g *Game) SeePosition(p gruid.Point) {
 			mons.LastKnownPos = invalidPos
 		}
 	}
+	delete(g.Map.Noise, p)
 	delete(g.Map.NoiseIllusion, p)
 }
 

@@ -718,7 +718,7 @@ func (g *Game) EvokeNoise() error {
 	const noiseDist = 23
 	g.PR.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, noiseDist)
 	noises := []gruid.Point{}
-	g.Map.NoiseIllusion = map[gruid.Point]bool{}
+	clear(g.Map.NoiseIllusion)
 	for _, mons := range g.Monsters {
 		if !mons.Exists() {
 			continue
