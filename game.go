@@ -94,7 +94,7 @@ const spEvMax = int(MistLevel)
 type startParams struct {
 	Lore         map[int]bool
 	Blocked      map[int]bool
-	Special      []specialRoom
+	Special      []specialVault
 	Event        map[int]specialEvent
 	Windows      map[int]bool
 	Trees        map[int]bool
@@ -260,35 +260,35 @@ func (g *Game) InitFirstLevel() {
 		// a second one sometimes!
 		g.Params.Blocked[2+RandInt(WinDepth-2)] = true
 	}
-	g.Params.Special = []specialRoom{
-		noSpecialRoom, // unused (depth 0)
-		noSpecialRoom,
-		noSpecialRoom,
-		roomMilfids,
-		roomCelmists,
-		roomVampires,
-		roomHarpies,
-		roomTreeMushrooms,
-		roomShaedra,
-		roomCelmists,
-		roomMirrorSpecters,
-		roomArtifact,
+	g.Params.Special = []specialVault{
+		noSpecialVault, // unused (depth 0)
+		noSpecialVault,
+		noSpecialVault,
+		vaultMilfids,
+		vaultCelmists,
+		vaultVampires,
+		vaultHarpies,
+		vaultTreeMushrooms,
+		vaultShaedra,
+		vaultCelmists,
+		vaultMirrorSpecters,
+		vaultArtifact,
 	}
 	if RandInt(2) == 0 {
-		g.Params.Special[5] = roomNixes
+		g.Params.Special[5] = vaultNixes
 	}
 	if RandInt(4) == 0 {
-		if g.Params.Special[5] == roomNixes {
-			g.Params.Special[9] = roomVampires
+		if g.Params.Special[5] == vaultNixes {
+			g.Params.Special[9] = vaultVampires
 		} else {
-			g.Params.Special[9] = roomNixes
+			g.Params.Special[9] = vaultNixes
 		}
 	}
 	if RandInt(4) == 0 {
 		if RandInt(2) == 0 {
-			g.Params.Special[3] = roomFrogs
+			g.Params.Special[3] = vaultFrogs
 		} else {
-			g.Params.Special[7] = roomFrogs
+			g.Params.Special[7] = vaultFrogs
 		}
 	}
 	if RandInt(4) == 0 {

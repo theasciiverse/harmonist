@@ -63,12 +63,12 @@ func (tp *TunnelPath) Neighbors(p gruid.Point) []gruid.Point {
 }
 
 func (tp *TunnelPath) Cost(from, to gruid.Point) int {
-	if tp.dg.room[from] && !tp.dg.tunnel[from] {
+	if tp.dg.vault[from] && !tp.dg.tunnel[from] {
 		return 50
 	}
 	cost := 1
 	t := tp.dg.m.At(from)
-	if tp.dg.room[from] {
+	if tp.dg.vault[from] {
 		cost += 7
 	} else if !tp.dg.tunnel[from] && t != GroundCell {
 		cost++

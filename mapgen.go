@@ -52,10 +52,10 @@ func (g *Game) HasNonWallExploredNeighbor(p gruid.Point) bool {
 type MapGen struct {
 	m         *Map
 	tunnel    map[gruid.Point]bool
-	room      map[gruid.Point]bool
-	rooms     []*room
+	vault     map[gruid.Point]bool
+	vaults    []*vault
 	spl       places
-	special   specialRoom
+	special   specialVault
 	layout    maplayout
 	PR        *paths.PathRange
 	rand      *rand.Rand
@@ -73,8 +73,8 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 	m.KnownTerrain.Fill(Unknown)
 	mg.m = m
 	mg.tunnel = make(map[gruid.Point]bool)
-	mg.room = make(map[gruid.Point]bool)
-	mg.rooms = []*room{}
+	mg.vault = make(map[gruid.Point]bool)
+	mg.vaults = []*vault{}
 	switch ml {
 	case AutomataCave:
 		mg.genCellularAutomataCaveMap()
@@ -93,7 +93,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 	}
 	var places []gruid.Point
 	var nspecial = 4
-	if sr := g.Params.Special[g.Map.Depth]; sr != noSpecialRoom {
+	if sr := g.Params.Special[g.Map.Depth]; sr != noSpecialVault {
 		nspecial--
 		pl := PlacementEdge
 		if mg.rand.IntN(3) == 0 {
@@ -103,7 +103,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 		var ok bool
 		count := 0
 		for {
-			places, ok = mg.genRooms(sr.Templates(), 1, pl)
+			places, ok = mg.genVaults(sr.Templates(), 1, pl)
 			count++
 			if count > 150 {
 				if g.Map.Depth == WinDepth || g.Map.Depth == MaxDepth {
@@ -131,27 +131,27 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 	}
 	switch ml {
 	case RandomWalkCave:
-		mg.genRooms(roomBigTemplates, nspecial-1, PlacementRandom)
-		mg.genRooms(roomNormalTemplates, normal, PlacementRandom)
+		mg.genVaults(vaultBigTemplates, nspecial-1, PlacementRandom)
+		mg.genVaults(vaultNormalTemplates, normal, PlacementRandom)
 	case RandomWalkTreeCave:
-		mg.genRooms(roomBigTemplates, nspecial+1, PlacementRandom)
-		mg.genRooms(roomNormalTemplates, normal+2, PlacementRandom)
+		mg.genVaults(vaultBigTemplates, nspecial+1, PlacementRandom)
+		mg.genVaults(vaultNormalTemplates, normal+2, PlacementRandom)
 	case RandomSmallWalkCaveUrbanised:
 		nspecial += 3
-		mg.genRooms(roomBigTemplates, nspecial, PlacementRandom)
-		mg.genRooms(roomNormalTemplates, normal+5, PlacementRandom)
+		mg.genVaults(vaultBigTemplates, nspecial, PlacementRandom)
+		mg.genVaults(vaultNormalTemplates, normal+5, PlacementRandom)
 	case NaturalCave:
 		nspecial++
 		if g.Map.Depth == WinDepth {
 			nspecial += 2
 		}
-		mg.genRooms(roomBigTemplates, nspecial, PlacementRandom)
-		mg.genRooms(roomNormalTemplates, normal-3, PlacementRandom)
+		mg.genVaults(vaultBigTemplates, nspecial, PlacementRandom)
+		mg.genVaults(vaultNormalTemplates, normal-3, PlacementRandom)
 	default:
-		mg.genRooms(roomBigTemplates, nspecial, PlacementRandom)
-		mg.genRooms(roomNormalTemplates, normal+2, PlacementRandom)
+		mg.genVaults(vaultBigTemplates, nspecial, PlacementRandom)
+		mg.genVaults(vaultNormalTemplates, normal+2, PlacementRandom)
 	}
-	mg.connectRooms()
+	mg.connectVaults()
 	g.Map = m
 	mg.putDoors()
 	mg.playerStart(g, places)
@@ -199,14 +199,14 @@ const (
 	PlacementEdge
 )
 
-// genRooms generates the vaults.
-func (mg *MapGen) genRooms(templates []string, n int, pl placement) (ps []gruid.Point, ok bool) {
+// genVaults generates the vaults.
+func (mg *MapGen) genVaults(templates []string, n int, pl placement) (ps []gruid.Point, ok bool) {
 	if len(templates) == 0 {
 		return nil, false
 	}
 	ok = true
 	for range n {
-		var r *room
+		var r *vault
 		count := 500
 		var p gruid.Point
 		var tpl string
@@ -225,14 +225,14 @@ func (mg *MapGen) genRooms(templates []string, n int, pl placement) (ps []gruid.
 				}
 			}
 			tpl = templates[mg.rand.IntN(len(templates))]
-			r = mg.newRoom(p, tpl)
+			r = mg.newVault(p, tpl)
 		}
 		if r != nil {
 			switch pl {
 			case PlacementCenter, PlacementEdge:
 				r.special = true
 			}
-			mg.rooms = append(mg.rooms, r)
+			mg.vaults = append(mg.vaults, r)
 			ps = append(ps, p)
 		} else {
 			ok = false
@@ -242,8 +242,8 @@ func (mg *MapGen) genRooms(templates []string, n int, pl placement) (ps []gruid.
 }
 
 // Newroom creates a new room at the given position of the given kind.
-func (mg *MapGen) newRoom(rpos gruid.Point, kind string) *room {
-	r := &room{p: rpos, vault: &rl.Vault{}}
+func (mg *MapGen) newVault(rpos gruid.Point, kind string) *vault {
+	r := &vault{p: rpos, vault: &rl.Vault{}}
 	err := r.vault.Parse(kind)
 	if err != nil {
 		log.Printf("bad vault:%v", err)
@@ -287,18 +287,18 @@ func (mg *MapGen) newRoom(rpos gruid.Point, kind string) *room {
 	return r
 }
 
-// connectRooms connects the rooms through tunnels to ensure connexity.
-func (mg *MapGen) connectRooms() {
-	sort.Sort(roomSlice(mg.rooms))
-	for i, r := range mg.rooms {
+// connectVaults connects the rooms through tunnels to ensure connexity.
+func (mg *MapGen) connectVaults() {
+	sort.Sort(roomSlice(mg.vaults))
+	for i, r := range mg.vaults {
 		if i == 0 {
 			continue
 		}
 		if r.tunnels > 0 {
 			continue
 		}
-		nearest := mg.nearestConnectedRoom(i)
-		ok := mg.connectRoomsShortestPath(nearest, i)
+		nearest := mg.nearestConnectedVault(i)
+		ok := mg.connectVaultsShortestPath(nearest, i)
 		for !ok {
 			panic("connect rooms")
 		}
@@ -311,7 +311,7 @@ func (mg *MapGen) connectRooms() {
 		extraTunnels = 4
 	}
 	count := 0
-	for i, r := range mg.rooms {
+	for i, r := range mg.vaults {
 		if count >= extraTunnels {
 			break
 		}
@@ -319,12 +319,12 @@ func (mg *MapGen) connectRooms() {
 			continue
 		}
 		count++
-		mg.connectRoomsShortestPath(i, mg.nearRoom(i))
+		mg.connectVaultsShortestPath(i, mg.nearVault(i))
 	}
 	if count >= extraTunnels {
 		return
 	}
-	for i, r := range mg.rooms {
+	for i, r := range mg.vaults {
 		if count >= extraTunnels {
 			break
 		}
@@ -332,17 +332,17 @@ func (mg *MapGen) connectRooms() {
 			continue
 		}
 		count++
-		mg.connectRoomsShortestPath(i, mg.nearRoom(i))
+		mg.connectVaultsShortestPath(i, mg.nearVault(i))
 	}
 }
 
-// connectRoomsShortestPath connects two rooms with a paved ground tunnel.
-func (mg *MapGen) connectRoomsShortestPath(i, j int) bool {
+// connectVaultsShortestPath connects two rooms with a paved ground tunnel.
+func (mg *MapGen) connectVaultsShortestPath(i, j int) bool {
 	if i == j {
 		return false
 	}
-	r1 := mg.rooms[i]
-	r2 := mg.rooms[j]
+	r1 := mg.vaults[i]
+	r2 := mg.vaults[j]
 	var e1pos, e2pos gruid.Point
 	var e1i, e2i int
 	e1i = r1.UnusedEntry()
@@ -373,7 +373,7 @@ func (mg *MapGen) connectRoomsShortestPath(i, j int) bool {
 }
 
 // roomSlice is used for sorting vaults/rooms.
-type roomSlice []*room
+type roomSlice []*vault
 
 func (rs roomSlice) Len() int      { return len(rs) }
 func (rs roomSlice) Swap(i, j int) { rs[i], rs[j] = rs[j], rs[i] }
@@ -388,14 +388,14 @@ func (rs roomSlice) Less(i, j int) bool {
 	return rs[i].special || !rs[j].special && Distance(ipos, center) <= Distance(jpos, center)
 }
 
-func (mg *MapGen) nearestConnectedRoom(i int) (k int) {
-	r := mg.rooms[i]
+func (mg *MapGen) nearestConnectedVault(i int) (k int) {
+	r := mg.vaults[i]
 	d := unreachable
-	for j, nextRoom := range mg.rooms[:i] {
+	for j, nextVault := range mg.vaults[:i] {
 		if j == i {
 			continue
 		}
-		nd := roomDistance(r, nextRoom)
+		nd := vaultDistance(r, nextVault)
 		if nd < d {
 			d = nd
 			k = j
@@ -404,14 +404,14 @@ func (mg *MapGen) nearestConnectedRoom(i int) (k int) {
 	return k
 }
 
-func (mg *MapGen) nearRoom(i int) (k int) {
-	r := mg.rooms[i]
+func (mg *MapGen) nearVault(i int) (k int) {
+	r := mg.vaults[i]
 	d := unreachable
-	for j, nextRoom := range mg.rooms {
+	for j, nextVault := range mg.vaults {
 		if j == i {
 			continue
 		}
-		nd := roomDistance(r, nextRoom)
+		nd := vaultDistance(r, nextVault)
 		if nd < d {
 			n := mg.rand.IntN(5)
 			if n > 0 {
@@ -425,9 +425,9 @@ func (mg *MapGen) nearRoom(i int) (k int) {
 
 // putDoors places doors.
 func (mg *MapGen) putDoors() {
-	for _, r := range mg.rooms {
+	for _, r := range mg.vaults {
 		for _, e := range r.entries {
-			if e.used && !e.virtual {
+			if e.used && !e.nodoor {
 				r.places = append(r.places, place{p: e.p, kind: PlaceDoor})
 			}
 		}
@@ -447,7 +447,7 @@ func (mg *MapGen) putHoledWalls(g *Game, n int) {
 	it := mg.m.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		if mg.room[p] && g.holedWallCandidate(p) {
+		if mg.vault[p] && g.holedWallCandidate(p) {
 			candidates = append(candidates, p)
 		}
 	}
@@ -466,7 +466,7 @@ func (mg *MapGen) putWindows(g *Game, n int) {
 	it := mg.m.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		if mg.room[p] && g.holedWallCandidate(p) {
+		if mg.vault[p] && g.holedWallCandidate(p) {
 			candidates = append(candidates, p)
 		}
 	}
@@ -537,7 +537,7 @@ func (mg *MapGen) putCavernCells() {
 	it := mg.m.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()
-		if it.Cell() == GroundCell && !mg.room[p] && !mg.tunnel[p] {
+		if it.Cell() == GroundCell && !mg.vault[p] && !mg.tunnel[p] {
 			d.Set(p, CavernCell)
 		}
 	}
@@ -674,7 +674,7 @@ func (mg *MapGen) putLore(g *Game) {
 		if count > 2000 {
 			panic("infinite loop")
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceItem)
 	}
 	count = 0
 	for {
@@ -718,7 +718,7 @@ func (mg *MapGen) genLights(g *Game) {
 		g.Map.Set(p, LightCell)
 	}
 	for i := 0; i < ni; i++ {
-		p := mg.rooms[RandInt(len(mg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
+		p := mg.vaults[RandInt(len(mg.vaults))].RandomPlaces(PlaceSpecialOrStatic)
 		if p != invalidPos {
 			g.Map.Set(p, LightCell)
 		} else if mg.rand.IntN(10) > 0 {
@@ -737,13 +737,13 @@ func (mg *MapGen) genLights(g *Game) {
 // playerStart generates the player's starting room features.
 func (mg *MapGen) playerStart(g *Game, places []gruid.Point) {
 	const far = 30
-	r := mg.rooms[len(mg.rooms)-1]
+	r := mg.vaults[len(mg.vaults)-1]
 loop:
-	for i := len(mg.rooms) - 2; i >= 0; i-- {
+	for i := len(mg.vaults) - 2; i >= 0; i-- {
 		for _, p := range places {
-			if Distance(r.p, p) < far && Distance(mg.rooms[i].p, p) >= far {
-				r = mg.rooms[i]
-				mg.rooms[len(mg.rooms)-1], mg.rooms[i] = mg.rooms[i], mg.rooms[len(mg.rooms)-1]
+			if Distance(r.p, p) < far && Distance(mg.vaults[i].p, p) >= far {
+				r = mg.vaults[i]
+				mg.vaults[len(mg.vaults)-1], mg.vaults[i] = mg.vaults[i], mg.vaults[len(mg.vaults)-1]
 				break loop
 			}
 		}
@@ -803,7 +803,7 @@ func (mg *MapGen) genBanana(g *Game) {
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
 		t := mg.m.At(p)
-		if t == GroundCell && !mg.room[p] {
+		if t == GroundCell && !mg.vault[p] {
 			mg.m.Set(p, BananaCell)
 			g.Objects.Bananas[p] = true
 			break
@@ -820,7 +820,7 @@ func (mg *MapGen) genPotion(g *Game, ptn Potion) {
 		if count > maxIterations {
 			return
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceItem)
 	}
 	mg.m.Set(p, PotionCell)
 	g.Objects.Potions[p] = ptn
@@ -842,7 +842,7 @@ func (mg *MapGen) outsideGroundCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if t == GroundCell && !mg.room[p] {
+		if t == GroundCell && !mg.vault[p] {
 			return p
 		}
 	}
@@ -868,7 +868,7 @@ func (mg *MapGen) outsideCavernMiddleCell(g *Game) gruid.Point {
 		if t == GroundCell && count < 400 || t == FoliageCell && count < 350 {
 			continue
 		}
-		if IsGround(t) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
+		if IsGround(t) && !mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -900,7 +900,7 @@ func (mg *MapGen) genItem(g *Game) {
 		if count > maxIterations {
 			panic("infinite loop")
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceItem)
 	}
 	g.Map.Set(p, ItemCell)
 	var it Item
@@ -924,7 +924,7 @@ func (mg *MapGen) genSealStone(g *Game) {
 		if count > maxIterations {
 			panic("infinite loop")
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlaces(PlaceSpecialOrStatic)
 	}
 	g.Map.Set(p, StoneCell)
 	g.Objects.Stones[p] = SealStone
@@ -939,7 +939,7 @@ func (mg *MapGen) genMagara(g *Game) {
 		if count > maxIterations {
 			panic("infinite loop")
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceItem)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceItem)
 	}
 	g.Map.Set(p, MagaraCell)
 	mag := g.RandomMagara()
@@ -951,7 +951,7 @@ func (mg *MapGen) genMagara(g *Game) {
 func (mg *MapGen) genStairs(g *Game, st Stair) {
 	var ri, pj int
 	best := 0
-	for i, r := range mg.rooms {
+	for i, r := range mg.vaults {
 		for j, pl := range r.places {
 			score := Distance(pl.p, g.Player.P) + mg.rand.IntN(20)
 			if !pl.used && pl.kind == PlaceSpecialStatic && score > best {
@@ -961,7 +961,7 @@ func (mg *MapGen) genStairs(g *Game, st Stair) {
 			}
 		}
 	}
-	r := mg.rooms[ri]
+	r := mg.vaults[ri]
 	r.places[pj].used = true
 	r.places[pj].used = true
 	p := r.places[pj].p
@@ -977,7 +977,7 @@ func (mg *MapGen) genFakeStairs(g *Game) {
 	var ri, pj int
 	best := 0
 loop:
-	for i, r := range mg.rooms {
+	for i, r := range mg.vaults {
 		for _, pl := range r.places {
 			if mg.m.At(pl.p) == StairCell {
 				continue loop
@@ -992,7 +992,7 @@ loop:
 			}
 		}
 	}
-	r := mg.rooms[ri]
+	r := mg.vaults[ri]
 	r.places[pj].used = true
 	r.places[pj].used = true
 	p := r.places[pj].p
@@ -1009,7 +1009,7 @@ func (mg *MapGen) genBarrel(g *Game) {
 		if count > 500 {
 			return
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceSpecialStatic)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceSpecialStatic)
 	}
 	g.Map.Set(p, BarrelCell)
 	g.Objects.Barrels[p] = true
@@ -1024,7 +1024,7 @@ func (mg *MapGen) genTable(g *Game) {
 		if count > 500 {
 			return
 		}
-		p = mg.rooms[RandInt(len(mg.rooms))].RandomPlaces(PlaceSpecialOrStatic)
+		p = mg.vaults[RandInt(len(mg.vaults))].RandomPlaces(PlaceSpecialOrStatic)
 	}
 	g.Map.Set(p, TableCell)
 }
@@ -1074,7 +1074,7 @@ func (mg *MapGen) genStones(g *Game) {
 					p = mg.caveGroundCell()
 					break
 				}
-				p = mg.rooms[RandInt(len(mg.rooms))].RandomPlace(PlaceStatic)
+				p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceStatic)
 			}
 			st = mg.randomInStone(genStones)
 			genStones = append(genStones, st)
@@ -1095,7 +1095,7 @@ func (mg *MapGen) caveGroundCell() gruid.Point {
 		y := mg.rand.IntN(MapHeight)
 		p := gruid.Point{x, y}
 		t := mg.m.At(p)
-		if (t == GroundCell || t == CavernCell || t == QueenRockCell) && !mg.room[p] {
+		if (t == GroundCell || t == CavernCell || t == QueenRockCell) && !mg.vault[p] {
 			return p
 		}
 	}
@@ -1164,7 +1164,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 			continue
 		}
 		t := it.Cell()
-		if t == WallCell && !mg.room[p] {
+		if t == WallCell && !mg.vault[p] {
 			walls = append(walls, p)
 		}
 	}
@@ -1174,7 +1174,7 @@ func (mg *MapGen) genLake(fillt rl.Cell) {
 	d := mg.m
 	passable := func(p gruid.Point) func(q gruid.Point) bool {
 		return func(q gruid.Point) bool {
-			return InMap(q) && mg.m.At(q) == WallCell && !mg.room[q] && Distance(p, q) < 10+mg.rand.IntN(10)
+			return InMap(q) && mg.m.At(q) == WallCell && !mg.vault[q] && Distance(p, q) < 10+mg.rand.IntN(10)
 		}
 	}
 	for {

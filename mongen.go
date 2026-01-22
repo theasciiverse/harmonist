@@ -181,15 +181,15 @@ func (mg *MapGen) GenMonsters(g *Game) {
 	bandOricCelmistPair := []monsterBand{PairOricCelmist}
 	bandHarmonicCelmistPair := []monsterBand{PairHarmonicCelmist}
 	// special bands
-	if g.Params.Special[g.Map.Depth] != noSpecialRoom {
+	if g.Params.Special[g.Map.Depth] != noSpecialVault {
 		switch mg.special {
-		case roomVampires:
+		case vaultVampires:
 			mg.putRandomBandN(g, []monsterBand{SpecialLoneVampire}, 2)
-		case roomNixes:
+		case vaultNixes:
 			mg.putRandomBandN(g, []monsterBand{SpecialLoneNixe}, 2)
-		case roomFrogs:
+		case vaultFrogs:
 			mg.putRandomBandN(g, []monsterBand{SpecialLoneBlinkingFrog}, 2)
-		case roomMilfids:
+		case vaultMilfids:
 			switch mg.rand.IntN(6) {
 			case 0:
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneYack}, 2)
@@ -198,7 +198,7 @@ func (mg *MapGen) GenMonsters(g *Game) {
 			default:
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneMilfid}, 2)
 			}
-		case roomCelmists:
+		case vaultCelmists:
 			switch mg.rand.IntN(3) {
 			case 0:
 				bandOricCelmists := []monsterBand{SpecialLoneOricCelmist}
@@ -212,19 +212,19 @@ func (mg *MapGen) GenMonsters(g *Game) {
 				mg.putRandomBandN(g, bandHarmonicCelmists, 1)
 				mg.putRandomBandN(g, bandOricCelmists, 1)
 			}
-		case roomHarpies:
+		case vaultHarpies:
 			if mg.rand.IntN(3) > 0 {
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneHarpy}, 2)
 			} else {
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneSpider}, 2)
 			}
-		case roomTreeMushrooms:
+		case vaultTreeMushrooms:
 			if mg.rand.IntN(3) > 0 {
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneTreeMushroom}, 2)
 			} else {
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneHazeCat}, 2)
 			}
-		case roomMirrorSpecters:
+		case vaultMirrorSpecters:
 			switch mg.rand.IntN(6) {
 			case 0:
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneAcidMound}, 2)
@@ -233,13 +233,13 @@ func (mg *MapGen) GenMonsters(g *Game) {
 			default:
 				mg.putRandomBandN(g, []monsterBand{SpecialLoneMirrorSpecter}, 2)
 			}
-		case roomShaedra:
+		case vaultShaedra:
 			if mg.rand.IntN(3) > 0 {
 				mg.putRandomBand(g, []monsterBand{SpecialLoneHighGuard})
 			} else {
 				mg.putRandomBand(g, []monsterBand{SpecialLoneOricCelmist})
 			}
-		case roomArtifact:
+		case vaultArtifact:
 			switch mg.rand.IntN(3) {
 			case 0:
 				mg.putRandomBand(g, []monsterBand{SpecialLoneHarmonicCelmist})
@@ -627,7 +627,7 @@ loop:
 			break
 		}
 		for range 20 {
-			r := mg.rooms[RandInt(len(mg.rooms)-1)]
+			r := mg.vaults[RandInt(len(mg.vaults)-1)]
 			for _, e := range r.places {
 				if e.kind == PlaceSpecialStatic {
 					p = r.RandomPlace(pl)
@@ -638,7 +638,7 @@ loop:
 				break loop
 			}
 		}
-		r := mg.rooms[RandInt(len(mg.rooms)-1)]
+		r := mg.vaults[RandInt(len(mg.vaults)-1)]
 		p = r.RandomPlace(pl)
 	}
 	bandinfo.Path = append(bandinfo.Path, p)
@@ -650,7 +650,7 @@ func (mg *MapGen) bandInfoGuardSpecial(g *Game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	p := invalidPos
 	count := 0
-	for _, r := range mg.rooms {
+	for _, r := range mg.vaults {
 		count++
 		if count > 1 {
 			log.Print("unavailable special guard position")
@@ -677,7 +677,7 @@ func (mg *MapGen) bandInfoPatrol(g *Game, band monsterBand, pl placeKind) bandIn
 			p = mg.insideCell(g)
 			break
 		}
-		p = mg.rooms[RandInt(len(mg.rooms)-1)].RandomPlace(pl)
+		p = mg.vaults[RandInt(len(mg.vaults)-1)].RandomPlace(pl)
 	}
 	target := invalidPos
 	count = 0
@@ -688,7 +688,7 @@ func (mg *MapGen) bandInfoPatrol(g *Game, band monsterBand, pl placeKind) bandIn
 			target = mg.insideCell(g)
 			break
 		}
-		target = mg.rooms[RandInt(len(mg.rooms)-1)].RandomPlace(pl)
+		target = mg.vaults[RandInt(len(mg.vaults)-1)].RandomPlace(pl)
 	}
 	bandinfo.Path = append(bandinfo.Path, p)
 	bandinfo.Path = append(bandinfo.Path, target)
@@ -700,7 +700,7 @@ func (mg *MapGen) bandInfoPatrolSpecial(g *Game, band monsterBand) bandInfo {
 	bandinfo := bandInfo{Kind: monsterBand(band)}
 	p := invalidPos
 	count := 0
-	for _, r := range mg.rooms {
+	for _, r := range mg.vaults {
 		count++
 		if count > 1 {
 			log.Print("unavailable special patrol position")
@@ -714,7 +714,7 @@ func (mg *MapGen) bandInfoPatrolSpecial(g *Game, band monsterBand) bandInfo {
 	}
 	target := invalidPos
 	count = 0
-	for _, r := range mg.rooms {
+	for _, r := range mg.vaults {
 		count++
 		if count > 1 {
 			log.Print("unavailable special second patrol position")
@@ -751,7 +751,7 @@ func (mg *MapGen) insideCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if mg.room[p] && (t == FoliageCell || t == GroundCell) {
+		if mg.vault[p] && (t == FoliageCell || t == GroundCell) {
 			return p
 		}
 	}
@@ -786,7 +786,7 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if (t == GroundCell || t == CavernCell) && !mg.room[p] && !mg.hasTooManyWallNeighbors(p) {
+		if (t == GroundCell || t == CavernCell) && !mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -847,7 +847,7 @@ func (mg *MapGen) outsideCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if !mg.room[p] && (t == FoliageCell || t == GroundCell) {
+		if !mg.vault[p] && (t == FoliageCell || t == GroundCell) {
 			return p
 		}
 	}

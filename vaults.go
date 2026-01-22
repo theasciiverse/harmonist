@@ -8,18 +8,19 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-type room struct {
+// vault represents a special vault region.
+type vault struct {
 	p       gruid.Point
 	w       int
 	h       int
-	entries []rentry
+	entries []ventry
 	places  []place
 	vault   *rl.Vault
 	special bool
 	tunnels int
 }
 
-// places represents the position of various special places.
+// places represents the position of various special story places.
 type places struct {
 	Shaedra  gruid.Point
 	Monolith gruid.Point
@@ -27,12 +28,14 @@ type places struct {
 	Artifact gruid.Point
 }
 
-type rentry struct {
-	p       gruid.Point
-	used    bool
-	virtual bool
+// ventry represents a vault entry.
+type ventry struct {
+	p      gruid.Point // position
+	used   bool        // whether the entry is actually used by a tunnel
+	nodoor bool        // whether the entry doesn't want a door
 }
 
+// placeKind represents the various kinds of special places within a vault.
 type placeKind int
 
 const (
@@ -45,24 +48,27 @@ const (
 	PlacePatrolSpecial
 )
 
+// place represents a special place within a vault.
 type place struct {
-	p    gruid.Point
-	kind placeKind
-	used bool
+	p    gruid.Point // position
+	kind placeKind   // kind of place
+	used bool        // whether the place is already used
 }
 
-func roomDistance(r1, r2 *room) int {
+// vaultDistance returns the distance between the center of two vaults.
+func vaultDistance(r1, r2 *vault) int {
 	return paths.DistanceManhattan(r1.p.Add(gruid.Point{r1.w / 2, r1.h / 2}), r2.p.Add(gruid.Point{r2.w / 2, r2.h / 2}))
 }
 
-func (r *room) HasSpace(dg *MapGen) bool {
+// HasSpace reports whether there's enough space for the vault.
+func (r *vault) HasSpace(dg *MapGen) bool {
 	if MapWidth-r.p.X < r.w || MapHeight-r.p.Y < r.h {
 		return false
 	}
 	for i := r.p.X - 1; i <= r.p.X+r.w; i++ {
 		for j := r.p.Y - 1; j <= r.p.Y+r.h; j++ {
 			p := gruid.Point{i, j}
-			if InMap(p) && dg.room[p] {
+			if InMap(p) && dg.vault[p] {
 				return false
 			}
 		}
@@ -70,11 +76,12 @@ func (r *room) HasSpace(dg *MapGen) bool {
 	return true
 }
 
-func (r *room) Dig(dg *MapGen) {
+// Dig draws the vault and gathers information.
+func (r *vault) Dig(dg *MapGen) {
 	runedraw := func(p gruid.Point, c rune) {
 		q := gruid.Point{X: r.p.X + p.X, Y: r.p.Y + p.Y}
 		if InMap(q) && c != '?' {
-			dg.room[q] = true
+			dg.vault[q] = true
 		}
 		switch c {
 		case '.', '>', '!', 'P', '_', '|', 'G', '-':
@@ -138,7 +145,7 @@ func (r *room) Dig(dg *MapGen) {
 			'Δ',
 			'A':
 		default:
-			log.Fatalf("Invalid terrain: %c for room w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.p, r.vault.Content())
+			log.Fatalf("Invalid terrain: %c for vault w:%d h:%d pos:%+v\n%s", c, r.w, r.h, r.p, r.vault.Content())
 		}
 		switch c {
 		case '>':
@@ -157,10 +164,10 @@ func (r *room) Dig(dg *MapGen) {
 			if q.X == 0 || q.X == MapWidth-1 || q.Y == 0 || q.Y == MapHeight-1 {
 				break
 			}
-			e := rentry{}
+			e := ventry{}
 			e.p = q
 			if c == '-' {
-				e.virtual = true
+				e.nodoor = true
 			}
 			r.entries = append(r.entries, e)
 		case '"':
@@ -206,7 +213,7 @@ func (r *room) Dig(dg *MapGen) {
 
 // UnusedEntry returns an unused entry, if possible, or a random entry
 // otherwise.
-func (r *room) UnusedEntry() int {
+func (r *vault) UnusedEntry() int {
 	ens := []int{}
 	for i, e := range r.entries {
 		if !e.used {
@@ -219,7 +226,8 @@ func (r *room) UnusedEntry() int {
 	return ens[RandInt(len(ens))]
 }
 
-func (r *room) RandomPlace(kind placeKind) gruid.Point {
+// RandomPlace returns a random place of the given kind in the vault.
+func (r *vault) RandomPlace(kind placeKind) gruid.Point {
 	var p []int
 	for i, pl := range r.places {
 		if pl.kind == kind && !pl.used {
@@ -236,7 +244,8 @@ func (r *room) RandomPlace(kind placeKind) gruid.Point {
 
 var PlaceSpecialOrStatic = []placeKind{PlaceSpecialStatic, PlaceStatic}
 
-func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
+// RandomPlaces returns a random place of any of the given kinds.
+func (r *vault) RandomPlaces(kinds []placeKind) gruid.Point {
 	p := invalidPos
 	for _, kind := range kinds {
 		p = r.RandomPlace(kind)
@@ -248,19 +257,19 @@ func (r *room) RandomPlaces(kinds []placeKind) gruid.Point {
 }
 
 const (
-	RoomAlmostSquare = `
+	VaultAlmostSquare = `
 ?###+##??
 #_....!#?
 +..PBP.!#
 #!....._#
 ?###+###?`
-	RoomSquareBis = `
+	VaultSquareBis = `
 ?##?#+##?
 #_!#!.._#
 #..|.P.P+
 #_!#!.._#
 ?##?#+##?`
-	RoomRoundSimple = `
+	VaultRoundSimple = `
 ??#+#??
 ?#!.!#?
 #_.P._#
@@ -268,31 +277,31 @@ const (
 #_.P._#
 ?#!.!#?
 ??#+#??`
-	RoomLittle = `
+	VaultLittle = `
 ?#+#?
 #_._#
 +.P.+
 #_.!#
 ?#+#?`
-	RoomLittleDiamond = `
+	VaultLittleDiamond = `
 ??#+#??
 ##!._##
 +..P..+
 ##_._##
 ??#+#??`
-	RoomLittleColumnDiamond = `
+	VaultLittleColumnDiamond = `
 ?##+#??
 #_..!##
 +.PBP.+
 ##!.._#
 ??#+##?`
-	RoomLittleTreeDiamond = `
+	VaultLittleTreeDiamond = `
 ??#+##?
 ##!.B_#
 +.P.P.#
 #_B.!##
 ?##+#??`
-	RoomRound = `
+	VaultRound = `
 ???##+##???
 ??#".P."#??
 ##".!B_."##
@@ -300,7 +309,7 @@ const (
 ##"._B_."##
 ??#".P."#??
 ???##+##???`
-	RoomRoundTree = `
+	VaultRoundTree = `
 ???##+##???
 ??#".P."#??
 ##"._._."##
@@ -310,10 +319,10 @@ const (
 ???##+##???`
 )
 
-var roomNormalTemplates = []string{RoomAlmostSquare, RoomSquareBis, RoomRoundSimple, RoomLittle, RoomLittleDiamond, RoomLittleColumnDiamond, RoomRound, RoomLittleTreeDiamond, RoomRoundTree}
+var vaultNormalTemplates = []string{VaultAlmostSquare, VaultSquareBis, VaultRoundSimple, VaultLittle, VaultLittleDiamond, VaultLittleColumnDiamond, VaultRound, VaultLittleTreeDiamond, VaultRoundTree}
 
 const (
-	RoomBigColumns = `
+	VaultBigColumns = `
 ?####?#++#?####?
 #!.._##..##!..>#
 ##.P........P.##
@@ -321,7 +330,7 @@ const (
 ##.P........P.##
 #!..>##..##>..!#
 ?####?#++#?####?`
-	RoomBigGarden = `
+	VaultBigGarden = `
 ?####?#++#?####?
 #""""##..##...!#
 #"T""".!P...~~.#
@@ -329,7 +338,7 @@ const (
 #"T""".!P...~~"#
 #""""##..##..""#
 ?####?#++#?####?`
-	RoomBigRooms = `
+	VaultBigVaults = `
 ?####?#++#?###??
 #_..!##..##!..#?
 #"""..#..#..π._#
@@ -337,14 +346,14 @@ const (
 #"""..#..#..π.!#
 #>..!##..##...#?
 ?####?#++#?###??`
-	RoomColumns = `
+	VaultColumns = `
 ###+##+###
 +..P..P..+
 #.#>B#!#.#
 #.#!##>B.#
 +..P..P..+
 ###+##+###`
-	RoomTriangles = `
+	VaultTriangles = `
 ?####?######?
 #...>#_.....#
 +.P.#...#.P.+
@@ -352,7 +361,7 @@ const (
 #!....P...#>#
 ?#..!#|#..>#?
 ??###.-.###??`
-	RoomHome1 = `
+	VaultHome1 = `
 ?########+#?
 #>.P..|..P!#
 #...B.#....#
@@ -361,7 +370,7 @@ const (
 #...P...|..#
 #>.....!#P.#
 ?########+#?`
-	RoomHome2 = `
+	VaultHome2 = `
 ##########??
 +...#....>#?
 #.P.|..P...#
@@ -370,7 +379,7 @@ const (
 #....##|####
 #!P..|..P..+
 ?########+##`
-	RoomHome3 = `
+	VaultHome3 = `
 ?#############?
 #>P.|.........#
 #..!##|##!.P..+
@@ -381,7 +390,7 @@ const (
 #.P.....|...B.#
 ?#......#....#?
 ??###########??`
-	RoomHome4 = `
+	VaultHome4 = `
 ?############?
 #..._.#.....!#
 #.P...|..B...#
@@ -390,7 +399,7 @@ const (
 +..P..####>..#
 #!....|....P!#
 ?###+########?`
-	RoomHome5 = `
+	VaultHome5 = `
 ????##########?
 ??###!...>#..!#
 ?###>.....!#..#
@@ -399,7 +408,7 @@ const (
 #..####|####..#
 #!.....P....._#
 ?######+######?`
-	RoomHome6 = `
+	VaultHome6 = `
 ?###+#???
 #>.#q##??
 #.P|P_##?
@@ -409,7 +418,7 @@ const (
 +.PBPB..#
 #......_#
 ?###+###?`
-	RoomCaban = `
+	VaultCaban = `
 ???????-??????
 ?????""""?????
 ???""""""""???
@@ -419,7 +428,7 @@ const (
 ??""""""""""??
 ????"""""?????
 ???????-??????`
-	RoomDolmen = `
+	VaultDolmen = `
 ???????-?????
 ????.....????
 ????.!#!.????
@@ -431,7 +440,7 @@ const (
 ????.!#!.????
 ????.....????
 ???????-?????`
-	RoomSmallTemple = `
+	VaultSmallTemple = `
 ?????????????
 ?????...?????
 ????..#..????
@@ -444,7 +453,7 @@ const (
 ??..#.P_#..??
 ???.......???
 ??????-??????`
-	RoomTemple = `
+	VaultTemple = `
 ????.....????
 ??...###...??
 ?..##!>!##..?
@@ -457,7 +466,7 @@ const (
 ?.....P.....-
 ??."T...T".??
 ???"".-.""???`
-	RoomSchool = `
+	VaultSchool = `
 ????#######???
 ???#l..!..l#??
 ??#!..Pπ..!##?
@@ -470,7 +479,7 @@ const (
 .#l...P...|._#
 ..####||#####-
 ?.....--P.....`
-	RoomShop = `
+	VaultShop = `
 ??????###???
 ?????#>P>#??
 ??#####|##??
@@ -482,7 +491,7 @@ const (
 .#l!..qq_!#?
 ..####||##.-
 ?.....--P..?`
-	RoomTavern = `
+	VaultTavern = `
 ??##########??
 ?#l.π...|..P#?
 .#..!...###>#?
@@ -492,7 +501,7 @@ const (
 .#l...qqπ.|._#
 -.####||###|#-
 ?.....--P.....`
-	RoomDoctor = `
+	VaultDoctor = `
 ????#####??
 ???#l...!#?
 ??##.Pππ.#?
@@ -505,7 +514,7 @@ const (
 .#l..Pq._#.
 -.####|##..
 ?.....-.P.?`
-	RoomRuins = `
+	VaultRuins = `
 ????????-????
 ????....P????
 ???..###.????
@@ -517,7 +526,7 @@ const (
 ????"#>#.????
 ????..P..????
 ??????-??????`
-	RoomPillars = `
+	VaultPillars = `
 ???????-?????
 ???.......???
 ?...#!#P#...?
@@ -527,7 +536,7 @@ const (
 ?...#P#!#...?
 ???.......???
 ?????-???????`
-	RoomRoundColumns = `
+	VaultRoundColumns = `
 ???##+##???
 ??#!...!#??
 ##_.BP#._##
@@ -535,7 +544,7 @@ const (
 ##_.#P#._##
 ??#!...!#??
 ???##+##???`
-	RoomTriangle = `
+	VaultTriangle = `
 ?????#?????
 ????#>#????
 ???#!.!#???
@@ -544,7 +553,7 @@ const (
 +..P...P..+
 ##_..P.._##
 ??###+###??`
-	RoomSpiraling = `
+	VaultSpiraling = `
 ?#####+#
 #!.P...+
 #.>#####
@@ -552,7 +561,7 @@ const (
 #####>.#
 +...P.!#
 #+#####?`
-	RoomSpiralingCircle = `
+	VaultSpiralingCircle = `
 ??##+#?##??
 ##.P.!#.>#?
 +.P.##....#
@@ -560,7 +569,7 @@ const (
 #....##!P.+
 ?#.>#.P..##
 ??###+###??`
-	RoomCircleDouble = `
+	VaultCircleDouble = `
 ???####+#???
 ??#""..P#???
 ?#""..#|#???
@@ -574,7 +583,7 @@ const (
 ?#""..#|#..#
 ??#"...P..#?
 ???####+##??`
-	RoomGardenHome = `
+	VaultGardenHome = `
 ???#######???
 ??#.#>#>#.#??
 ?#!...P...!#?
@@ -588,14 +597,14 @@ const (
 ?#"T"...#...+
 ??#""".!#!..#
 ???#######+#?`
-	RoomAltar = `
+	VaultAltar = `
 #+#??#######??#+#
 +P_##>..!..>##_P+
 #...#..#>#..#...#
 ?##.#!..P..!#.##?
 ??#..P.....P..#??
 ???#####+#####???`
-	RoomRoundGarden = `
+	VaultRoundGarden = `
 ???##+##???
 ??#_.P.>#??
 ##!.""".!##
@@ -603,19 +612,19 @@ const (
 ##!.""".!##
 ??#>.P.>#??
 ???##+##???`
-	RoomLongHall = `
+	VaultLongHall = `
 #################
 +.P...........P.+
 #..!#!>.B.>!#!..#
 +.P...........P.+
 #################`
-	RoomGardenHall = `
+	VaultGardenHall = `
 ?#############?
 #"""".>!>.""""#
 +..P...P...P..+
 #""""._!>.""""#
 ?#############?`
-	RoomRoundHall = `
+	VaultRoundHall = `
 ????###?###+#?
 ?###!_##>#.P.#
 #....###|#...#
@@ -623,7 +632,7 @@ const (
 #....#!#.....#
 ?###.>#?#.π.##
 ????##???###??`
-	RoomToilets = `
+	VaultToilets = `
 ??######
 ?#!.P..+
 -Wπ..###
@@ -632,7 +641,7 @@ const (
 .#!..|>#
 -|.P.###
 ?####???`
-	RoomPicnic = `
+	VaultPicnic = `
 ????""""????
 ??""""T"""??
 ?"T.!P..T""?
@@ -642,7 +651,7 @@ const (
 ?"T..P!.T""?
 ??""".."""??
 ??????-?????`
-	RoomSnake = `
+	VaultSnake = `
 ?????#####???###
 ?#?##!..._#?##.+
 #B#........#.|.#
@@ -656,13 +665,13 @@ const (
 ????########????`
 )
 
-var roomBigTemplates = []string{RoomBigColumns, RoomBigGarden, RoomColumns,
-	RoomRoundColumns, RoomRoundGarden, RoomLongHall, RoomGardenHall,
-	RoomTriangles, RoomHome1, RoomHome2, RoomHome3, RoomHome4, RoomHome5, RoomHome6,
-	RoomTriangle, RoomSpiraling, RoomSpiralingCircle, RoomAltar,
-	RoomCircleDouble, RoomGardenHome, RoomBigRooms, RoomCaban, RoomDolmen,
-	RoomSmallTemple, RoomTemple, RoomSchool, RoomTavern, RoomShop,
-	RoomDoctor, RoomRuins, RoomPillars, RoomRoundHall, RoomToilets, RoomPicnic, RoomSnake}
+var vaultBigTemplates = []string{VaultBigColumns, VaultBigGarden, VaultColumns,
+	VaultRoundColumns, VaultRoundGarden, VaultLongHall, VaultGardenHall,
+	VaultTriangles, VaultHome1, VaultHome2, VaultHome3, VaultHome4, VaultHome5, VaultHome6,
+	VaultTriangle, VaultSpiraling, VaultSpiralingCircle, VaultAltar,
+	VaultCircleDouble, VaultGardenHome, VaultBigVaults, VaultCaban, VaultDolmen,
+	VaultSmallTemple, VaultTemple, VaultSchool, VaultTavern, VaultShop,
+	VaultDoctor, VaultRuins, VaultPillars, VaultRoundHall, VaultToilets, VaultPicnic, VaultSnake}
 
 const (
 	CellShaedra = `
@@ -713,10 +722,10 @@ c###_._###c
 `
 )
 
-var roomCellTemplates = []string{CellShaedra, CellShaedra2, CellShaedra3, CellShaedra4}
+var vaultCellTemplates = []string{CellShaedra, CellShaedra2, CellShaedra3, CellShaedra4}
 
 const (
-	RoomArtifact = `
+	VaultArtifact = `
 ????#????
 ???#c#???
 ??#cAc#??
@@ -726,7 +735,7 @@ const (
 +P.G.G.P+
 #>..P..>#
 ?###+###?`
-	RoomArtifact2 = `
+	VaultArtifact2 = `
 ??cccc??
 ?cc#####
 cc#cc!P+
@@ -736,7 +745,7 @@ c##.#G.#
 c###π.!#
 -|q..P>#
 P######?`
-	RoomArtifact3 = `
+	VaultArtifact3 = `
 ?#####+#?
 #B..Gcq.#
 #.Gc.cP.#
@@ -748,10 +757,10 @@ P######?`
 ?###+###?`
 )
 
-var roomArtifactTemplates = []string{RoomArtifact, RoomArtifact2, RoomArtifact3}
+var vaultArtifactTemplates = []string{VaultArtifact, VaultArtifact2, VaultArtifact3}
 
 const (
-	RoomSpecialNixes = `
+	VaultSpecialNixes = `
 ?#########???
 ##.#~>~##>##?
 #>.G~.~G...!#
@@ -762,7 +771,7 @@ const (
 +P.......#!##
 #....P...!#??
 ?####+####???`
-	RoomSpecialVampires = `
+	VaultSpecialVampires = `
 ?#####+#####?
 #>.G.#.#...>#
 ?#.......G.#?
@@ -772,7 +781,7 @@ const (
 ?#...|......#
 #>.G.#.#..._#
 ?#####+#####?`
-	RoomSpecialVampires2 = `
+	VaultSpecialVampires2 = `
 ?~~~~~~~~~~-.
 ~~##W##W##~~.
 ~#>._#.π.##~P
@@ -783,7 +792,7 @@ const (
 ~~###.π.!#~~.
 ?~~~##W###~~.
 ???~~~~~~~~-.`
-	RoomSpecialFrogs = `
+	VaultSpecialFrogs = `
 ?~~-~~?~??
 ~~.P~~~~~?
 ~..._~B.~?
@@ -794,7 +803,7 @@ const (
 ?~!..BG.~~
 ?~~~P..~~?
 ???~-~~???`
-	RoomSpecialMilfids = `
+	VaultSpecialMilfids = `
 ?????????-???
 ???......P.??
 ??..!?G._?..?
@@ -804,7 +813,7 @@ const (
 ??.......?..-
 ????!.G...P??
 ????????-????`
-	RoomSpecialMilfids2 = `
+	VaultSpecialMilfids2 = `
 ?????????-??
 -P.ccc?c.Gc?
 ?c.G..cc..cc
@@ -814,7 +823,7 @@ const (
 ??cc.G.cccc?
 ???c.....???
 ?????P-.????`
-	RoomSpecialTreeMushrooms = `
+	VaultSpecialTreeMushrooms = `
 ????"--.???????
 ??"""..G."""???
 ??""?....!"""??
@@ -823,7 +832,7 @@ const (
 -..!..T>T._"".-
 -P???..G..""""?
 .-??????.-?????`
-	RoomSpecialTreeMushrooms2 = `
+	VaultSpecialTreeMushrooms2 = `
 ???""-???????
 ??""?.."""???
 ??""..G..""??
@@ -834,7 +843,7 @@ const (
 -.?......_""?
 ?P??".TG.""??
 .-?????.-????`
-	RoomSpecialHarpies = `
+	VaultSpecialHarpies = `
 ?-????##??????
 ?P???#..#?????
 ?.???#G.>####?
@@ -844,7 +853,7 @@ const (
 ??.#.G._._#>#?
 ??P?#.>###?#??
 ??-??##???????`
-	RoomSpecialHarpies2 = `
+	VaultSpecialHarpies2 = `
 ?-#????##..P
 -P.####...#-
 ?#.G.#..G.!#
@@ -853,7 +862,7 @@ const (
 #>.#_.G.##??
 ?##?###.>#??
 ???????##???`
-	RoomSpecialCelmists = `
+	VaultSpecialCelmists = `
 ?############+##?
 #>#_......>#.P._#
 #...G!#!G.##....#
@@ -862,7 +871,7 @@ const (
 ##..G!#!G.##....#
 #>........>#.P._#
 ?############+##?`
-	RoomSpecialCelmists2 = `
+	VaultSpecialCelmists2 = `
 ?##?##########
 #_.#....G....+
 #..#>#W#|#W#!#
@@ -872,7 +881,7 @@ const (
 #..#!#W#|#W#>#
 #_#.....G....#
 ?##+#########?`
-	RoomSpecialCelmists3 = `
+	VaultSpecialCelmists3 = `
 ?###???.-.??????
 #...#..P...?????
 +.P.|....P.....-
@@ -883,7 +892,7 @@ const (
 ????#!.....!#???
 ?????#>#>#>#????
 ??????#?#?#?????`
-	RoomSpecialMirrorSpecters = `
+	VaultSpecialMirrorSpecters = `
 ########-########
 -P.....W.W..q..P-
 ##W##_.#q#._##W##
@@ -893,7 +902,7 @@ const (
 #.G.#..#.G.#.#G.#
 #...............#
 #################`
-	RoomSpecialMirrorSpecters2 = `
+	VaultSpecialMirrorSpecters2 = `
 ######--#####
 -P...W.P...P-
 #.#####B.##.#
@@ -907,44 +916,45 @@ const (
 ??###?####???`
 )
 
-type specialRoom int
+type specialVault int
 
 const (
-	noSpecialRoom specialRoom = iota
-	roomMilfids
-	roomFrogs
-	roomNixes
-	roomVampires
-	roomCelmists
-	roomHarpies
-	roomTreeMushrooms
-	roomMirrorSpecters
-	roomShaedra
-	roomArtifact
+	noSpecialVault specialVault = iota
+	vaultMilfids
+	vaultFrogs
+	vaultNixes
+	vaultVampires
+	vaultCelmists
+	vaultHarpies
+	vaultTreeMushrooms
+	vaultMirrorSpecters
+	vaultShaedra
+	vaultArtifact
 )
 
-func (sr specialRoom) Templates() (tpl []string) {
+// Templates returns the template for a given special vault.
+func (sr specialVault) Templates() (tpl []string) {
 	switch sr {
-	case roomMilfids:
-		tpl = append(tpl, RoomSpecialMilfids, RoomSpecialMilfids2)
-	case roomFrogs:
-		tpl = append(tpl, RoomSpecialFrogs)
-	case roomVampires:
-		tpl = append(tpl, RoomSpecialVampires, RoomSpecialVampires2)
-	case roomCelmists:
-		tpl = append(tpl, RoomSpecialCelmists, RoomSpecialCelmists2, RoomSpecialCelmists3)
-	case roomNixes:
-		tpl = append(tpl, RoomSpecialNixes)
-	case roomHarpies:
-		tpl = append(tpl, RoomSpecialHarpies, RoomSpecialHarpies2)
-	case roomTreeMushrooms:
-		tpl = append(tpl, RoomSpecialTreeMushrooms, RoomSpecialTreeMushrooms2)
-	case roomMirrorSpecters:
-		tpl = append(tpl, RoomSpecialMirrorSpecters, RoomSpecialMirrorSpecters2)
-	case roomShaedra:
-		tpl = roomCellTemplates
-	case roomArtifact:
-		tpl = roomArtifactTemplates
+	case vaultMilfids:
+		tpl = append(tpl, VaultSpecialMilfids, VaultSpecialMilfids2)
+	case vaultFrogs:
+		tpl = append(tpl, VaultSpecialFrogs)
+	case vaultVampires:
+		tpl = append(tpl, VaultSpecialVampires, VaultSpecialVampires2)
+	case vaultCelmists:
+		tpl = append(tpl, VaultSpecialCelmists, VaultSpecialCelmists2, VaultSpecialCelmists3)
+	case vaultNixes:
+		tpl = append(tpl, VaultSpecialNixes)
+	case vaultHarpies:
+		tpl = append(tpl, VaultSpecialHarpies, VaultSpecialHarpies2)
+	case vaultTreeMushrooms:
+		tpl = append(tpl, VaultSpecialTreeMushrooms, VaultSpecialTreeMushrooms2)
+	case vaultMirrorSpecters:
+		tpl = append(tpl, VaultSpecialMirrorSpecters, VaultSpecialMirrorSpecters2)
+	case vaultShaedra:
+		tpl = vaultCellTemplates
+	case vaultArtifact:
+		tpl = vaultArtifactTemplates
 	}
 	return tpl
 }
