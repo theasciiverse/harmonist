@@ -383,7 +383,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 	case t == WindowCell && !g.Player.HasStatus(StatusDig):
 		return again, errors.New("You cannot pass through the closed window.")
 	case t == BarrelCell && g.MonsterFOV[g.Player.P]:
-		return again, errors.New("You cannot enter a barrel while seen.")
+		return again, errors.New("You cannot enter a barrel while unhidden.")
 	}
 	mons := g.MonsterAt(p)
 	if IsJumpPropulsion(t) && !g.Player.HasStatus(StatusDig) {
