@@ -307,9 +307,12 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		return nil
 	}
 	anims := !md.anims.Done()
-	if anims && md.interrupt(msg) {
-		md.anims.Finish()
-		anims = false
+	if md.interrupt(msg) {
+		if anims {
+			md.anims.Finish()
+			anims = false
+		}
+		md.g.StopAuto()
 	}
 	eff := md.update(msg)
 	if cmd := md.animCmd(); !anims && cmd != nil {
