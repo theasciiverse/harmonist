@@ -472,7 +472,6 @@ func (g *Game) EvokeTeleportOther() error {
 	if !done {
 		return errors.New("There are no targetable monsters.")
 	}
-
 	return nil
 }
 
