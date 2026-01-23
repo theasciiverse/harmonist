@@ -462,10 +462,10 @@ func (g *Game) EvokeTeleportOther() error {
 		if mons.Search == invalidPos {
 			mons.Search = mons.P
 		}
-		done = done || mons.TeleportAway(g)
+		done = mons.TeleportAway(g) || done
 		if mons.Kind.ReflectsTeleport() {
 			g.Logf("The %s reflected back some energies.", mons.Kind)
-			done = done || g.Teleportation()
+			done = g.Teleportation() || done
 			break
 		}
 	}
