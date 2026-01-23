@@ -70,6 +70,12 @@ func TestInitLevel(t *testing.T) {
 				if m.Kind == MonsSatowalgaPlant && g.Map.At(m.P) == StairCell {
 					t.Errorf("Satowalga on stairs: %+v", m.P)
 				}
+				if m.Kind == MonsSatowalgaPlant && g.Map.At(m.P) == BananaCell {
+					t.Errorf("Satowalga on banana: %+v", m.P)
+				}
+				if m.Kind == MonsSatowalgaPlant && g.Map.At(m.P) == StoneCell {
+					t.Errorf("Satowalga on magic stone: %+v", m.P)
+				}
 			}
 			for range 20 {
 				g.EndTurn()
