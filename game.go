@@ -474,7 +474,7 @@ func (g *Game) InitLevel() {
 		g.StoryPrint("Special event: foggy level")
 		for range 20 {
 			g.PushEvent(&PosEvent{Action: FogProgression},
-				g.Turn+DurationMistProgression+RandInt(DurationMistProgression/2))
+				g.Turn+DurationPurpleMistProgression+RandInt(DurationPurpleMistProgression/2))
 		}
 	case EarthquakeLevel:
 		g.PushEvent(&PosEvent{P: gruid.Point{MapWidth/2 - 15 + RandInt(30), MapHeight/2 - 5 + RandInt(10)}, Action: Earthquake},

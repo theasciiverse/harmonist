@@ -13,10 +13,12 @@ import (
 // These constants represent various common durations for animation frames.
 const (
 	AnimDurExtremelyShort = 15 * time.Millisecond
-	AnimDurShort          = 25 * time.Millisecond
-	AnimDurShortMedium    = 50 * time.Millisecond
-	AnimDurMedium         = 75 * time.Millisecond
+	AnimDurVeryShort      = 30 * time.Millisecond
+	AnimDurShort          = 40 * time.Millisecond
+	AnimDurShortMedium    = 60 * time.Millisecond
+	AnimDurMedium         = 80 * time.Millisecond
 	AnimDurMediumLong     = 100 * time.Millisecond
+	AnimDurLong           = 150 * time.Millisecond
 )
 
 // Animations provides support for animations.
@@ -146,7 +148,6 @@ func (md *model) SwappingAnimation(mp, pp gruid.Point) {
 		return
 	}
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
 	_, fgm, bgColorm := md.positionDrawing(mp)
 	_, _, bgColorp := md.positionDrawing(pp)
 	md.anims.Draw(mp, 'Φ', fgm, bgColorp)
@@ -191,7 +192,7 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 		p := ray[i]
 		or, fgColor, bgColor := md.positionDrawing(p)
 		md.anims.Draw(p, r, fg, bgColor)
-		md.anims.Frame(AnimDurShort)
+		md.anims.Frame(AnimDurVeryShort)
 		md.anims.Draw(p, or, fgColor, bgColor)
 	}
 }
@@ -230,7 +231,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
-	md.FOVWavesAnimation(DefaultFOVRange, WaveMagicNoise, md.g.Player.P)
+	md.FOVWavesAnimation(DefaultFOVRange, WaveHarmonicNoise, md.g.Player.P)
 	colors := []gruid.Color{ColorViolet, ColorCyan}
 	for i := range 2 {
 		for _, p := range noises {
@@ -240,7 +241,7 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 		}
 		_, _, bgColor := md.positionDrawing(md.g.Player.P)
 		md.anims.DrawReverse(md.g.Player.P, '@', colors[i], bgColor)
-		md.anims.Frame(AnimDurShortMedium)
+		md.anims.Frame(AnimDurShort)
 	}
 
 }
@@ -251,7 +252,6 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 	}
 	g := md.g
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
 	colors := [2]gruid.Color{ColorYellow, ColorOrange}
 	if es == WallExplosion || es == AroundWallExplosion {
 		colors[0] = ColorViolet
@@ -276,7 +276,7 @@ func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
 func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
 	var mp paths.Pather
 	switch ws {
-	case WaveMagicNoise:
+	case WaveHarmonicNoise:
 		mp = &GridPath{}
 	default:
 		mp = &NoisePath{g: g}
@@ -307,10 +307,10 @@ func (md *model) FOVWavesAnimation(r int, ws wavestyle, center gruid.Point) {
 type wavestyle int
 
 const (
-	WaveMagicNoise wavestyle = iota
+	WaveHarmonicNoise wavestyle = iota
 	WaveNoise
 	WaveConfusion
-	WaveSlowing
+	WaveDaze
 	WaveTree
 	WaveSleeping
 )
@@ -333,7 +333,7 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
-		case WaveSlowing:
+		case WaveDaze:
 			fg := ColorCyan
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
@@ -348,12 +348,12 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
-		case WaveMagicNoise:
+		case WaveHarmonicNoise:
 			fg := ColorCyan
 			md.WaveDrawAt(p, fg)
 		}
 	}
-	md.anims.Frame(AnimDurShort)
+	md.anims.Frame(AnimDurVeryShort)
 }
 
 func (md *model) WallExplosionAnimation(p gruid.Point) {
@@ -365,7 +365,7 @@ func (md *model) WallExplosionAnimation(p gruid.Point) {
 	for _, fg := range colors {
 		_, _, bgColor := md.positionDrawing(p)
 		md.anims.DrawReverse(p, '%', fg, bgColor)
-		md.anims.Frame(AnimDurShort)
+		md.anims.Frame(AnimDurVeryShort)
 	}
 }
 
@@ -382,7 +382,7 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 		return
 	}
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
+	md.anims.Frame(AnimDurVeryShort)
 	// change colors depending on effect
 	var fg gruid.Color
 	switch bs {
@@ -403,7 +403,7 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 			}
 			md.anims.DrawReverse(p, r, fg, bgColor)
 		}
-		md.anims.Frame(AnimDurShortMedium)
+		md.anims.Frame(AnimDurShort)
 	}
 }
 
@@ -412,7 +412,6 @@ func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
 		return
 	}
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
 	colors := [2]gruid.Color{ColorGreen, ColorCyan}
 	for range 3 {
 		for i := len(ray) - 1; i >= 0; i-- {
@@ -453,10 +452,9 @@ func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
 		p := ray[i]
 		r, fgColor, bgColor := md.positionDrawing(p)
 		md.anims.Draw(p, md.ProjectileSymbol(DirNorm(g.Player.P, p)), ColorRed, bgColor)
-		md.anims.Frame(AnimDurShort)
+		md.anims.Frame(AnimDurVeryShort)
 		md.anims.Draw(p, r, fgColor, bgColor)
 	}
-	md.anims.Frame(AnimDurShort)
 }
 
 func (md *model) WoundedAnimation() {
@@ -480,13 +478,11 @@ func (md *model) PlayerGoodEffectAnimation() {
 	}
 	g := md.g
 	md.startAnimSeq()
-	md.anims.Frame(AnimDurShort)
 	r, _, bg := md.positionDrawing(g.Player.P)
 	md.anims.Draw(g.Player.P, r, ColorGreen, bg)
 	md.anims.Frame(AnimDurShortMedium)
 	md.anims.Draw(g.Player.P, r, ColorYellow, bg)
 	md.anims.Frame(AnimDurShortMedium)
-	//md.anims.Draw(g.Player.Pos, r, fg, bg)
 }
 
 func (md *model) StatusEndAnimation() {
@@ -543,18 +539,18 @@ func (md *model) AbyssFallAnimation() {
 		return
 	}
 	gd := rl.NewGrid(MapWidth, MapHeight)
-	max := 5
+	n := 5
 	gd.FillFunc(func() rl.Cell {
-		return rl.Cell(RandInt(max))
+		return rl.Cell(RandInt(n))
 	})
-	for i := range max {
+	for i := range n {
 		it := gd.Iterator()
 		for it.Next() {
 			if it.Cell() == rl.Cell(i) {
 				md.anims.Draw(it.P(), ' ', ColorForeground, ColorBackground)
 			}
 		}
-		md.anims.Frame(AnimDurShort)
+		md.anims.Frame(AnimDurVeryShort)
 	}
 }
 

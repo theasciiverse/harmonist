@@ -9,6 +9,17 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
+// MapPath implements the paths.Pather interface and is used to provide pathing
+// information in map generation.
+type MapPath struct {
+	passable func(gruid.Point) bool
+	nbs      paths.Neighbors
+}
+
+func (mp *MapPath) Neighbors(p gruid.Point) []gruid.Point {
+	return mp.nbs.Cardinal(p, mp.passable)
+}
+
 // MappingPath implements the paths.Pather interface and is used to provide
 // pathing for connected components during map generation.
 type MappingPath struct {

@@ -186,7 +186,7 @@ func (cev *PosEvent) Handle(g *Game) {
 		p := g.FreePassableCell()
 		g.Fog(p, 1)
 		g.PushEvent(&PosEvent{Action: FogProgression},
-			g.Turn+DurationMistProgression+RandInt(DurationMistProgression/4))
+			g.Turn+DurationPurpleMistProgression+RandInt(DurationPurpleMistProgression/4))
 	case Earthquake:
 		g.LogStyled("The earth suddenly shakes with force!", logSpecial)
 		g.LogStyled("Craack!", logSpecial)
@@ -267,7 +267,7 @@ func (g *Game) PurpleMist(at gruid.Point, radius int) {
 		if !ok {
 			g.Map.Clouds[n.P] = CloudPurpleMist
 			g.PushEventD(&PosEvent{Action: PurpleMistProgression,
-				P: n.P, Timer: DurationNightFog}, DurationCloudProgression)
+				P: n.P, Timer: DurationPurpleMist}, DurationCloudProgression)
 
 			g.applyPurpleMistEffectsAt(n.P)
 		}
@@ -327,32 +327,32 @@ func (g *Game) Burn(p gruid.Point) {
 
 // The following constants represent various kinds of durations.
 const (
-	DurationSwiftness              = 5
-	DurationShadows                = 15
-	DurationLevitation             = 18
-	DurationShortSwiftness         = 3
-	DurationDigging                = 8
-	DurationDazeMonster            = 6
 	DurationCloudProgression       = 1
-	DurationFog                    = 15
-	DurationExhaustion             = 5
 	DurationConfusionMonster       = 12
 	DurationConfusionPlayer        = 5
-	DurationLignificationMonster   = 15
+	DurationDazeMonster            = 6
+	DurationDigging                = 8
+	DurationDisguise               = 9
+	DurationDispersal              = 12
+	DurationExhaustion             = 5
+	DurationExhaustionMonster      = 10
+	DurationFog                    = 15
+	DurationFogSmokingCloak        = 2
+	DurationHarmonicNoiseDelay     = 13
+	DurationIlluminated            = 7
+	DurationLevitation             = 18
+	DurationLignificationMonster   = 12
 	DurationLignificationPlayer    = 4
 	DurationMagicalBarrier         = 15
 	DurationObstructionProgression = 15
-	DurationMistProgression        = 12
-	DurationSmokingCloakFog        = 2
-	DurationExhaustionMonster      = 10
-	DurationSatiationMonster       = 40
-	DurationIlluminated            = 7
-	DurationTransparency           = 15
-	DurationDisguise               = 9
-	DurationDispersal              = 12
-	DurationHarmonicNoiseDelay     = 13
 	DurationOricExplosionDelay     = 8
-	DurationTurn                   = 1
+	DurationPurpleMist             = 15
+	DurationPurpleMistProgression  = 12
+	DurationSatiationMonster       = 40
+	DurationShadows                = 15
 	DurationStatusStep             = 1
-	DurationNightFog               = 15
+	DurationSwiftness              = 5
+	DurationSwiftnessAmulet        = 3
+	DurationTransparency           = 15
+	DurationTurn                   = 1
 )

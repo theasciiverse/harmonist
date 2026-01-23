@@ -160,15 +160,15 @@ func (stn Stone) Desc(g *Game) (text string) {
 	case BarrelStone:
 		text = "Activating this magical stone will teleport you away to a random barrel in the same level. It reveals any other barrels on the map."
 	case EarthStone:
-		text = "It produces an oric explosion that destroys nearby walls. It reveals interior walls."
+		text = "Activating this magical stone will produce an oric explosion that destroys nearby walls. It reveals interior walls."
 	case QueenStone:
-		text = "This magical stone is made from queen rock. Activating it will produce an amplified harmonic sound confusing enemies in a quite large area. This can also attract monsters. It reveals the current position of monsters and the nature of nearby ones."
+		text = "Activating this magical stone made of queen rock will produce an amplified harmonic sound confusing enemies in a wide area. This can also attract monsters. It reveals the current position of monsters and the nature of nearby ones."
 	case NightStone:
-		text = "Activating this magical stone will produce hypnotic harmonic sounds and illusions inducing sleep in all the monsters in sight. It reveals any lights on the map."
+		text = "Activating this magical stone will produce hypnotic harmonic illusions inducing sleep in all the monsters in sight. It reveals any lights on the map."
 	case TeleportStone:
 		text = "Activating this magical stone will teleport away monsters in sight. It reveals any magaras on the map."
 	case TreeStone:
-		text = "Activating this magical stone will lignify monsters in sight. It reveals any trees on the map as well as some foliage."
+		text = "Activating this magical stone will lignify monsters in a wide area. It reveals any trees on the map as well as some foliage."
 	case SealStone:
 		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs. It reveals the position of the target barrier."
 	}
@@ -309,7 +309,7 @@ func (g *Game) ActivateQueenStone() {
 	mp := &NoisePath{g: g}
 	g.PR.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, QueenStoneDistance)
 	g.Log("The stone releases confusing sounds.")
-	g.md.FOVWavesAnimation(DefaultFOVRange, WaveMagicNoise, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveHarmonicNoise, g.Player.P)
 	for _, m := range g.Monsters {
 		if !m.Exists() {
 			continue
@@ -357,15 +357,21 @@ func (g *Game) ActivateNightStone() {
 }
 
 func (g *Game) ActivateTreeStone() {
+	pp := g.Player.P
+	mp := &MapPath{passable: func(q gruid.Point) bool {
+		return IsJumpPassable(g.Map.At(q))
+	}}
+	const maxdist = DefaultFOVRange
+	g.PR.BreadthFirstMap(mp, []gruid.Point{pp}, maxdist)
 	targets := []*Monster{}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || !g.Player.Sees(mons.P) || mons.Kind.ResistsLignification() {
+		if !mons.Exists() || g.PR.BreadthFirstMapAt(mons.P) > maxdist || mons.Kind.ResistsLignification() {
 			continue
 		}
 		targets = append(targets, mons)
 	}
 	g.Log("The stone releases magical spores.")
-	g.md.FOVWavesAnimation(DefaultFOVRange, WaveTree, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveTree, pp)
 	for _, mons := range targets {
 		mons.EnterLignification(g)
 		if mons.Search == invalidPos {

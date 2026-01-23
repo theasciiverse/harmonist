@@ -347,7 +347,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case ObstructionMagara:
 		desc = fmt.Sprintf("Creates temporal barriers with oric energy between you and monsters in sight. They last at least %d turns.", DurationMagicalBarrier)
 	case LignificationMagara:
-		desc = fmt.Sprintf("Liberates magical spores that lignify up to three random monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
+		desc = fmt.Sprintf("Liberates magical beams that lignify monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
 	case EnergyMagara:
 		desc = "Replenishes your MP and HP."
 	case TransparencyMagara:
@@ -646,7 +646,7 @@ func (g *Game) EvokeDazing() error {
 		return errors.New("No suitable targets in view.")
 	}
 	g.Log("Whoosh! A slowing luminous wave emerges.")
-	g.md.FOVWavesAnimation(DefaultFOVRange, WaveSlowing, g.Player.P)
+	g.md.FOVWavesAnimation(DefaultFOVRange, WaveDaze, g.Player.P)
 	return nil
 }
 
@@ -688,18 +688,12 @@ func (g *Game) EvokeSleeping() error {
 }
 
 func (g *Game) EvokeLignification() error {
-	// TODO: for lignification spores, we probably want a different kind of
-	// targeting. Maybe path-propagating based with some maximal distance,
-	// usable out of view. The same can probably be said for the tree
-	// stone. The limitation on number of monsters is not very nice.
 	ms := g.MonstersInFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no monsters in view.")
 	}
-	ma := min(3, len(ms))
 	targets := []gruid.Point{}
-	for i := range ma {
-		mons := ms[i]
+	for _, mons := range ms {
 		if mons.Status(MonsLignified) || mons.Kind.ResistsLignification() {
 			continue
 		}
@@ -712,10 +706,10 @@ func (g *Game) EvokeLignification() error {
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
 	}
-	if ma == 1 {
+	if len(targets) == 1 {
 		g.Log("A beam of lignification emerges.")
 	} else {
-		g.Log("Two beams of lignification emerge.")
+		g.Log("Beams of lignification emerge.")
 	}
 	g.md.BeamsAnimation(targets, BeamLignification)
 	return nil

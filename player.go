@@ -430,7 +430,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 			_, ok := g.Map.Clouds[g.Player.P]
 			if !ok && AllowsFog(g.Map.At(g.Player.P)) {
 				g.Map.Clouds[g.Player.P] = CloudPlain
-				g.PushEventD(&PosEvent{P: g.Player.P, Action: CloudEnd}, DurationSmokingCloakFog)
+				g.PushEventD(&PosEvent{P: g.Player.P, Action: CloudEnd}, DurationFogSmokingCloak)
 			}
 		}
 		g.Stats.Moves++
@@ -464,7 +464,7 @@ func (g *Game) ActivateAmuletFog() {
 			g.PushEvent(&PosEvent{P: n.P, Action: CloudEnd}, g.Turn+DurationFog+RandInt(DurationFog/2))
 		}
 	}
-	g.PutStatus(StatusSwift, DurationShortSwiftness)
+	g.PutStatus(StatusSwift, DurationSwiftnessAmulet)
 	g.ComputeFOV()
 	g.Log("You feel an energy burst and smoke comes out from you.")
 }
