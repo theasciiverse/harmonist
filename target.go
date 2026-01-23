@@ -120,7 +120,12 @@ func (md *model) drawPosInfo() {
 
 	features := []string{}
 	if info.Unknown {
-		features = append(features, "unknown terrain")
+		if info.Cell == UnknownPassable {
+			features = append(features, "passable terrain")
+		} else {
+			features = append(features, "unknown terrain")
+		}
+		features = append(features, "unexplored")
 	} else {
 		features = append(features, g.TerrainName(info.Cell, info.P))
 		if info.Cloud != "" && info.Sees {
@@ -141,7 +146,11 @@ func (md *model) drawPosInfo() {
 	fg := ColorForeground
 	desc := ""
 	if info.Unknown {
-		desc = "You do not know what is in there."
+		if info.Cell == UnknownPassable {
+			desc = "Passable terrain of unknown nature."
+		} else {
+			desc = "Terrain of unknown nature."
+		}
 	} else {
 		desc = g.TerrainDesc(info.Cell, info.P)
 	}
@@ -281,6 +290,7 @@ func (md *model) updatePosInfo() {
 		md.targ.ex.info = pi
 		return
 	case !IsKnown(g.Map.KnownTerrain.At(p)) && g.Wizard != WizardSeeAll:
+		pi.Cell = g.Map.KnownTerrain.At(p)
 		pi.Unknown = true
 		if mons := g.KnownMonsterAt(p); mons.Exists() {
 			pi.Monster = mons
