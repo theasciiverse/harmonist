@@ -772,15 +772,7 @@ func (mg *MapGen) bandInfoSatowalga(g *Game, band monsterBand) bandInfo {
 }
 
 func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
-	count := 0
-	for {
-		count++
-		if count > 2000 {
-			return g.freeCellForMonster()
-		}
-		x := mg.rand.IntN(MapWidth)
-		y := mg.rand.IntN(MapHeight)
-		p := gruid.Point{x, y}
+	for _, p := range mg.rndPos {
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
 			continue
@@ -790,6 +782,16 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 			return p
 		}
 	}
+	for _, p := range mg.rndPos {
+		t := mg.m.At(p)
+		if t == WallCell && g.HasNonWallNeighbors(p) {
+			g.Map.Set(p, GroundCell)
+			return p
+		}
+	}
+	// Should not happen.
+	log.Print("mapgen warning: no suitable position for satowalga")
+	return g.freeCellForMonster()
 }
 
 func (mg *MapGen) bandInfoOutside(g *Game, band monsterBand) bandInfo {
@@ -898,7 +900,9 @@ func (g *Game) freeCellForMonster() gruid.Point {
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
 		t := d.At(p)
-		if !Passable(t) {
+		switch t {
+		case CavernCell, GroundCell, QueenRockCell, FoliageCell:
+		default:
 			continue
 		}
 		if g.Player != nil && Distance(g.Player.P, p) < 8 {

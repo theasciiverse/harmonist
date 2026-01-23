@@ -41,6 +41,7 @@ type MapGen struct {
 	tunnel    map[gruid.Point]bool
 	vault     map[gruid.Point]bool
 	vaults    []*vault
+	rndPos    []gruid.Point
 	spl       places
 	special   specialVault
 	layout    maplayout
@@ -52,6 +53,12 @@ type MapGen struct {
 // GenMapWithLayout generates the map using the given layout.
 func (g *Game) GenMapWithLayout(ml maplayout) {
 	mg := MapGen{}
+	mg.rndPos = make([]gruid.Point, 0, MapWidth*MapHeight)
+	for y := range MapHeight {
+		for x := range MapWidth {
+			mg.rndPos = append(mg.rndPos, gruid.Point{x, y})
+		}
+	}
 	mg.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	mg.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	mg.layout = ml

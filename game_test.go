@@ -67,8 +67,11 @@ func TestInitLevel(t *testing.T) {
 				if !Passable(g.Map.At(m.P)) {
 					t.Errorf("Not free: %+v", m.P)
 				}
+				if m.Kind == MonsSatowalgaPlant && g.Map.At(m.P) == StairCell {
+					t.Errorf("Satowalga on stairs: %+v", m.P)
+				}
 			}
-			for j := 0; j < 20; j++ {
+			for range 20 {
 				g.EndTurn()
 				g.PlayerBump(randomPlayerNeighbor(g.Player.P)) // wait if impossible
 				if g.Player.HP == 0 {
