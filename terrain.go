@@ -544,9 +544,9 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 	case QueenRockCell:
 		r, fg = '‗', ColorForeground
 	case UnknownPassable:
-		r, fg = '♫', ColorForeground
+		r, fg = '♫', ColorForegroundSecondary
 	case Unknown:
-		r, fg = ' ', ColorForeground
+		r, fg = ' ', ColorForegroundSecondary
 	}
 	return r, fg
 }

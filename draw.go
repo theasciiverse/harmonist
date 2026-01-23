@@ -175,9 +175,9 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 	}
 	fgColor, bgColor = ColorForeground, ColorBackground
 	if !IsKnown(kt) && (g.Wizard == WizardNone || g.Wizard == WizardNormal) {
-		r = ' '
+		r, fgColor = g.TerrainStyle(kt, p)
 		bgColor = ColorBackground
-		if g.HasNonWallExploredNeighbor(p) {
+		if kt == Unknown && g.HasNonWallExploredNeighbor(p) {
 			r = '¤'
 			fgColor = ColorForegroundSecondary
 		}

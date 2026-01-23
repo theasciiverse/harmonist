@@ -497,6 +497,9 @@ func (g *Game) ComputeNoise() {
 			} else {
 				g.Logf("You hear %s.", monsterNoise(mons.Kind))
 			}
+			if g.Map.KnownTerrain.At(n.P) == Unknown {
+				g.Map.KnownTerrain.Set(n.P, UnknownPassable)
+			}
 		}
 	}
 	if count > 0 {
