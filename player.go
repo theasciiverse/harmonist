@@ -379,7 +379,8 @@ func (g *Game) DeepChasmDepth() bool {
 // PlayerBump handles player "bump" movement.
 func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 	if !InMap(p) {
-		return again, errors.New("You cannot move there.")
+		err = g.WallJump(p)
+		return
 	}
 	t := g.Map.At(p)
 	switch t {
