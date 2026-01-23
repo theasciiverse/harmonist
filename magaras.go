@@ -31,7 +31,7 @@ const (
 	SleepingMagara
 	TeleportOtherMagara
 	SwappingMagara
-	ParalysisMagara
+	DazingMagara
 	ObstructionMagara
 	LignificationMagara
 	EnergyMagara
@@ -48,7 +48,7 @@ const (
 func (mag Magara) Harmonic() bool {
 	switch mag.Kind {
 	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara,
-		SleepingMagara, ParalysisMagara, TransparencyMagara, DisguiseMagara,
+		SleepingMagara, DazingMagara, TransparencyMagara, DisguiseMagara,
 		DelayedNoiseMagara:
 		return true
 	default:
@@ -74,7 +74,7 @@ func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, ShadowsMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
 		return 6
-	case ParalysisMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, DelayedOricExplosionMagara:
+	case DazingMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, DelayedOricExplosionMagara:
 		return 5
 	case EnergyMagara:
 		return 1
@@ -88,7 +88,7 @@ func (g *Game) RandomStartingMagara() Magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
-		TeleportOtherMagara, SwappingMagara, ParalysisMagara,
+		TeleportOtherMagara, SwappingMagara, DazingMagara,
 		ObstructionMagara, LignificationMagara, TransparencyMagara,
 		DelayedNoiseMagara, DisguiseMagara}
 	var mag magaraKind
@@ -110,7 +110,7 @@ func (g *Game) RandomMagara() Magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
 		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
-		TeleportOtherMagara, SwappingMagara, ParalysisMagara,
+		TeleportOtherMagara, SwappingMagara, DazingMagara,
 		ObstructionMagara, LignificationMagara, TransparencyMagara,
 		DelayedNoiseMagara, DisguiseMagara, EnergyMagara}
 	var mag magaraKind
@@ -172,8 +172,8 @@ func (g *Game) UseMagara(i int) (err error) {
 		err = g.EvokeNoise()
 	case ConfusionMagara:
 		err = g.EvokeConfusion()
-	case ParalysisMagara:
-		err = g.EvokeParalysis()
+	case DazingMagara:
+		err = g.EvokeDazing()
 	case SleepingMagara:
 		err = g.EvokeSleeping()
 	case TeleportOtherMagara:
@@ -280,8 +280,8 @@ func (mag Magara) String() (desc string) {
 		desc = "magara of teleport other"
 	case SwappingMagara:
 		desc = "magara of swapping"
-	case ParalysisMagara:
-		desc = "magara of paralysis"
+	case DazingMagara:
+		desc = "magara of dazing"
 	case ObstructionMagara:
 		desc = "magara of obstruction"
 	case LignificationMagara:
@@ -336,8 +336,8 @@ func (mag Magara) Desc(g *Game) (desc string) {
 		desc = "Tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. The possible monster destinations will be marked with noise symbols in the map. It only works on monsters that are not already seeing you."
 	case ConfusionMagara:
 		desc = fmt.Sprintf("Confuses monsters in sight with harmonic light, leaving them unable to attack you for %d turns.", DurationConfusionMonster)
-	case ParalysisMagara:
-		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with harmonic illusions for %d turns.", DurationParalysisMonster)
+	case DazingMagara:
+		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with harmonic illusions for %d turns.", DurationDazeMonster)
 	case SleepingMagara:
 		desc = "Induces deep sleeping and exhaustion for up to three random monsters you see in cardinal directions using hypnotic illusions."
 	case TeleportOtherMagara:
@@ -631,11 +631,11 @@ func (g *Game) EvokeShadows() error {
 	return nil
 }
 
-func (g *Game) EvokeParalysis() error {
+func (g *Game) EvokeDazing() error {
 	ms := g.MonstersInFOV()
 	count := 0
 	for _, mons := range ms {
-		if mons.PutStatus(g, MonsParalysed, DurationParalysisMonster) {
+		if mons.PutStatus(g, MonsDazed, DurationDazeMonster) {
 			count++
 			if mons.Search == invalidPos {
 				mons.Search = mons.P

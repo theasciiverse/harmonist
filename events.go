@@ -332,7 +332,7 @@ const (
 	DurationLevitation             = 18
 	DurationShortSwiftness         = 3
 	DurationDigging                = 8
-	DurationParalysisMonster       = 6
+	DurationDazeMonster            = 6
 	DurationCloudProgression       = 1
 	DurationFog                    = 15
 	DurationExhaustion             = 5

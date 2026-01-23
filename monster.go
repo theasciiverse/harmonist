@@ -38,7 +38,7 @@ type monsterStatus int
 const (
 	MonsConfused monsterStatus = iota
 	MonsExhausted
-	MonsParalysed
+	MonsDazed
 	MonsSatiated
 	MonsLignified
 )
@@ -52,8 +52,8 @@ func (st monsterStatus) String() (text string) {
 		text = "confused"
 	case MonsExhausted:
 		text = "exhausted"
-	case MonsParalysed:
-		text = "paralysed"
+	case MonsDazed:
+		text = "dazed"
 	case MonsSatiated:
 		text = "satiated"
 	case MonsLignified:
@@ -1044,7 +1044,7 @@ func (m *Monster) HandleTurn(g *Game) {
 
 // handleTurn handles a monster's turn.
 func (m *Monster) handleTurn(g *Game) {
-	if m.Status(MonsParalysed) {
+	if m.Status(MonsDazed) {
 		return
 	}
 	if m.Swapped {

@@ -441,7 +441,7 @@ func (g *Game) ComputeNoise() {
 			// Monster noise over queen rocks is easier to hear.
 			dist -= 4
 		}
-		if mons.State == Resting || mons.Status(MonsParalysed) || mons.Status(MonsLignified) {
+		if mons.State == Resting || mons.Status(MonsDazed) || mons.Status(MonsLignified) {
 			if !goodhearing {
 				// Resting monsters cannot be heard without
 				// cloak of hearing.
@@ -630,7 +630,7 @@ func (g *Game) ComputeLights() {
 		sources = append(sources, lpos)
 	}
 	for _, mons := range g.Monsters {
-		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsParalysed) {
+		if !mons.Exists() || mons.Kind != MonsButterfly || mons.Status(MonsConfused) || mons.Status(MonsDazed) {
 			continue
 		}
 		if Distance(mons.P, g.Player.P) > DefaultFOVRange+LightRange && pt != TreeCell {

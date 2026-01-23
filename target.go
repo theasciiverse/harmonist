@@ -212,7 +212,7 @@ func (m *Monster) color(g *Game) gruid.Color {
 		fg = ColorYellow
 	case m.Status(MonsConfused):
 		fg = ColorGreen
-	case m.Status(MonsParalysed):
+	case m.Status(MonsDazed):
 		fg = ColorCyan
 	case m.State == Resting:
 		fg = ColorViolet
