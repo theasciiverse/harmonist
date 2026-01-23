@@ -96,13 +96,17 @@ func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 	return free
 }
 
+// FindJumpTarget finds a jump target for cases that need jumping with turning
+// (or else the player would be blocked). Thematically, we can think that the
+// gawalt propulses itself using the monsters (so several small jumps in a
+// row).
 func (g *Game) FindJumpTarget(m *Monster) gruid.Point {
 	mp := &JumpPath{g: g}
 	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{m.P}, 10)
 	free := invalidPos
 	dist := unreachable
 	for _, n := range nodes {
-		if !g.PlayerCanPass(n.P) {
+		if !g.PlayerCanJumpTo(n.P) {
 			continue
 		}
 		if n.P == g.Player.P || n.P == m.P {
@@ -156,7 +160,7 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 			break
 		}
 	}
-	if !g.PlayerCanPass(p) {
+	if !g.PlayerCanJumpTo(p) {
 		p = g.FindJumpTarget(mons)
 		if !g.PlayerCanPass(p) {
 			// should not happen in practice, but better safe than sorry

@@ -377,21 +377,24 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		return again, errors.New("You cannot move there.")
 	}
 	t := g.Map.At(p)
-	switch {
-	case t == BarrierCell && !g.Player.HasStatus(StatusLevitation):
-		return again, errors.New("You cannot move into a magical barrier.")
-	case t == WindowCell && !g.Player.HasStatus(StatusDig):
-		return again, errors.New("You cannot pass through the closed window.")
-	case t == BarrelCell && g.MonsterFOV[g.Player.P]:
-		return again, errors.New("You cannot enter a barrel while unhidden.")
+	switch t {
+	case BarrierCell:
+		if !g.Player.HasStatus(StatusLevitation) {
+			err = g.WallJump(p)
+			return
+		}
+	case WallCell, WindowCell:
+		if !g.Player.HasStatus(StatusDig) {
+			err = g.WallJump(p)
+			return
+		}
+	case BarrelCell:
+		if g.MonsterFOV[g.Player.P] {
+			return again, errors.New("You cannot enter a barrel while unhidden.")
+		}
 	}
 	mons := g.MonsterAt(p)
-	if IsJumpPropulsion(t) && !g.Player.HasStatus(StatusDig) {
-		err := g.WallJump(p)
-		if err != nil {
-			return again, err
-		}
-	} else if !mons.Exists() {
+	if !mons.Exists() {
 		if g.Player.HasStatus(StatusLignification) {
 			return again, errors.New("You cannot move while lignified.")
 		}
@@ -563,6 +566,15 @@ func (g *Game) PlayerCanPass(p gruid.Point) bool {
 		g.Player.HasStatus(StatusDig) && IsDiggable(t)
 }
 
+// PlayerCanJumpTo reports whether the player can jump the given map point,
+// possibly levitating or digging.
+func (g *Game) PlayerCanJumpTo(p gruid.Point) bool {
+	if g.Map.At(p) == BarrelCell {
+		return false
+	}
+	return g.PlayerCanPass(p)
+}
+
 // PlayerCanJumpPass reports whether the player can pass through the given map
 // point, possibly jumping or levitating.
 func (g *Game) PlayerCanJumpPass(p gruid.Point) bool {
@@ -571,5 +583,6 @@ func (g *Game) PlayerCanJumpPass(p gruid.Point) bool {
 	}
 	t := g.Map.At(p)
 	return IsJumpPassable(t) ||
-		g.Player.HasStatus(StatusLevitation) && t == BarrierCell
+		t == BarrierCell && g.Player.HasStatus(StatusLevitation) ||
+		t == DoorCell && (g.MonsterAt(p).Exists() || g.Player.P == p)
 }

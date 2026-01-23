@@ -106,7 +106,7 @@ func IsSwimPassable(t rl.Cell) bool {
 // propulsion.
 func IsJumpPropulsion(t rl.Cell) bool {
 	switch t {
-	case WallCell, WindowCell:
+	case WallCell, WindowCell, BarrierCell:
 		return true
 	default:
 		return false
