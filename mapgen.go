@@ -59,6 +59,9 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 			mg.rndPos = append(mg.rndPos, gruid.Point{x, y})
 		}
 	}
+	rand.Shuffle(len(mg.rndPos), func(i, j int) {
+		mg.rndPos[i], mg.rndPos[j] = mg.rndPos[j], mg.rndPos[i]
+	})
 	mg.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	mg.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	mg.layout = ml
@@ -527,7 +530,6 @@ const (
 // ground (for patrol purposes).
 func (mg *MapGen) putCavernCells() {
 	d := mg.m
-	// TODO: improve handling and placement of this
 	it := mg.m.Terrain.Iterator()
 	for it.Next() {
 		p := it.P()

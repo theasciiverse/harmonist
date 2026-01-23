@@ -772,6 +772,7 @@ func (mg *MapGen) bandInfoSatowalga(g *Game, band monsterBand) bandInfo {
 }
 
 func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
+	// Try to find a suitable cell outside of vaults.
 	for _, p := range mg.rndPos {
 		mons := g.MonsterAt(p)
 		if mons.Exists() {
@@ -782,8 +783,12 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 			return p
 		}
 	}
+	// Otherwise, try to find a suitable cell inside of vaults or in some lateral wall.
 	for _, p := range mg.rndPos {
 		t := mg.m.At(p)
+		if (t == GroundCell || t == CavernCell) && mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
+			return p
+		}
 		if t == WallCell && g.HasNonWallNeighbors(p) {
 			g.Map.Set(p, GroundCell)
 			return p
@@ -936,7 +941,13 @@ func (g *Game) freeCellForBandMonster(p gruid.Point) gruid.Point {
 			continue
 		}
 		mons := g.MonsterAt(p)
-		if mons.Exists() || !Passable(g.Map.At(p)) {
+		t := g.Map.At(p)
+		if mons.Exists() {
+			continue
+		}
+		switch t {
+		case CavernCell, GroundCell, QueenRockCell, FoliageCell:
+		default:
 			continue
 		}
 		return p
@@ -966,7 +977,7 @@ func (mg *MapGen) putMonsterBand(g *Game, band monsterBand) bool {
 		bdinf = mg.bandInfoOutside(g, band)
 	case LoneHighGuard:
 		bdinf = mg.bandInfoGuard(g, band, PlacePatrol)
-	case LoneSatowalgaPlant:
+	case LoneSatowalgaPlant, PairSatowalga:
 		bdinf = mg.bandInfoSatowalga(g, band)
 	case SpecialLoneVampire, SpecialLoneNixe, SpecialLoneMilfid, SpecialLoneOricCelmist, SpecialLoneHarmonicCelmist, SpecialLoneHighGuard,
 		SpecialLoneHarpy, SpecialLoneTreeMushroom, SpecialLoneMirrorSpecter, SpecialLoneHazeCat, SpecialLoneSpider, SpecialLoneAcidMound, SpecialLoneDog, SpecialLoneExplosiveNadre, SpecialLoneYack, SpecialLoneBlinkingFrog:
