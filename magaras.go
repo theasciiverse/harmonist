@@ -39,8 +39,7 @@ const (
 	DisguiseMagara
 	DelayedNoiseMagara
 	DispersalMagara
-	DelayedOricExplosionMagara
-	//BarrierMagara
+	OricExplosionMagara
 )
 
 // Harmonist reports whether the magara is of harmonic nature (for achievement
@@ -62,7 +61,7 @@ func (mag Magara) Oric() bool {
 	switch mag.Kind {
 	case BlinkMagara, DigMagara, TeleportMagara, LevitationMagara,
 		TeleportOtherMagara, SwappingMagara, ObstructionMagara,
-		DispersalMagara, DelayedOricExplosionMagara:
+		DispersalMagara, OricExplosionMagara:
 		return true
 	default:
 		return false
@@ -74,7 +73,7 @@ func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, ShadowsMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
 		return 6
-	case DazingMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, DelayedOricExplosionMagara:
+	case DazingMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, OricExplosionMagara:
 		return 5
 	case EnergyMagara:
 		return 1
@@ -194,7 +193,7 @@ func (g *Game) UseMagara(i int) (err error) {
 		err = g.EvokeDelayedNoiseMagara()
 	case DispersalMagara:
 		err = g.EvokeDispersalMagara()
-	case DelayedOricExplosionMagara:
+	case OricExplosionMagara:
 		err = g.EvokeOricExplosionMagara()
 	}
 	if err != nil {
@@ -296,7 +295,7 @@ func (mag Magara) String() (desc string) {
 		desc = "magara of delayed noise"
 	case DispersalMagara:
 		desc = "magara of dispersal"
-	case DelayedOricExplosionMagara:
+	case OricExplosionMagara:
 		desc = "magara of oric explosion"
 	}
 	return desc
@@ -339,9 +338,9 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case DazingMagara:
 		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with harmonic illusions for %d turns.", DurationDazeMonster)
 	case SleepingMagara:
-		desc = "Induces deep sleeping and exhaustion for up to three random monsters you see in cardinal directions using hypnotic illusions."
+		desc = "Induces deep sleeping and exhaustion for monsters you see in cardinal directions using hypnotic illusions."
 	case TeleportOtherMagara:
-		desc = "Creates oric energy disturbances, teleporting up to two random monsters you see in cardinal directions."
+		desc = "Creates oric energy disturbances, teleporting monsters you see in cardinal directions."
 	case SwappingMagara:
 		desc = "Makes you swap positions with the farthest monster in sight. If there is more than one at the same distance, it will be chosen randomly."
 	case ObstructionMagara:
@@ -358,7 +357,7 @@ func (mag Magara) Desc(g *Game) (desc string) {
 		desc = fmt.Sprintf("Will produce a thunderous harmonic noise in your current cell after a @YDelay@N of %d turns.", DurationHarmonicNoiseDelay)
 	case DispersalMagara:
 		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusDispersal.String(), DurationDispersal, StatusDispersal.Desc())
-	case DelayedOricExplosionMagara:
+	case OricExplosionMagara:
 		desc = fmt.Sprintf("Will produce a big rock-destroying oric explosion at your current cell after a @YDelay@N of %d turns. It destroys only walls.", DurationHarmonicNoiseDelay)
 	}
 	desc += fmt.Sprintf("\n\nIt currently has %d charges.", mag.Charges)
@@ -385,6 +384,7 @@ func (g *Game) EvokeBlink() error {
 // Blink makes the player blink away.
 func (g *Game) Blink() bool {
 	if g.Player.HasStatus(StatusLignification) {
+		g.Log("You resist blinking while lignified.")
 		return false
 	}
 	npos := g.BlinkPos(false)
@@ -452,6 +452,31 @@ func (g *Game) EvokeDig() error {
 	return nil
 }
 
+func (g *Game) EvokeTeleportOther() error {
+	ms := g.MonstersInCardinalFOV()
+	if len(ms) == 0 {
+		return errors.New("There are no targetable monsters.")
+	}
+	done := false
+	for _, mons := range ms {
+		if mons.Search == invalidPos {
+			mons.Search = mons.P
+		}
+		done = done || mons.TeleportAway(g)
+		if mons.Kind.ReflectsTeleport() {
+			g.Logf("The %s reflected back some energies.", mons.Kind)
+			done = done || g.Teleportation()
+			break
+		}
+	}
+	if !done {
+		return errors.New("There are no targetable monsters.")
+	}
+
+	return nil
+}
+
+// MonstersInCardinalFOV returns monsters in view in cardinal directions.
 func (g *Game) MonstersInCardinalFOV() []*Monster {
 	ms := []*Monster{}
 	for _, mons := range g.Monsters {
@@ -465,27 +490,6 @@ func (g *Game) MonstersInCardinalFOV() []*Monster {
 		ms[i], ms[j] = ms[j], ms[i]
 	}
 	return ms
-}
-
-func (g *Game) EvokeTeleportOther() error {
-	ms := g.MonstersInCardinalFOV()
-	if len(ms) == 0 {
-		return errors.New("There are no targetable monsters.")
-	}
-	ma := min(2, len(ms))
-	for i := range ma {
-		if ms[i].Search == invalidPos {
-			ms[i].Search = ms[i].P
-		}
-		ms[i].TeleportAway(g)
-		if ms[i].Kind.ReflectsTeleport() {
-			g.Logf("The %s reflected back some energies.", ms[i].Kind)
-			g.Teleportation()
-			break
-		}
-	}
-
-	return nil
 }
 
 func (g *Game) EvokeHealWounds() error {
@@ -651,19 +655,12 @@ func (g *Game) EvokeDazing() error {
 }
 
 func (g *Game) EvokeSleeping() error {
-	// TODO: The limitation of number of monsters is a bit arbitrary.
-	// Same for teleport magara. Either remove the limitation (and adjust
-	// number of charges if necessary to compensate) or use a different
-	// kind of limitation (like only one monster in each direction).
 	ms := g.MonstersInCardinalFOV()
 	if len(ms) == 0 {
 		return errors.New("There are no targetable monsters.")
 	}
-	ma := min(3, len(ms))
 	targets := []gruid.Point{}
-	// XXX: maybe use noise distance instead of FOV?
-	for i := range ma {
-		mons := ms[i]
+	for _, mons := range ms {
 		if mons.State != Resting {
 			g.Logf("%s falls asleep.", mons.Kind.Definite(true))
 		} else {
@@ -677,13 +674,8 @@ func (g *Game) EvokeSleeping() error {
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
 	}
-	if ma == 1 {
-		g.Log("A beam of sleeping emerges.")
-	} else {
-		g.Log("Two beams of sleeping emerge.")
-	}
+	g.Log("Beams of sleeping emerge.")
 	g.md.BeamsAnimation(targets, BeamSleeping)
-
 	return nil
 }
 
@@ -706,11 +698,7 @@ func (g *Game) EvokeLignification() error {
 	if len(targets) == 0 {
 		return errors.New("There are no suitable targets.")
 	}
-	if len(targets) == 1 {
-		g.Log("A beam of lignification emerges.")
-	} else {
-		g.Log("Beams of lignification emerge.")
-	}
+	g.Log("Beams of lignification emerge.")
 	g.md.BeamsAnimation(targets, BeamLignification)
 	return nil
 }

@@ -386,8 +386,8 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	// change colors depending on effect
 	var fg gruid.Color
 	switch bs {
-	//	case BeamSleeping:
-	//		fg = ColorFgSleepingMonster
+	case BeamSleeping:
+		fg = ColorViolet
 	case BeamLignification:
 		fg = ColorYellow
 	case BeamObstruction:
@@ -623,7 +623,7 @@ func (g *Game) RescuedShaedra() {
 	if RandInt(2) == 0 {
 		g.Player.Magaras[len(g.Player.Magaras)-1] = Magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
 	} else {
-		g.Player.Magaras[len(g.Player.Magaras)-1] = Magara{Kind: DelayedOricExplosionMagara, Charges: DelayedOricExplosionMagara.DefaultCharges()}
+		g.Player.Magaras[len(g.Player.Magaras)-1] = Magara{Kind: OricExplosionMagara, Charges: OricExplosionMagara.DefaultCharges()}
 	}
 	AchRescuedShaedra.Get(g)
 }

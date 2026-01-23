@@ -441,8 +441,13 @@ func (m *Monster) Alternate() {
 	}
 }
 
-// TeleportAway teleports the monster away.
-func (m *Monster) TeleportAway(g *Game) {
+// TeleportAway teleports the monster away. Reports whether teleportation
+// happened.
+func (m *Monster) TeleportAway(g *Game) bool {
+	if m.Status(MonsLignified) {
+		g.Logf("The lignified %s resists teleportation.", m.Kind)
+		return false
+	}
 	var p gruid.Point
 	i := 0
 	count := 0
@@ -473,6 +478,7 @@ func (m *Monster) TeleportAway(g *Game) {
 	if g.Player.Sees(opos) {
 		g.md.TeleportAnimation(opos, p, false)
 	}
+	return true
 }
 
 // MoveTo attemps to move the monster to the given target point.
@@ -1167,9 +1173,7 @@ func (m *Monster) HitPlayer(g *Game) {
 	case AmuletObstruction:
 		opos := m.P
 		p := m.LeaveRoomForPlayer(g)
-		if p == invalidPos {
-			m.Blink(g)
-		} else {
+		if p == invalidPos && !m.Blink(g) {
 			m.MoveTo(g, p)
 		}
 		if opos != m.P {
@@ -1601,15 +1605,19 @@ func (m *Monster) AbsorbMana(g *Game) bool {
 }
 
 // Blink attemps to make the monster blink away.
-func (m *Monster) Blink(g *Game) {
+func (m *Monster) Blink(g *Game) bool {
+	if m.Status(MonsLignified) {
+		return false
+	}
 	npos := g.BlinkPos(true)
 	if !InMap(npos) || npos == g.Player.P || npos == m.P {
-		return
+		return false
 	}
 	opos := m.P
 	g.Logf("The %s blinks away.", m.Kind)
 	g.md.TeleportAnimation(opos, npos, true)
 	m.MoveTo(g, npos)
+	return true
 }
 
 // MakeHunt makes the monster hunt the player.

@@ -241,7 +241,11 @@ func (g *Game) NeedsRegenRest() bool {
 }
 
 // Teleportation makes the player teleport away.
-func (g *Game) Teleportation() {
+func (g *Game) Teleportation() bool {
+	if g.Player.HasStatus(StatusLignification) {
+		g.LogStyled("You resist teleportation while lignified.", logNotable)
+		return false
+	}
 	var p gruid.Point
 	i := 0
 	count := 0
@@ -268,6 +272,7 @@ func (g *Game) Teleportation() {
 		// should not happen
 		g.Log("Something went wrong with the teleportation.")
 	}
+	return true
 }
 
 // MaxBananas represents the maximum number of bananas the player can carry.

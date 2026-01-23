@@ -164,8 +164,10 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 		p = g.FindJumpTarget(mons)
 		if !g.PlayerCanPass(p) {
 			// should not happen in practice, but better safe than sorry
-			g.Teleportation()
-			return false, nil
+			if g.Teleportation() {
+				return false, nil
+			}
+			return false, errors.New("You cannot jump there.")
 		}
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {

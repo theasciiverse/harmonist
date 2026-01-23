@@ -119,6 +119,7 @@ const (
 )
 
 // FreePassableCell returns a free passable cell without any actors.
+// Also avoids some special locations like stairs, bananas, magical stones.
 func (g *Game) FreePassableCell() gruid.Point {
 	d := g.Map
 	count := 0
@@ -131,7 +132,7 @@ func (g *Game) FreePassableCell() gruid.Point {
 		y := RandInt(MapHeight)
 		p := gruid.Point{x, y}
 		t := d.At(p)
-		if !Passable(t) {
+		if !Passable(t) || t == StairCell || t == StoneCell || t == BananaCell {
 			continue
 		}
 		if g.Player != nil && g.Player.P == p {
