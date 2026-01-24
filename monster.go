@@ -1164,9 +1164,8 @@ func (m *Monster) HitPlayer(g *Game) {
 	}
 	switch g.Player.Inventory.Neck {
 	case AmuletConfusion:
-		m.PutConfusion(g)
-		// XXX: maybe affect all monsters in sight?
 		g.LogfStyled("Your amulet releases confusing harmonies.", logNotable)
+		m.PutConfusion(g)
 	case AmuletFog:
 		g.LogStyled("Your amulet feels warm.", logNotable)
 		g.ActivateAmuletFog()
@@ -1177,8 +1176,8 @@ func (m *Monster) HitPlayer(g *Game) {
 			m.MoveTo(g, p)
 		}
 		if opos != m.P {
-			g.MagicalBarrierAt(opos)
 			g.LogStyled("The amulet releases an oric wind.", logNotable)
+			g.MagicalBarrierAt(opos)
 			m.Exhaust(g)
 		}
 	case AmuletTeleport:
@@ -1188,11 +1187,9 @@ func (m *Monster) HitPlayer(g *Game) {
 			g.LogfStyled("The %s reflected back some energies.", logNotable, m.Kind)
 			g.Teleportation()
 		}
-	case AmuletLignification:
+	case AmuletDazing:
 		g.LogStyled("Your amulet glows.", logNotable)
-		if !m.Kind.ResistsLignification() {
-			m.EnterLignification(g)
-		}
+		m.PutStatus(g, MonsDazed, DurationDazeMonster)
 	}
 }
 

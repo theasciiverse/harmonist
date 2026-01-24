@@ -583,7 +583,7 @@ const (
 	AmuletTeleport
 	AmuletConfusion
 	AmuletFog
-	AmuletLignification
+	AmuletDazing
 	AmuletObstruction
 	MarevorMagara
 )
@@ -608,7 +608,7 @@ func (it Item) IsAmulet() bool {
 	case AmuletTeleport,
 		AmuletConfusion,
 		AmuletFog,
-		AmuletLignification,
+		AmuletDazing,
 		AmuletObstruction:
 		return true
 	}
@@ -637,8 +637,8 @@ func (it Item) String() (desc string) {
 		desc = "amulet of confusion"
 	case AmuletFog:
 		desc = "amulet of fog"
-	case AmuletLignification:
-		desc = "amulet of lignification"
+	case AmuletDazing:
+		desc = "amulet of daze"
 	case AmuletObstruction:
 		desc = "amulet of obstruction"
 	case MarevorMagara:
@@ -673,8 +673,8 @@ func (it Item) Desc(g *Game) (desc string) {
 		desc = "Confuses foes that critically hit you."
 	case AmuletFog:
 		desc = "Releases fog and makes you swift when critically hurt."
-	case AmuletLignification:
-		desc = "Lignifies foes that critically hit you."
+	case AmuletDazing:
+		desc = "Dazes foes that critically hit you."
 	case AmuletObstruction:
 		desc = "Uses a magical barrier to blow away monsters that critically hit you."
 	case MarevorMagara:
@@ -754,7 +754,7 @@ func (g *Game) RandomAmulet() (it Item) {
 	amulets := []Item{AmuletTeleport,
 		AmuletConfusion,
 		AmuletFog,
-		AmuletLignification,
+		AmuletDazing,
 		AmuletObstruction}
 loop:
 	for {
