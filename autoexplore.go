@@ -6,6 +6,7 @@ import (
 	"codeberg.org/anaseto/gruid"
 )
 
+// Autoexplore attemps auto-exploration.
 func (g *Game) Autoexplore() (again bool, err error) {
 	if mons := g.MonsterInFOV(); mons.Exists() {
 		return again, errors.New("You cannot auto-explore while there are monsters in view.")
@@ -27,6 +28,7 @@ func (g *Game) Autoexplore() (again bool, err error) {
 	return g.PlayerBump(*n)
 }
 
+// AllExplored reports whether all the reachable terrain has been explored.
 func (g *Game) AllExplored() bool {
 	np := &NoisePath{g: g}
 	it := g.Map.Terrain.Iterator()
@@ -45,6 +47,7 @@ func (g *Game) AllExplored() bool {
 	return true
 }
 
+// AutoexploreSources returns source points for auto-exploration.
 func (g *Game) AutoexploreSources() []gruid.Point {
 	g.autosources = g.autosources[:0]
 	np := &NoisePath{g: g}
@@ -78,12 +81,15 @@ func (g *Game) AutoexploreSources() []gruid.Point {
 
 const unreachable = 9999
 
+// BuildAutoexploreMap rebuilds auto-exploration data.
 func (g *Game) BuildAutoexploreMap(sources []gruid.Point) {
 	ap := &AutoexplorePath{g: g}
 	g.PRauto.BreadthFirstMap(ap, sources, unreachable)
 	g.autoexploreMapRebuild = false
 }
 
+// NextAuto returns the next auto-explore position and reports whether
+// auto-explore finished.
 func (g *Game) NextAuto() (next *gruid.Point, finished bool) {
 	ap := &AutoexplorePath{g: g}
 	if g.PRauto.BreadthFirstMapAt(g.Player.P) > unreachable {
