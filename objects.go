@@ -162,9 +162,9 @@ func (stn Stone) Desc(g *Game) (text string) {
 	case EarthStone:
 		text = "Activating this magical stone will produce an oric explosion that destroys nearby walls. It reveals interior walls."
 	case QueenStone:
-		text = "Activating this magical stone made of queen rock will produce an amplified harmonic sound confusing enemies in a wide area. This can also attract monsters. It reveals the current position of monsters and the nature of nearby ones."
+		text = "Activating this magical stone made of queen rock will produce an amplified harmonic sound confusing enemies in a wide area. This can also attract monsters. It reveals the current position of monsters, including the exact kind for nearby ones."
 	case NightStone:
-		text = "Activating this magical stone will produce hypnotic harmonic illusions inducing sleep in all the monsters in sight. It reveals any lights on the map."
+		text = "Activating this magical stone will produce hypnotic harmonic illusions inducing sleep in all the monsters in sight. It reveals any cloaks, amulets and lights on the map."
 	case TeleportStone:
 		text = "Activating this magical stone will teleport away monsters in sight. It reveals any magaras on the map."
 	case TreeStone:
@@ -352,6 +352,9 @@ func (g *Game) ActivateNightStone() {
 		mons.ExhaustTime(g, 4+RandInt(2))
 	}
 	for p := range g.Objects.Lights {
+		g.SeeTerrainAt(p)
+	}
+	for p := range g.Objects.Items {
 		g.SeeTerrainAt(p)
 	}
 }
