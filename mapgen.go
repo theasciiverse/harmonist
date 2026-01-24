@@ -1099,14 +1099,14 @@ func (mg *MapGen) caveGroundCell() gruid.Point {
 }
 
 func (mg *MapGen) randomInStone(sts []Stone) Stone {
-	instones := []Stone{
+	stones := []Stone{
 		BarrelStone,
 		EarthStone,
 		QueenStone,
 		TeleportStone,
 	}
 	for {
-		st := instones[RandInt(len(instones))]
+		st := stones[RandInt(len(stones))]
 		if !slices.Contains(sts, st) {
 			return st
 		}
@@ -1114,16 +1114,17 @@ func (mg *MapGen) randomInStone(sts []Stone) Stone {
 }
 
 func (mg *MapGen) randomOutStone(sts []Stone) Stone {
-	instones := []Stone{
-		BarrelStone,
-		EarthStone,
-		QueenStone,
-		TeleportStone,
+	stones := []Stone{
 		NightStone,
 		TreeStone,
 	}
+	if mg.rand.IntN(2) == 0 {
+		// Stones that usually appear in vaults may appear outside,
+		// too, but less often.
+		stones = append(stones, BarrelStone, EarthStone, QueenStone, TeleportStone)
+	}
 	for {
-		st := instones[mg.rand.IntN(len(instones))]
+		st := stones[mg.rand.IntN(len(stones))]
 		if !slices.Contains(sts, st) {
 			return st
 		}
