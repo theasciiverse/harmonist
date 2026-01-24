@@ -693,7 +693,7 @@ func (md *model) evokeMagaraMenu() {
 		r++
 	}
 	altBgEntries(entries)
-	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke Magara").WithStyle(gruid.Style{Fg: ColorYellow})})
+	md.menu.SetBox(&ui.Box{Title: ui.Text("Evoke").WithStyle(gruid.Style{Fg: ColorYellow})})
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
