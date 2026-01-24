@@ -214,8 +214,6 @@ func (g *Game) Rest() error {
 	if g.Player.Bananas <= 0 {
 		return errors.New("You cannot sleep without eating for dinner a banana first.")
 	}
-	// TODO: animation
-	//g.ui.DrawMessage("Resting...")
 	g.resting = true
 	g.restingTurns = RandInt(5) // you do not wake up when you want
 	g.Player.Bananas--
@@ -289,7 +287,7 @@ func (g *Game) CollectGround() {
 	switchcell:
 		switch t {
 		case BarrelCell:
-			// TODO: move here message
+			g.Log("You hide yourself inside the barrel.")
 		case BananaCell:
 			if g.Player.Bananas >= MaxBananas {
 				g.Log("There is a banana, but your pack is already full.")
@@ -409,8 +407,6 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 			return again, g.AbyssJump()
 		}
 		switch t {
-		case BarrelCell:
-			g.Log("You hide yourself inside the barrel.")
 		case TableCell:
 			g.Log("You hide yourself under the table.")
 		case TreeCell:
