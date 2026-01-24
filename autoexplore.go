@@ -98,3 +98,17 @@ func (g *Game) NextAuto() (next *gruid.Point, finished bool) {
 	next = &n
 	return next, finished
 }
+
+// StopAuto stops auto-movement.
+func (g *Game) StopAuto() {
+	if g.autoexploring && !g.autoHalt {
+		g.Log("You stop exploring.")
+	} else if g.autoDir != ZP {
+		g.Log("You stop.")
+	} else if g.autoTarget != invalidPos {
+		g.Log("You stop.")
+	}
+	g.autoHalt = true
+	g.autoDir = ZP
+	g.autoTarget = invalidPos
+}

@@ -40,7 +40,7 @@ func (lt *lighter) Cost(src, from, to gruid.Point) int {
 	}
 	// from terrain specific costs
 	t := g.Map.Terrain.AtU(from)
-	if t == WallCell {
+	if t == WallCell || t == RubbleCell {
 		return wallcost
 	}
 	if _, ok := g.Map.Clouds[from]; ok {
@@ -132,9 +132,9 @@ func (g *Game) diagonalVisibility(from, to gruid.Point) visibility {
 			continue
 		}
 		switch g.Map.Terrain.AtU(p) {
+		case WallCell, HoledWallCell, RubbleCell:
 		case WindowCell:
 			vis |= Fuzzy
-		case WallCell, HoledWallCell:
 		case FoliageCell:
 			vis |= Fuzzy
 		default:
@@ -154,26 +154,10 @@ const (
 	LightRay
 )
 
-func (g *Game) StopAuto() {
-	if g.autoexploring && !g.autoHalt {
-		g.Log("You stop exploring.")
-	} else if g.autoDir != ZP {
-		g.Log("You stop.")
-	} else if g.autoTarget != invalidPos {
-		g.Log("You stop.")
-	}
-	g.autoHalt = true
-	g.autoDir = ZP
-	g.autoTarget = invalidPos
-}
-
+// Illuminated reports whether the given position is lighted.
 func (g *Game) Illuminated(p gruid.Point) bool {
 	c, ok := g.LightFOV.At(p)
 	return ok && c <= LightRange || g.Map.Terrain.At(p) == StoneCell
-}
-
-func (g *Game) blocksSSCFOV(p gruid.Point) bool {
-	return g.Map.At(p) != WallCell
 }
 
 // ComputeFOV updates the field of view of both player and monsters (so that
@@ -196,7 +180,7 @@ func (g *Game) ComputeFOV() {
 	nbs := paths.Neighbors{}
 	g.Player.FOV.SSCVisionMap(
 		g.Player.P, maxDepth,
-		g.blocksSSCFOV,
+		g.passSSCFOV,
 		false,
 	)
 	for _, n := range lnodes {
@@ -242,6 +226,11 @@ func (g *Game) ComputeFOV() {
 	}
 }
 
+func (g *Game) passSSCFOV(p gruid.Point) bool {
+	t := g.Map.At(p)
+	return t != WallCell && t != RubbleCell
+}
+
 // SeeMonster makes you see or sense a monster.
 func (g *Game) SeeMonster(mons *Monster, verb string) {
 	if mons.Seen {
@@ -278,7 +267,7 @@ func (m *Monster) ComputeFOV(g *Game) {
 	lnodes := g.mfov.VisionMap(lt, m.P)
 	g.mfov.SSCVisionMap(
 		m.P, DefaultMonsterFOVRange,
-		g.blocksSSCFOV,
+		g.passSSCFOV,
 		false,
 	)
 	for _, n := range lnodes {
