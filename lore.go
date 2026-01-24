@@ -119,7 +119,7 @@ I just can’t believe it was a dream. I wanted so much to be back home and be f
 
 [A long page written in a rather hurried way. It is accompanied by the drawings of two children, most likely the author’s]
 `,
-	`“Damned, damned kerejats! If it wasn’t because of the light of these butterflies, they wouldn’t have seen me. Luckily I’m small and I got in a barrel. But it was close. For Karihesat’s sake, I hate those butterflies…”
+	`“Damned, damned kerejats! If it wasn’t because of the light of these butterflies, they wouldn’t have seen me. Luckily I’m small and I got in a barrel. But it was a close call. For Karihesat’s sake, I hate those butterflies…”
 
 [Piece of paper signed: The Hobbit Who Doesn’t Want To Die]
 `,
@@ -173,7 +173,7 @@ if you want to say hello, it’s this way, come on, come…”
 
 [The message is carved in stone. You think: yeah, hello… And you nervously look for a barrel]
 `,
-	`“Just a bit earlier, I climbed a tree to see a little farther. There was a kerejat butterfly shining in the distance. However, a milfid happened to see me and attacked me… Though I’m a gawalt, I ran away as fast as an arrow.”
+	`“Just a bit earlier, I climbed a tree to see a little farther. There was a kerejat butterfly shining in the distance. However, a milfid happened to see me and attacked me… Even though I’m a gawalt, I ran away as fast as an arrow.”
 
 [You blink at the paper, surprised. A gawalt? A gawalt monkey like you wrote that? Then, you smile: I will, too, run like an arrow!]
 `,
@@ -239,7 +239,7 @@ It was my blood they were drinking. It was their blood I was drinking. I was the
 	`“Go on. Don’t look behind.
  Nothing good you will find.
  There are nothing but ghosts,
- ghosts that will cost your life.”
+ ghosts that will end your life.”
 
 [Fragment of Ghosts of the Past, by Yaylin Ekath (5541-?)]
 `,
