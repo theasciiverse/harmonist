@@ -178,7 +178,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 	}
 	mg.addSpecialFeatures(g, ml)
 	mg.PR.CCMapAll(NewMappingPath(func(p gruid.Point) bool {
-		return InMap(p) && Passable(g.Map.At(p))
+		return Passable(g.Map.At(p))
 	}))
 	mg.GenMonsters(g)
 	mg.putCavernCells()
@@ -539,7 +539,8 @@ func (mg *MapGen) putCavernCells() {
 	}
 }
 
-// clearUnconnected ensures that no unconnected terrain remains.
+// clearUnconnected ensures that no unconnected terrain remains (before adding
+// lakes or chasm).
 func (dg *MapGen) clearUnconnected(g *Game) {
 	d := dg.m
 	sp := NewMappingPath(func(p gruid.Point) bool { return IsPlayerPassable(d.At(p)) })

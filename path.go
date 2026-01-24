@@ -36,8 +36,6 @@ func (sp *MappingPath) Neighbors(p gruid.Point) []gruid.Point {
 	if !sp.passable(p) {
 		return nil
 	}
-	// TODO: investigate that in all uses we really want sp.passable and
-	// not just InMap.
 	return sp.neighbors.Cardinal(p, sp.passable)
 }
 
