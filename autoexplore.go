@@ -57,11 +57,21 @@ func (g *Game) AutoexploreSources() []gruid.Point {
 				continue
 			}
 		}
-		if !IsKnown(g.Map.KnownTerrain.At(p)) || g.Player.Bananas < MaxBananas && g.Objects.Bananas[p] {
-			// TODO: add more sources (potions, magaras) in some cases.
+		if !IsKnown(g.Map.KnownTerrain.At(p)) {
 			g.autosources = append(g.autosources, p)
 		}
 
+	}
+	if g.Player.Bananas < MaxBananas {
+		for p := range g.Objects.Bananas {
+			g.autosources = append(g.autosources, p)
+		}
+	}
+	for p, pt := range g.Objects.Potions {
+		if pt == HealthPotion && g.Player.HP < g.Player.HPMax() ||
+			pt == MagicPotion && g.Player.MP < g.Player.MPMax() {
+			g.autosources = append(g.autosources, p)
+		}
 	}
 	return g.autosources
 }
