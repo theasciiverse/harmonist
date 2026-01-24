@@ -292,7 +292,7 @@ func (m *Monster) noiseColor() gruid.Color {
 		// Satowalga plants and kerejats don't make any
 		// noise, so shouldn't happen.
 		return ColorForeground
-	case MonsMirrorSpecter:
+	case MonsMirrorSpecter, MonsSpider:
 		return ColorYellow
 	case MonsWingedMilfid, MonsTinyHarpy:
 		return ColorCyan
@@ -300,7 +300,7 @@ func (m *Monster) noiseColor() gruid.Color {
 		return ColorMagenta
 	case MonsWorm, MonsAcidMound:
 		return ColorGreen
-	case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
+	case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp:
 		return ColorOrange
 	default:
 		return ColorRed

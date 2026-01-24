@@ -501,7 +501,7 @@ func monsterNoise(mk monsterKind) string {
 	case MonsSatowalgaPlant, MonsButterfly:
 		// Should not happen.
 		return "a silent noise"
-	case MonsMirrorSpecter:
+	case MonsMirrorSpecter, MonsSpider:
 		return "an imperceptible air movement"
 	case MonsWingedMilfid, MonsTinyHarpy:
 		return "the flapping of wings"
@@ -509,7 +509,7 @@ func monsterNoise(mk monsterKind) string {
 		return "heavy footsteps"
 	case MonsWorm, MonsAcidMound:
 		return "a creep noise"
-	case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp, MonsSpider:
+	case MonsDog, MonsBlinkingFrog, MonsHazeCat, MonsCrazyImp:
 		return "light footsteps"
 	default:
 		return "footsteps"
