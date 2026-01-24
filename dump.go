@@ -117,20 +117,19 @@ func (g *Game) Dump() string {
 	fmt.Fprintf(buf, "┌%s┐\n", strings.Repeat("─", MapWidth))
 	buf.WriteString(g.DumpDungeon())
 	fmt.Fprintf(buf, "└%s┘\n", strings.Repeat("─", MapWidth))
-	fmt.Fprintf(buf, "\n")
 	if g.Stats.Killed > 0 {
-		fmt.Fprint(buf, g.DumpedKilledMonsters())
 		fmt.Fprintf(buf, "\n")
+		fmt.Fprint(buf, g.DumpedKilledMonsters())
 	}
-	fmt.Fprintf(buf, "Timeline:\n")
-	fmt.Fprint(buf, g.DumpStory())
 	fmt.Fprintf(buf, "\n")
 	g.DetailedStatistics(buf)
+	fmt.Fprintf(buf, "\n")
+	fmt.Fprintf(buf, "Timeline:\n")
+	fmt.Fprint(buf, g.DumpStory())
 	return buf.String()
 }
 
 func (g *Game) DetailedStatistics(w io.Writer) {
-	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Statistics:\n")
 	fmt.Fprintf(w, "You evoked magaras %d times (%d oric magaras, %d harmonic, %d others).\n",
 		g.Stats.MagarasUsed, g.Stats.OricMagUse,
