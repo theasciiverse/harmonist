@@ -11,10 +11,10 @@ Improved and reworked content:
   (producing dust) and reveals interior walls, and the queenstone has been
   merged with the sensing stone. The other stones are still the same but now
   provide some kind of partial information about the map, in addition to their
-  usual tactical effect (revealing barrels for barrel stone, lights for night
-  stone, magaras for teleport stone, stairs for seal stone, trees and partially
-  foliage for tree stone). To compensate for the extra strategic buff, there
-  are somewhat less stones on the maps than before.
+  usual tactical effect (revealing barrels for barrel stone; lights, cloaks and
+  amulets for night stone; magaras for teleport stone; stairs for seal stone;
+  trees, bananas and partially foliage for tree stone). To compensate for the
+  extra strategic buff, there are somewhat less stones on the maps than before.
 * The tile where a magical stone is present is now always lighted, due to
   magical stones producing a very small light. This change mostly intends to
   make stone coloring independent from lighting and not require the player to
@@ -34,11 +34,18 @@ Improved and reworked content:
   more interesting, as it helps hear in-place footsteps of watching monsters
   (except satowalga plants, which make no noise at all), and even resting
   monsters at a short range.
+* It's now possible to jump off out-of-map (indestructible) walls. It felt
+  strange that you couldn't move out of the map, but still couldn't consider
+  the borders as walls.
+* Mirror specter monsters now absorb the player's mana at a somewhat slower
+  rate than before.
 * The “cloak of magic” has been removed, as it was a bit redundant with respect
   to the “cloak of conversion”. The latter is a bit more interesting and less
   quantitative.
-* Mirror specter monsters now absorb the player's mana at a somewhat slower
-  rate than before.
+* Rename “paralysis” into more thematic “daze”, as it's the result of being
+  trapped in harmonic illusions, not actual paralysis.
+* The “amulet of lignification” has been replaced by the “amulet of daze”,
+  which is more useful as an emergency amulet.
 
 UI, graphics, QoL:
 
@@ -73,9 +80,10 @@ Fixes:
 * Fix map drawing refresh issue when interrupting chained animations early.
 * Fix possible cases of unreachable rubble after earthquake.
 * Fix old regression that broke the fire magara.
-* Prevent satowalga plants from ever being generated on top of a banana (that
-  made swapping and teleport the only ways to get such banana, which was kind
-  of fun, but it was a bit confusing).
+* Prevent satowalga plants from ever being generated on top of a banana or
+  stairs (that made swapping and teleport the only ways to get to such place,
+  which was kind of fun, but problematic). It was very rare, but somehow not
+  impossible.
 * Minor fix in story sequence when liberating Shaedra: half of the story
   sequence animation could happen out of view if a nixe or some other monsters
   moved you away during the same turn you reached Shaedra. Now the story
