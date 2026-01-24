@@ -1057,13 +1057,8 @@ func (mg *MapGen) genStones(g *Game) {
 	for i := range nstones {
 		p := invalidPos
 		var st Stone
-		if i < outside {
-			// The map contains a magical stone outside from a
-			// vault.
-			p = mg.caveGroundCell()
-			st = mg.randomOutStone(genStones)
-			genStones = append(genStones, st)
-		} else {
+		if i < nstones-outside {
+			// Place a stone inside a vault.
 			count := 0
 			for p == invalidPos {
 				count++
@@ -1074,6 +1069,12 @@ func (mg *MapGen) genStones(g *Game) {
 				p = mg.vaults[RandInt(len(mg.vaults))].RandomPlace(PlaceStatic)
 			}
 			st = mg.randomInStone(genStones)
+			genStones = append(genStones, st)
+		} else {
+			// The map contains a magical stone outside from a
+			// vault.
+			p = mg.caveGroundCell()
+			st = mg.randomOutStone(genStones, outside)
 			genStones = append(genStones, st)
 		}
 		g.Objects.Stones[p] = st
@@ -1113,12 +1114,12 @@ func (mg *MapGen) randomInStone(sts []Stone) Stone {
 	}
 }
 
-func (mg *MapGen) randomOutStone(sts []Stone) Stone {
+func (mg *MapGen) randomOutStone(sts []Stone, outside int) Stone {
 	stones := []Stone{
 		NightStone,
 		TreeStone,
 	}
-	if mg.rand.IntN(2) == 0 {
+	if mg.rand.IntN(2) == 0 || outside > len(stones) {
 		// Stones that usually appear in vaults may appear outside,
 		// too, but less often.
 		stones = append(stones, BarrelStone, EarthStone, QueenStone, TeleportStone)
