@@ -168,7 +168,7 @@ func (stn Stone) Desc(g *Game) (text string) {
 	case TeleportStone:
 		text = "Activating this magical stone will teleport away monsters in sight. It reveals any magaras on the map."
 	case TreeStone:
-		text = "Activating this magical stone will lignify monsters in a wide area. It reveals any trees on the map as well as some foliage."
+		text = "Activating this magical stone will lignify monsters in a wide area. It reveals any trees and bananas on the map as well as some foliage."
 	case SealStone:
 		text = "Activating this magical stone will disable a magical barrier somewhere in the same level, usually one blocking stairs. It reveals the position of the target barrier."
 	}
@@ -379,7 +379,7 @@ func (g *Game) ActivateTreeStone() {
 		}
 	}
 	for p, t := range g.Map.Terrain.All() {
-		if t == TreeCell || t == FoliageCell && g.rand.IntN(3) == 0 {
+		if t == TreeCell || t == BananaCell || t == FoliageCell && g.rand.IntN(3) == 0 {
 			g.SeeTerrainAt(p)
 		}
 	}
