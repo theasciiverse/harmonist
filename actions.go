@@ -881,6 +881,8 @@ func (md *model) helpItems() {
 
 @CMagical Stones@N are static items found in every level. Pressing the @MInteract Key@N(e) will activate them.
 
+@CScrolls@N are story and flavour items that can be read using the @MInteract Key@N(e).
+
 @CStairs@N are found once on every level and lead to the next one when used with the @MInteract Key@N(e). They may sometimes be blocked and require the activation of a seal stone to unblock them.
 `)
 	md.helpTopic("Items (Help)", s)

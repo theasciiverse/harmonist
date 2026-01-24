@@ -403,7 +403,7 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case BananaCell:
 		desc = "A gawalt monkey cannot enter a healthy sleep without eating one of those bananas before."
 	case LightCell:
-		desc = "A campfire illuminates surrounding cells. Creatures can spot you in illuminated cells from a greater range."
+		desc = "A campfire illuminates surrounding cells. Creatures can spot you in illuminated cells from a greater range. You can extinguish it, but guards may light it up again."
 	case ExtinguishedLightCell:
 		desc = "An extinguished campfire can be lighted again by guards."
 	case TableCell:
