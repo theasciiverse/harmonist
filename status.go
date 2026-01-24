@@ -361,6 +361,10 @@ func (md *model) updateStatusInfo() {
 		entries = append(entries, ui.MenuEntry{
 			Text:     stt.WithText("@RDead@N "),
 			Disabled: true})
+	case g.Map.Depth == -1:
+		entries = append(entries, ui.MenuEntry{
+			Text:     stt.WithText("@BEscaped!@N "),
+			Disabled: true})
 	case md.mode == modeEnd:
 	default:
 		p := g.Player.P
@@ -380,7 +384,5 @@ func (md *model) updateStatusInfo() {
 			entries = append(entries, ui.MenuEntry{Text: stt.WithText("@C[Examine]@N"), Disabled: true})
 		}
 	}
-
-	//altBgEntries(entries)
 	md.status.SetEntries(entries)
 }
