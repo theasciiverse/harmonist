@@ -306,47 +306,47 @@ func (mg *MapGen) GenMonsters(g *Game) {
 			}
 		}
 	case 3:
-		// 11-12
+		// 12-13
 		mg.putRandomBandN(g, bandsHighGuard, 2)
 		mg.putRandomBandN(g, bandsGuard, 4)
 		switch mg.rand.IntN(5) {
 		case 0, 1:
-			// 5
+			// 6
 			if mg.rand.IntN(3) == 0 {
-				mg.putRandomBandN(g, bandDog, 3)
+				mg.putRandomBandN(g, bandDog, 4)
 			} else {
-				mg.putRandomBandN(g, bandsAnimals, 3)
+				mg.putRandomBandN(g, bandsAnimals, 4)
 			}
 			mg.putRandomBandN(g, bandsPlants, 2)
 		case 2, 3:
-			// 5
+			// 6
 			mg.putRandomBandN(g, bandsAnimals, 2)
 			mg.putRandomBandN(g, bandsPlants, 1)
-			mg.putRandomBandN(g, bandsBipeds, 2)
+			mg.putRandomBandN(g, bandsBipeds, 3)
 		case 4:
-			// 6
+			// 7
 			mg.putRandomBandN(g, bandsPlants, 1)
-			mg.putRandomBandN(g, bandNadre, 5)
+			mg.putRandomBandN(g, bandNadre, 6)
 		}
 	case 4:
-		// 12-13
+		// 13-14
 		mg.putRandomBandN(g, bandsHighGuard, 2)
 		switch mg.rand.IntN(5) {
 		case 0, 1:
 			// 10
-			mg.putRandomBandN(g, bandsGuard, 4)
+			mg.putRandomBandN(g, bandsGuard, 5)
 			mg.putRandomBandN(g, bandsRare, 2)
 			mg.putRandomBandN(g, bandGuardPair, 1)
 			mg.putRandomBandN(g, bandsBipeds, 1)
 			mg.putRandomBandN(g, bandsPlants, 1)
 		case 2, 3:
 			// 11
-			mg.putRandomBandN(g, bandsGuard, 7)
+			mg.putRandomBandN(g, bandsGuard, 8)
 			mg.putRandomBandN(g, bandGuardPair, 1)
 			mg.putRandomBandN(g, bandsAnimals, 1)
 			mg.putRandomBandN(g, bandsPlants, 1)
 		case 4:
-			mg.putRandomBandN(g, bandsGuard, 4)
+			mg.putRandomBandN(g, bandsGuard, 5)
 			if mg.rand.IntN(2) == 0 {
 				mg.putRandomBandN(g, bandOricCelmist, 4)
 			} else {
@@ -355,10 +355,10 @@ func (mg *MapGen) GenMonsters(g *Game) {
 			mg.putRandomBandN(g, bandsPlants, 1)
 		}
 	case 5:
-		// 13-14
+		// 14-15
 		mg.putRandomBandN(g, bandsHighGuard, 2)
 		if mg.rand.IntN(2) == 0 {
-			// 11
+			// 12
 			if mg.rand.IntN(2) == 0 {
 				mg.putRandomBandN(g, bandsGuard, 2)
 				mg.putRandomBandN(g, bandGuardPair, 1)
@@ -366,13 +366,13 @@ func (mg *MapGen) GenMonsters(g *Game) {
 				mg.putRandomBandN(g, bandsGuard, 4)
 			}
 			mg.putRandomBandN(g, bandsAnimals, 1)
-			mg.putRandomBandN(g, bandsRare, 2)
+			mg.putRandomBandN(g, bandsRare, 3)
 			mg.putRandomBandN(g, bandsBipeds, 3)
 			mg.putRandomBandN(g, bandsPlants, 1)
 		} else {
-			// 12
+			// 13
 			mg.putRandomBandN(g, bandsGuard, 2)
-			mg.putRandomBandN(g, bandsAnimals, 3)
+			mg.putRandomBandN(g, bandsAnimals, 4)
 			mg.putRandomBandN(g, bandsBipeds, 2)
 			if mg.rand.IntN(2) == 0 {
 				mg.putRandomBandN(g, bandOricCelmistPair, 1)
@@ -383,12 +383,12 @@ func (mg *MapGen) GenMonsters(g *Game) {
 			mg.putRandomBandN(g, bandsPlants, 2)
 		}
 	case 6:
-		// 15-17
+		// 16-17
 		mg.putRandomBandN(g, bandsHighGuard, 1)
 		if mg.rand.IntN(2) == 0 {
-			// 14
+			// 15
 			mg.putRandomBandN(g, bandsGuard, 3)
-			mg.putRandomBandN(g, bandsAnimals, 2)
+			mg.putRandomBandN(g, bandsAnimals, 3)
 			mg.putRandomBandN(g, bandsRare, 3)
 			mg.putRandomBandN(g, bandsBipeds, 1)
 			if mg.rand.IntN(2) == 0 {
@@ -785,6 +785,10 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 	}
 	// Otherwise, try to find a suitable cell inside of vaults or in some lateral wall.
 	for _, p := range mg.rndPos {
+		mons := g.MonsterAt(p)
+		if mons.Exists() {
+			continue
+		}
 		t := mg.m.At(p)
 		if (t == GroundCell || t == CavernCell) && mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
 			return p
@@ -1003,7 +1007,7 @@ func (mg *MapGen) putMonsterBand(g *Game, band monsterBand) bool {
 	} else {
 		p = bdinf.Path[0]
 		if g.MonsterAt(p).Exists() {
-			log.Printf("already monster at %v mons %v no place for %v", p, g.MonsterAt(p).Kind, monsters)
+			log.Printf("already %s at %v: no place for %v", g.MonsterAt(p).Kind, p, monsters)
 			p = g.freeCellForMonster()
 		}
 	}
