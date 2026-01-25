@@ -206,7 +206,7 @@ func (md *model) drawPosInfo() {
 	if !mons.Seen && g.Wizard != WizardSeeAll {
 		formatBox("unknown monster", "You sensed a monster there.", mfg)
 	} else {
-		if !mons.Peaceful(g) && mons.State != Resting && info.MFOV {
+		if !mons.Peaceful(g) && mons.State != Resting && !mons.Status(MonsDazed) && info.MFOV {
 			mdesc = append(mdesc, "@OCan see you from there!@N")
 		}
 		formatBox(title, strings.Join(mdesc, "\n"), mfg)
@@ -217,18 +217,18 @@ func (md *model) drawPosInfo() {
 func (m *Monster) color(g *Game) gruid.Color {
 	var fg gruid.Color
 	switch {
+	case m.Status(MonsLignified) && m.Status(MonsConfused) || m.Status(MonsDazed):
+		fg = ColorCyan
 	case m.Status(MonsLignified):
 		fg = ColorYellow
 	case m.Status(MonsConfused):
 		fg = ColorGreen
-	case m.Status(MonsDazed):
-		fg = ColorCyan
-	case m.State == Resting:
-		fg = ColorViolet
-	case m.State == Hunting:
-		fg = ColorRed
 	case m.Peaceful(g):
 		fg = ColorBlue
+	case m.State == Hunting:
+		fg = ColorRed
+	case m.State == Resting:
+		fg = ColorViolet
 	default:
 		fg = ColorOrange
 	}
@@ -238,8 +238,9 @@ func (m *Monster) color(g *Game) gruid.Color {
 func (m *Monster) statusesText() string {
 	infos := []string{}
 	for st, i := range m.Statuses {
+		ms := monsterStatus(st)
 		if i > 0 {
-			infos = append(infos, fmt.Sprintf("%s(@s%d@N)", monsterStatus(st), m.Statuses[monsterStatus(st)]))
+			infos = append(infos, fmt.Sprintf("@%c%s(%d)@N", ms.Color(), ms, m.Statuses[monsterStatus(st)]))
 		}
 	}
 	return strings.Join(infos, ", ")

@@ -914,7 +914,7 @@ On the map, monster color may change depending on active status effects.  By def
 	sb.WriteString("\n\n")
 	sb.WriteString(`Monster statuses are less varied than player ones in Harmonist. Most happen as the result as using some magaras.
 
-@YLignified@N monsters cannot move, but may attack you if adjacent, while @Cdazed@N monsters cannot act at all, and @Gconfused@N monsters can move as usual but cannot attack you. Some monsters may become @Yexhausted@N or @Ysatiated@N after performing some special techniques and need to wait a few turns before performing them again.`)
+@YLignified@N monsters cannot move, but may attack you if adjacent, while @Cdazed@N monsters cannot act at all, and @Gconfused@N monsters can move as usual but cannot attack you. Some monsters may become exhausted or @Bsatiated@N after performing some special techniques and need to wait a few turns before performing them again.`)
 	sb.WriteString("\n\n")
 	md.helpTopic("Statuses (Help)", sb.String())
 }

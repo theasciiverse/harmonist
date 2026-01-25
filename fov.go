@@ -252,11 +252,9 @@ func visionRange(p gruid.Point, radius int) gruid.Range {
 
 // ComputeFOV updates the field of view of the monster.
 func (m *Monster) ComputeFOV(g *Game) {
-	if m.Kind.Peaceful() {
+	clear(m.FOV)
+	if m.Kind.Peaceful() || m.Status(MonsDazed) {
 		return
-	}
-	for k := range m.FOV {
-		delete(m.FOV, k)
 	}
 	if g.mfov == nil {
 		g.mfov = rl.NewFOV(visionRange(m.P, DefaultMonsterFOVRange))

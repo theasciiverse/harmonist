@@ -210,6 +210,7 @@ func (g *Game) InitPlayer() {
 	g.Player.FOV = rl.NewFOV(visionRange(g.Player.P, TreeRange))
 	// Testing
 	// g.Player.Inventory.Body = CloakHear
+	// g.Player.Inventory.Neck = AmuletDazing
 	// g.Player.Magaras[1] = Magara{Kind: SwiftnessMagara, Charges: 10}
 	// g.Player.Magaras[2] = Magara{Kind: NoiseMagara, Charges: 10}
 	// g.Player.Magaras[3] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}

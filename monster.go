@@ -62,6 +62,21 @@ func (st monsterStatus) String() (text string) {
 	return text
 }
 
+func (st monsterStatus) Color() rune {
+	switch st {
+	case MonsConfused:
+		return 'G'
+	case MonsDazed:
+		return 'C'
+	case MonsSatiated:
+		return 'B'
+	case MonsLignified:
+		return 'Y'
+	default:
+		return 'N'
+	}
+}
+
 // monsterKind represents the various kinds of monsters.
 type monsterKind int
 
@@ -343,7 +358,7 @@ var MonsDesc = []string{
 	MonsMadNixe:         "Nixes are magical humanoids. Usually, they specialize in illusion harmonic magic, but the so called mad nixes are a perverted variant who learned the oric arts to create a spell that can attract their foes to them, so that they can kill them without pursuing them.",
 	MonsVampire:         "Vampires are humanoids that drink blood to survive. Their nauseous spitting can cause confusion, impeding the use of magaras for a few turns.",
 	MonsTreeMushroom:    "Tree mushrooms are big clunky creatures. They can throw lignifying spores at you, leaving you unable to move for a few turns, though the spores will also provide some protection against harm.",
-	MonsButterfly:       "Underground’s butterflies, called kerejats, wander peacefully around, illuminating their surroundings.",
+	MonsButterfly:       "Underground’s butterflies, called kerejats, wander peacefully around, illuminating their surroundings. They stop doing so when confused or dazed.",
 	MonsCrazyImp:        "Crazy Imp is a crazy creature that likes to sing with its small guitar. It seems to be fond of monkeys and quite capable at finding them by smell. While singing it may attract unwanted attention.",
 	MonsHazeCat:         "Haze cats are a special variety of cats found in the Underground. They have very good night vision and are always alert.",
 }
