@@ -592,7 +592,6 @@ type ItemKind int
 const (
 	NoItem ItemKind = iota
 	CloakHear
-	CloakVitality
 	CloakAcrobat
 	CloakShadows
 	CloakSmoke
@@ -609,7 +608,6 @@ const (
 func (it Item) IsCloak() bool {
 	switch it.Kind {
 	case CloakHear,
-		CloakVitality,
 		CloakAcrobat,
 		CloakSmoke,
 		CloakShadows,
@@ -638,8 +636,6 @@ func (it Item) String() (desc string) {
 		desc = "empty slot"
 	case CloakHear:
 		desc = "cloak of hearing"
-	case CloakVitality:
-		desc = "cloak of vitality"
 	case CloakAcrobat:
 		desc = "cloak of acrobatics"
 	case CloakShadows:
@@ -674,12 +670,10 @@ func (it Item) Desc(g *Game) (desc string) {
 		return "You do not have an item equipped on this slot yet."
 	case CloakHear:
 		desc = "Improves hearing. Allows to sometimes hear monsters watching and turning around, as well as the breathing of nearby sleeping monsters."
-	case CloakVitality:
-		desc = "Improves your maximum health by 2."
 	case CloakAcrobat:
 		desc = "Prevents exhaustion from jumping."
 	case CloakShadows:
-		desc = "Reduces the range at which foes see you in the dark by one."
+		desc = "Reduces the range at which foes see you in the dark by one. It also improves your maximum health by one."
 	case CloakSmoke:
 		desc = "Leaves smoke behind as you move, making you difficult to spot."
 	case CloakConversion:
@@ -755,7 +749,6 @@ func (g *Game) EquipItem() error {
 func (g *Game) RandomCloak() Item {
 	cloaks := []ItemKind{
 		CloakHear,
-		CloakVitality,
 		CloakAcrobat,
 		CloakSmoke,
 		CloakShadows,

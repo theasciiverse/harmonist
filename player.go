@@ -35,8 +35,8 @@ const DefaultHealth = 4
 
 func (pl *Player) HPMax() int {
 	hpmax := DefaultHealth
-	if pl.Inventory.Body.Kind == CloakVitality {
-		hpmax += 2
+	if pl.Inventory.Body.Kind == CloakShadows {
+		hpmax++
 	}
 	if hpmax < 2 {
 		hpmax = 2
