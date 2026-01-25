@@ -449,7 +449,7 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 	if BlocksRange(t) {
 		autodesc += " It blocks ranged attacks from foes."
 	}
-	if Hides(t) {
+	if Hides(t) && t != WallCell {
 		autodesc += " You can hide just behind it."
 	}
 	if IsJumpPropulsion(t) {
