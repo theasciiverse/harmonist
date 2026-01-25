@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.15"
+var Version string = "v0.7.0-dev.16"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -72,8 +72,8 @@ type Game struct {
 type ProcInfo struct {
 	GeneratedLore    map[int]bool             // whether there's a lore text
 	GeneratedMagaras []magaraKind             // magara kind
-	GeneratedCloaks  []Item                   // cloak kind
-	GeneratedAmulets []Item                   // amulet kind
+	GeneratedCloaks  []ItemKind               // cloak kind
+	GeneratedAmulets []ItemKind               // amulet kind
 	GenPlan          [MaxDepth + 1]genFlavour // cloak/amulet generation
 }
 
@@ -206,11 +206,11 @@ func (g *Game) InitPlayer() {
 	g.ProcInfo.GeneratedMagaras = []magaraKind{}
 	g.Player.Magaras[0] = g.RandomStartingMagara()
 	g.ProcInfo.GeneratedMagaras = append(g.ProcInfo.GeneratedMagaras, g.Player.Magaras[0].Kind)
-	g.Player.Inventory.Misc = MarevorMagara
+	g.Player.Inventory.Misc = Item{Kind: MarevorMagara}
 	g.Player.FOV = rl.NewFOV(visionRange(g.Player.P, TreeRange))
 	// Testing
-	// g.Player.Inventory.Body = CloakHear
-	// g.Player.Inventory.Neck = AmuletDazing
+	// g.Player.Inventory.Body = Item{Kind: CloakHear}
+	// g.Player.Inventory.Neck = Item{Kind: AmuletDazing}
 	// g.Player.Magaras[1] = Magara{Kind: SwiftnessMagara, Charges: 10}
 	// g.Player.Magaras[2] = Magara{Kind: NoiseMagara, Charges: 10}
 	// g.Player.Magaras[3] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}

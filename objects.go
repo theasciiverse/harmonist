@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	"codeberg.org/anaseto/gruid"
 )
@@ -580,11 +581,16 @@ func (st Story) Style(g *Game) (r rune, fg gruid.Color) {
 	return r, fg
 }
 
-// Item represents the various kinds of inventory items.
-type Item int
+type Item struct {
+	Kind  ItemKind // item kind
+	Depth int      // map depth where you found it
+}
+
+// ItemKind represents the various kinds of inventory items.
+type ItemKind int
 
 const (
-	NoItem Item = iota
+	NoItem ItemKind = iota
 	CloakHear
 	CloakVitality
 	CloakAcrobat
@@ -601,7 +607,7 @@ const (
 
 // IsCloak reports whether the item is a cloak.
 func (it Item) IsCloak() bool {
-	switch it {
+	switch it.Kind {
 	case CloakHear,
 		CloakVitality,
 		CloakAcrobat,
@@ -615,7 +621,7 @@ func (it Item) IsCloak() bool {
 
 // IsAmulet reports whether the item is an amulet.
 func (it Item) IsAmulet() bool {
-	switch it {
+	switch it.Kind {
 	case AmuletTeleport,
 		AmuletConfusion,
 		AmuletFog,
@@ -627,7 +633,7 @@ func (it Item) IsAmulet() bool {
 }
 
 func (it Item) String() (desc string) {
-	switch it {
+	switch it.Kind {
 	case NoItem:
 		desc = "empty slot"
 	case CloakHear:
@@ -663,7 +669,7 @@ func (it Item) ShortDesc(g *Game) string {
 }
 
 func (it Item) Desc(g *Game) (desc string) {
-	switch it {
+	switch it.Kind {
 	case NoItem:
 		return "You do not have an item equipped on this slot yet."
 	case CloakHear:
@@ -691,6 +697,9 @@ func (it Item) Desc(g *Game) (desc string) {
 	case MarevorMagara:
 		desc = "It was given to you by Marevor Helith so that he can create an escape portal when you reach Shaedra. Its sister magara, the Gem Portal Artifact, also crafted by Marevor, is the artifact that was stolen and that Shaedra was trying to retrieve before being captured.\n\nThis magara needs a lot of time to recharge, so you’ll only be able to use it once."
 	}
+	if it.Depth >= 1 {
+		desc += fmt.Sprintf("\n\nYou found it at dungeon depth %d.", it.Depth)
+	}
 	return desc
 }
 
@@ -710,6 +719,9 @@ func (g *Game) EquipItem() error {
 	if !ok {
 		return errors.New("Nothing to equip here.")
 	}
+	if it.Depth == -1 {
+		it.Depth = g.Map.Depth
+	}
 	var oitem Item
 	switch {
 	case it.IsCloak():
@@ -719,7 +731,7 @@ func (g *Game) EquipItem() error {
 		oitem = g.Player.Inventory.Neck
 		g.Player.Inventory.Neck = it
 	}
-	if oitem != NoItem {
+	if oitem.Kind != NoItem {
 		g.Objects.Items[g.Player.P] = oitem
 		g.Logf("You equip the %s.", it.ShortDesc(g))
 		g.Logf("You leave the %s.", oitem.ShortDesc(g))
@@ -740,14 +752,15 @@ func (g *Game) EquipItem() error {
 }
 
 // RandomCloak returns a random cloak (not already generated).
-func (g *Game) RandomCloak() (it Item) {
-	cloaks := []Item{
+func (g *Game) RandomCloak() Item {
+	cloaks := []ItemKind{
 		CloakHear,
 		CloakVitality,
 		CloakAcrobat,
 		CloakSmoke,
 		CloakShadows,
 		CloakConversion}
+	var it ItemKind
 loop:
 	for {
 		it = cloaks[RandInt(len(cloaks))]
@@ -758,15 +771,16 @@ loop:
 		}
 		break
 	}
-	return it
+	return Item{Kind: it, Depth: -1}
 }
 
-func (g *Game) RandomAmulet() (it Item) {
-	amulets := []Item{AmuletTeleport,
+func (g *Game) RandomAmulet() Item {
+	amulets := []ItemKind{AmuletTeleport,
 		AmuletConfusion,
 		AmuletFog,
 		AmuletDazing,
 		AmuletObstruction}
+	var it ItemKind
 loop:
 	for {
 		it = amulets[RandInt(len(amulets))]
@@ -777,7 +791,7 @@ loop:
 		}
 		break
 	}
-	return it
+	return Item{Kind: it, Depth: -1}
 }
 
 // Potion represents a potion.

@@ -400,7 +400,7 @@ func (g *Game) ComputeNoise() {
 			mons.Noise = false
 		}
 	}
-	goodhearing := g.Player.Inventory.Body == CloakHear
+	goodhearing := g.Player.Inventory.Body.Kind == CloakHear
 	for _, n := range nodes {
 		if g.Player.Sees(n.P) {
 			continue
@@ -533,7 +533,7 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 	if m.Kind == MonsHazeCat {
 		darkRange = DefaultMonsterFOVRange
 	}
-	if g.Player.Inventory.Body == CloakShadows {
+	if g.Player.Inventory.Body.Kind == CloakShadows {
 		darkRange--
 	}
 	if g.Player.HasStatus(StatusShadows) {

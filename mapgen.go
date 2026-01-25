@@ -907,10 +907,10 @@ func (mg *MapGen) genItem(g *Game) {
 	switch plan {
 	case GenCloak:
 		it = g.RandomCloak()
-		g.ProcInfo.GeneratedCloaks = append(g.ProcInfo.GeneratedCloaks, it)
+		g.ProcInfo.GeneratedCloaks = append(g.ProcInfo.GeneratedCloaks, it.Kind)
 	case GenAmulet:
 		it = g.RandomAmulet()
-		g.ProcInfo.GeneratedAmulets = append(g.ProcInfo.GeneratedAmulets, it)
+		g.ProcInfo.GeneratedAmulets = append(g.ProcInfo.GeneratedAmulets, it.Kind)
 	}
 	g.Objects.Items[p] = it
 }

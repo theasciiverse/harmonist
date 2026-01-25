@@ -24,7 +24,7 @@ func (m *Monster) InflictDamage(g *Game) {
 	} else {
 		g.StoryPrintf("Killed by %s", m.Kind)
 	}
-	if g.Player.HP > 0 && g.Player.Inventory.Body == CloakConversion && g.Player.MP < g.Player.MPMax() {
+	if g.Player.HP > 0 && g.Player.Inventory.Body.Kind == CloakConversion && g.Player.MP < g.Player.MPMax() {
 		g.Player.MP++
 	}
 }
@@ -170,7 +170,7 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 			return false, errors.New("You cannot jump there.")
 		}
 	}
-	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
+	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body.Kind != CloakAcrobat {
 		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
 	if mons.Kind == MonsEarthDragon {
@@ -228,7 +228,7 @@ func (g *Game) WallJump(p gruid.Point) error {
 	if !g.PlayerCanPass(q) || (count != 3 && count != 2) {
 		return errors.New("There’s not enough room to jump.")
 	}
-	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body != CloakAcrobat {
+	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body.Kind != CloakAcrobat {
 		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
 	g.md.PushAnimation(path)

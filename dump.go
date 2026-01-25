@@ -87,10 +87,10 @@ func (g *Game) Dump() string {
 	}
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "Inventory:\n")
-	if g.Player.Inventory.Body != NoItem {
+	if g.Player.Inventory.Body.Kind != NoItem {
 		fmt.Fprintf(buf, "- %s (body)\n", g.Player.Inventory.Body.ShortDesc(g))
 	}
-	if g.Player.Inventory.Neck != NoItem {
+	if g.Player.Inventory.Neck.Kind != NoItem {
 		fmt.Fprintf(buf, "- %s (neck)\n", g.Player.Inventory.Neck.ShortDesc(g))
 	}
 	fmt.Fprintf(buf, "\n")

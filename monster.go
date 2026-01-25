@@ -1177,7 +1177,7 @@ func (m *Monster) HitPlayer(g *Game) {
 	if g.Player.HP >= HeavyWoundHP {
 		return
 	}
-	switch g.Player.Inventory.Neck {
+	switch g.Player.Inventory.Neck.Kind {
 	case AmuletConfusion:
 		g.LogfStyled("Your amulet releases confusing harmonies.", logNotable)
 		m.PutConfusion(g)

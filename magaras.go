@@ -10,8 +10,9 @@ import (
 
 // Magara represents a magara.
 type Magara struct {
-	Kind    magaraKind
-	Charges int
+	Kind    magaraKind // kind of magara
+	Charges int        // number of charges
+	Depth   int        // map depth where you found it
 }
 
 type magaraKind int
@@ -121,13 +122,16 @@ loop:
 		}
 		break
 	}
-	return Magara{Kind: mag, Charges: mag.DefaultCharges()}
+	return Magara{Kind: mag, Charges: mag.DefaultCharges(), Depth: -1}
 }
 
 // EquipMagara equips the the magara on the ground on the given slot index.
 func (g *Game) EquipMagara(i int) (err error) {
 	omagara := g.Player.Magaras[i]
 	g.Player.Magaras[i] = g.Objects.Magaras[g.Player.P]
+	if g.Player.Magaras[i].Depth == -1 {
+		g.Player.Magaras[i].Depth = g.Map.Depth
+	}
 	g.Objects.Magaras[g.Player.P] = omagara
 	g.Logf("You take the %s.", g.Player.Magaras[i])
 	g.Logf("You leave the %s.", omagara)
@@ -360,7 +364,11 @@ func (mag Magara) Desc(g *Game) (desc string) {
 	case OricExplosionMagara:
 		desc = fmt.Sprintf("Will produce a big rock-destroying oric explosion at your current cell after a @YDelay@N of %d turns. It destroys only walls.", DurationHarmonicNoiseDelay)
 	}
-	desc += fmt.Sprintf("\n\nIt currently has %d charges.", mag.Charges)
+	desc += "\n"
+	if mag.Depth >= 1 {
+		desc += fmt.Sprintf("\nYou found it at dungeon depth %d.", mag.Depth)
+	}
+	desc += fmt.Sprintf("\nIt currently has %d charges.", mag.Charges)
 	return desc
 }
 

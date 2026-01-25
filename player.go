@@ -35,7 +35,7 @@ const DefaultHealth = 4
 
 func (pl *Player) HPMax() int {
 	hpmax := DefaultHealth
-	if pl.Inventory.Body == CloakVitality {
+	if pl.Inventory.Body.Kind == CloakVitality {
 		hpmax += 2
 	}
 	if hpmax < 2 {
@@ -307,6 +307,7 @@ func (g *Game) CollectGround() {
 					continue
 				}
 				g.Player.Magaras[i] = g.Objects.Magaras[p]
+				g.Player.Magaras[i].Depth = g.Map.Depth
 				delete(g.Objects.Magaras, p)
 				g.Map.Set(p, GroundCell)
 				g.Logf("You take the %s.", g.Player.Magaras[i])
@@ -432,7 +433,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 				AchDestructorMaster.Get(g)
 			}
 		}
-		if g.Player.Inventory.Body == CloakSmoke {
+		if g.Player.Inventory.Body.Kind == CloakSmoke {
 			_, ok := g.Map.Clouds[g.Player.P]
 			if !ok && AllowsFog(g.Map.At(g.Player.P)) {
 				g.Map.Clouds[g.Player.P] = CloudPlain

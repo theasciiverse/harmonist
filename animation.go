@@ -618,7 +618,7 @@ func (md *model) FreeingShaedra() {
 func (g *Game) RescuedShaedra() {
 	g.Player.Magaras = append(g.Player.Magaras, Magara{})
 	g.Player.MP++ // gain one MP point when obtaining the new magara slot and returning the artifact
-	g.Player.Inventory.Misc = NoItem
+	g.Player.Inventory.Misc = Item{Kind: NoItem}
 	g.LogStyled("You equip the new magara in the artifact’s old place.", logSpecial)
 	if RandInt(2) == 0 {
 		g.Player.Magaras[len(g.Player.Magaras)-1] = Magara{Kind: DispersalMagara, Charges: DispersalMagara.DefaultCharges()}
