@@ -11,7 +11,7 @@
 .\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.Dd January 2, 2026
+.Dd January 25, 2026
 .Dt HARMONIST 6
 .Os
 .Sh NAME
@@ -113,3 +113,7 @@ Current game's replay (binary file).
 .It Pa "$XDG_DATA_HOME/harmonist/save"
 Last saved game (binary file).
 .El
+If
+.Pa "$XDG_DATA_HOME"
+is undefined, it defaults to
+.Pa ~/.local/share .
