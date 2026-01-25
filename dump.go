@@ -314,13 +314,13 @@ func (g *Game) DumpDungeon() string {
 		case WallCell:
 			r = '#'
 		default:
-			switch {
-			case p == g.Player.P:
+			switch p {
+			case g.Player.P:
 				r = '@'
 			default:
 				r, _ = g.TerrainStyle(kt, p)
 				if _, ok := g.Map.Clouds[p]; ok && g.Player.AFOV[p] {
-					r = '§'
+					r = '≡'
 				}
 				m := g.MonsterAt(p)
 				if m.Exists() && g.Player.AFOV[m.P] {
