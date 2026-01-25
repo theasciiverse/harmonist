@@ -164,9 +164,7 @@ func (g *Game) Illuminated(p gruid.Point) bool {
 // the player can tell what monsters will see).
 func (g *Game) ComputeFOV() {
 	g.ComputeLights()
-	for k := range g.Player.AFOV {
-		delete(g.Player.AFOV, k)
-	}
+	clear(g.Player.AFOV)
 	c := g.Map.At(g.Player.P)
 	rs := NormalPlayerRay
 	maxDepth := DefaultFOVRange
@@ -570,9 +568,7 @@ func (m *Monster) Sees(g *Game, p gruid.Point) bool {
 
 // ComputeMonsterFOV updates the field of view of all monsters.
 func (g *Game) ComputeMonsterFOV() {
-	for k := range g.MonsterFOV {
-		delete(g.MonsterFOV, k)
-	}
+	clear(g.MonsterFOV)
 	for _, mons := range g.Monsters {
 		if !mons.Exists() || !g.Player.Sees(mons.P) {
 			continue
