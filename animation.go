@@ -281,7 +281,7 @@ func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int
 	default:
 		mp = &NoisePath{g: g}
 	}
-	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{center}, maxCost)
+	nodes := g.PRanim.BreadthFirstMap(mp, []gruid.Point{center}, maxCost)
 	cdists = make(map[int][]int)
 	for _, n := range nodes {
 		cdists[n.Cost] = append(cdists[n.Cost], Pos2Idx(n.P))

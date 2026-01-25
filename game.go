@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.16"
+var Version string = "v0.7.0-dev.17"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -49,6 +49,7 @@ type Game struct {
 
 	PR      *paths.PathRange // path range for pathfinding
 	PRnoise *paths.PathRange // path range for noise
+	PRanim  *paths.PathRange // path range for noise
 	PRauto  *paths.PathRange // path range for auto-explore
 
 	autosources []gruid.Point        // cache for auto-explore sources
@@ -377,6 +378,7 @@ func (g *Game) InitFirstLevel() {
 	g.Params.CrazyImp = 2 + RandInt(MaxDepth-2)
 	g.PR = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	g.PRnoise = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
+	g.PRanim = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 	g.PRauto = paths.NewPathRange(gruid.NewRange(0, 0, MapWidth, MapHeight))
 }
 
