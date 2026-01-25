@@ -188,6 +188,9 @@ func (g *Game) MoveToTarget() bool {
 // WaitTurn is called when the player waits a turn.
 func (g *Game) WaitTurn() {
 	g.Stats.Waits++
+	if t := g.Map.At(g.Player.P); t == PotionCell {
+		g.DrinkPotion(g.Player.P)
+	}
 }
 
 // Monstercount returns the number of (alive) monsters.

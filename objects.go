@@ -855,6 +855,7 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 		g.StoryPrintf("Drank %s (MP: %d).", ptn, g.Player.MP)
 	}
 	g.Logf("You drink %s.", ptn.ShortDesc(g))
+	g.Stats.DrankPotions++
 	g.Map.Set(p, GroundCell)
 	delete(g.Objects.Potions, p)
 }

@@ -53,6 +53,7 @@ type Stats struct {
 	Lore              map[int]bool
 	Statuses          map[status]int
 	StolenBananas     int
+	DrankPotions      int
 	TimesPushed       int
 	TimesBlinked      int
 	TimesBlocked      int

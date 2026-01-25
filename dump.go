@@ -136,6 +136,7 @@ func (g *Game) DetailedStatistics(w io.Writer) {
 		g.Stats.HarmonicMagUse, g.Stats.MagarasUsed-g.Stats.OricMagUse-g.Stats.HarmonicMagUse)
 	fmt.Fprintf(w, "You activated %d magical stones.\n", g.Stats.UsedStones)
 	fmt.Fprintf(w, "You rested %d times.\n", g.Stats.Rest)
+	fmt.Fprintf(w, "You drank %d potions.\n", g.Stats.DrankPotions)
 	fmt.Fprintf(w, "You were spotted by %d monsters, %d times.\n", g.Stats.NUSpotted, g.Stats.NSpotted)
 	fmt.Fprintf(w, "You got hit %d times.\n", g.Stats.ReceivedHits)
 	fmt.Fprintf(w, "You endured %d damage.\n", g.Stats.Damage)
