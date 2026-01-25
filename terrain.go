@@ -418,7 +418,7 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 	case WaterCell:
 		desc = "This is shallow water. Only monsters that can swim will follow you there."
 	case RubbleCell:
-		desc = "Rubblestone is a collection of rocks broken into smaller stones. They are never well illuminated."
+		desc = "Rubblestone is a collection of rocks broken into smaller stones. They block vision and are never well illuminated."
 	case CavernCell:
 		desc = "This is natural cave ground."
 	case PotionCell:
