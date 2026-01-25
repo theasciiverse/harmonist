@@ -250,7 +250,7 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		}
 		infov := g.Player.Sees(p) || g.Wizard == WizardSeeAll
 		if cld, ok := g.Map.Clouds[p]; ok && infov {
-			r = '§'
+			r = '≡'
 			switch cld {
 			case CloudFire:
 				fgColor = ColorOrange

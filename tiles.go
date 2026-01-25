@@ -151,7 +151,8 @@ var MapNames = map[rune]string{
 	'}':  "rbrace",
 	'~':  "tilde",
 	'¤':  "frontier",
-	'§':  "fog",
+	'§':  "fog", // compatibility
+	'≡':  "fog",
 	'Δ':  "portal",
 	'Θ':  "window",
 	'Ξ':  "barrier",
@@ -207,7 +208,8 @@ var LetterNames = map[rune]string{
 	'}':  "rbrace",
 	'~':  "tilde",
 	'¤':  "frontier",
-	'§':  "fog",
+	'§':  "fog", // compatibility
+	'≡':  "fog",
 	'«':  "ldiag",
 	'»':  "rdiag",
 	'×':  "times",
