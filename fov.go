@@ -427,7 +427,7 @@ func (g *Game) ComputeNoise() {
 			}
 			// Even with good hearing, resting monsters are
 			// difficult to perceive from afar.
-			dist += 10
+			dist += 8
 		}
 		switch {
 		case goodhearing:
@@ -436,6 +436,7 @@ func (g *Game) ComputeNoise() {
 					continue
 				}
 			} else {
+				// Without the cloak, hearing range is reduced.
 				dist -= 2
 			}
 		case !queenrock && RandInt(3+dist/4) > 1 || mons.State == Watching:
@@ -471,7 +472,7 @@ func (g *Game) ComputeNoise() {
 		if mons.Noise {
 			count++
 			if mons.State == Resting {
-				g.Log("You hear some breathing.")
+				g.Log("You hear breathing.")
 			} else {
 				g.Logf("You hear %s.", monsterNoise(mons.Kind))
 			}
