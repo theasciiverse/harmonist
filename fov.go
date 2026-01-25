@@ -431,12 +431,10 @@ func (g *Game) ComputeNoise() {
 		}
 		switch {
 		case goodhearing:
-			if mons.State == Watching {
-				if RandInt(3+dist/4) > 1 {
-					continue
-				}
-			} else {
-				// Without the cloak, hearing range is reduced.
+			if mons.State != Watching {
+				// With the cloak, hearing range is reduced
+				// (but not for monsters that are just watching
+				// without moving).
 				dist -= 2
 			}
 		case !queenrock && RandInt(3+dist/4) > 1 || mons.State == Watching:
