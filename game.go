@@ -604,7 +604,7 @@ func (g *Game) Descend(style descendstyle) bool {
 		g.LogStyled("You fall into the abyss. It hurts!", logDamage)
 		g.StoryPrint("Fell into the abyss")
 	} else {
-		g.Log("You descend deeper in the dungeon.")
+		g.LogStyled("You descend deeper in the dungeon.", logSpecial)
 		g.StoryPrint("Descended stairs")
 	}
 	g.Map.Depth++
