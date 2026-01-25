@@ -172,6 +172,9 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 			mg.genStairs(g, NormalStair)
 		}
 		mg.genFakeStairs(g)
+		if g.Map.Depth != WinDepth && mg.rand.IntN(4) == 0 {
+			mg.genFakeStairs(g)
+		}
 	}
 	for i := 0; i < 4+mg.rand.IntN(2); i++ {
 		mg.genBarrel(g)
@@ -993,8 +996,8 @@ loop:
 	r.places[pj].used = true
 	r.places[pj].used = true
 	p := r.places[pj].p
-	g.Map.Set(p, FakeStairCell)
-	g.Objects.FakeStairs[p] = true
+	g.Map.Set(p, StairCell)
+	g.Objects.Stairs[p] = FakeStair
 }
 
 // genBarrel places a barrel in a free suitable location.

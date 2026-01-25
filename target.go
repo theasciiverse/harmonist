@@ -459,7 +459,7 @@ func (g *Game) getStairs() []gruid.Point {
 	}
 	for it.Next() {
 		t := it.Cell()
-		if t != StairCell && t != FakeStairCell {
+		if t != StairCell {
 			continue
 		}
 		stairs = append(stairs, it.P())

@@ -311,13 +311,6 @@ func (g *Game) SeeNotable(t rl.Cell, p gruid.Point) {
 		} else {
 			g.StoryPrintf("Discovered %s", st)
 		}
-	case FakeStairCell:
-		path := g.PR.JPSPath(nil, g.Player.P, p, InMap, false)
-		if len(path) > 0 {
-			g.StoryPrintf("Discovered %s (distance: %d)", normalStairShortDesc, len(path))
-		} else {
-			g.StoryPrintf("Discovered %s", normalStairShortDesc)
-		}
 	case StoryCell:
 		st := g.Objects.Story[p]
 		if st == StoryArtifactSealed {

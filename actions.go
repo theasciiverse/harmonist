@@ -287,7 +287,8 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		t := g.Map.At(g.Player.P)
 		switch t {
 		case StairCell:
-			if g.Objects.Stairs[g.Player.P] != SealedStair {
+			switch g.Objects.Stairs[g.Player.P] {
+			case NormalStair, WinStair:
 				strt := g.Objects.Stairs[g.Player.P]
 				err = md.checkShaedra(strt)
 				if err != nil {
@@ -297,8 +298,10 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 				if g.Descend(DescendNormal) {
 					md.win()
 				}
-			} else {
-				err = errors.New("The stairs are blocked by a magical stone barrier energies.")
+			case SealedStair:
+				err = errors.New("The stairs are blocked by an oric magical barrier.")
+			default:
+				err = errors.New("You cannot use fake stairs made of harmonic illusions!")
 			}
 		case BarrelCell:
 			err = g.Rest()

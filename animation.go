@@ -513,7 +513,7 @@ func (md *model) FoundFakeStairsAnimation() {
 	}
 	g := md.g
 	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorMagenta, bg)
+	md.anims.Draw(g.Player.P, r, ColorForeground, bg)
 	md.anims.Frame(AnimDurMediumLong)
 }
 

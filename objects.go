@@ -8,18 +8,17 @@ import (
 
 // Objects gathers all map information about Objects.
 type Objects struct {
-	Stairs     map[gruid.Point]Stair
-	Stones     map[gruid.Point]Stone
-	Magaras    map[gruid.Point]Magara
-	Barrels    map[gruid.Point]bool
-	Bananas    map[gruid.Point]bool
-	Lights     map[gruid.Point]bool // true: on, false: off
-	Scrolls    map[gruid.Point]Scroll
-	Story      map[gruid.Point]Story
-	Lore       map[gruid.Point]int
-	Items      map[gruid.Point]Item
-	FakeStairs map[gruid.Point]bool
-	Potions    map[gruid.Point]Potion
+	Stairs  map[gruid.Point]Stair
+	Stones  map[gruid.Point]Stone
+	Magaras map[gruid.Point]Magara
+	Barrels map[gruid.Point]bool
+	Bananas map[gruid.Point]bool
+	Lights  map[gruid.Point]bool // true: on, false: off
+	Scrolls map[gruid.Point]Scroll
+	Story   map[gruid.Point]Story
+	Lore    map[gruid.Point]int
+	Items   map[gruid.Point]Item
+	Potions map[gruid.Point]Potion
 }
 
 // Stair represents the various kinds of stair objects.
@@ -29,16 +28,20 @@ const (
 	NormalStair Stair = iota
 	WinStair
 	SealedStair
+	FakeStair
+	KnownFakeStair
 )
 
 func (st Stair) String() (desc string) {
 	switch st {
-	case NormalStair:
+	case NormalStair, FakeStair:
 		desc = "stairs"
 	case WinStair:
 		desc = "monolith portal"
 	case SealedStair:
 		desc = "sealed stairs"
+	case KnownFakeStair:
+		desc = "fake stairs"
 	}
 	return desc
 }
@@ -48,7 +51,7 @@ const deepStairShortDesc = "deep stairs downwards"
 
 func (st Stair) ShortString(g *Game) (desc string) {
 	switch st {
-	case NormalStair:
+	case NormalStair, FakeStair:
 		if g.Map.Depth == WinDepth {
 			desc = deepStairShortDesc
 		} else {
@@ -58,6 +61,8 @@ func (st Stair) ShortString(g *Game) (desc string) {
 		desc = "monolith portal"
 	case SealedStair:
 		desc = "blocked " + NormalStair.ShortDesc(g)
+	case KnownFakeStair:
+		desc = "fake stairs"
 	}
 	return desc
 }
@@ -74,6 +79,8 @@ func (st Stair) ShortDesc(g *Game) (desc string) {
 		desc = "a monolith portal"
 	case SealedStair:
 		desc = "blocked " + NormalStair.ShortDesc(g)
+	case KnownFakeStair:
+		desc = "fake stairs"
 	}
 	return desc
 }
@@ -88,7 +95,7 @@ func (st Stair) Desc(g *Game) (desc string) {
 		if g.Map.Depth < MaxDepth {
 			desc += " If you’re courageous enough, you may skip this portal and continue going deeper in the dungeon, to find Marevor’s magara, finishing Shaedra’s failed mission."
 		}
-	case NormalStair:
+	case NormalStair, FakeStair:
 		desc = normalStairDesc
 		if g.Map.Depth == WinDepth {
 			desc = deepStairDesc
@@ -96,6 +103,8 @@ func (st Stair) Desc(g *Game) (desc string) {
 		}
 	case SealedStair:
 		desc = "Stairs lead to the next level of the Dayoriah Clan’s domain in Hareka’s Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that enemies cannot follow you either."
+	case KnownFakeStair:
+		desc = "An illusion made by an harmonic celmist. It looks like stairs downwards, but it’s all fake."
 	}
 	return desc
 }
@@ -106,13 +115,15 @@ func (st Stair) Style(g *Game) (r rune, fg gruid.Color) {
 	case WinStair:
 		fg = ColorCyan
 		r = 'Δ'
-	case NormalStair:
+	case NormalStair, FakeStair:
 		fg = ColorMagenta
 		if g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case SealedStair:
 		fg = ColorCyan
+	case KnownFakeStair:
+		fg = ColorForeground
 	}
 	return r, fg
 }

@@ -314,12 +314,13 @@ func (g *Game) CollectGround() {
 				break switchcell
 			}
 			g.Logf("You stand over %s.", Indefinite(g.Objects.Magaras[p].String(), false))
-		case FakeStairCell:
-			g.Map.Set(p, GroundCell)
-			g.LogStyled("You stand over fake stairs.", logSpecial)
-			g.LogStyled("Harmonic illusions!", logSpecial)
-			g.StoryPrint("Found harmonic fake stairs!")
-			g.md.FoundFakeStairsAnimation()
+		case StairCell:
+			if g.Objects.Stairs[p] == FakeStair {
+				g.Objects.Stairs[p] = KnownFakeStair
+				g.LogStyled("You stand over fake stairs: harmonic illusions!", logSpecial)
+				g.StoryPrint("Found harmonic fake stairs!")
+				g.md.FoundFakeStairsAnimation()
+			}
 		case PotionCell:
 			g.DrinkPotion(p)
 		default:

@@ -32,7 +32,6 @@ const (
 	WaterCell
 	RubbleCell
 	CavernCell
-	FakeStairCell
 	PotionCell
 	QueenRockCell
 
@@ -65,7 +64,7 @@ func IsJumpPassable(t rl.Cell) bool {
 // terrain.
 func IsNormalPatrolWay(t rl.Cell) bool {
 	switch t {
-	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell, FakeStairCell:
+	case GroundCell, ScrollCell, DoorCell, StairCell, LightCell, ItemCell, ExtinguishedLightCell, StoneCell, MagaraCell:
 		return true
 	default:
 		return false
@@ -229,7 +228,7 @@ func IsGround(t rl.Cell) bool {
 func IsNotable(t rl.Cell) bool {
 	switch t {
 	case StairCell, StoneCell, BarrelCell, MagaraCell, BananaCell,
-		ScrollCell, ItemCell, FakeStairCell, PotionCell:
+		ScrollCell, ItemCell, PotionCell:
 		return true
 	default:
 		return false
@@ -290,12 +289,6 @@ func (g *Game) TerrainName(t rl.Cell, p gruid.Point) (desc string) {
 		desc = "rubblestone"
 	case CavernCell:
 		desc = "cave ground"
-	case FakeStairCell:
-		if g.Map.Depth == WinDepth {
-			desc = deepStairShortDesc
-		} else {
-			desc = normalStairShortDesc
-		}
 	case PotionCell:
 		desc = g.Objects.Potions[p].String()
 	case QueenRockCell:
@@ -362,12 +355,6 @@ func (g *Game) TerrainShortDesc(t rl.Cell, p gruid.Point) (desc string) {
 		desc = "rubblestone"
 	case CavernCell:
 		desc = "cave ground"
-	case FakeStairCell:
-		if g.Map.Depth == WinDepth {
-			desc = deepStairShortDesc
-		} else {
-			desc = normalStairShortDesc
-		}
 	case PotionCell:
 		desc = g.Objects.Potions[p].ShortDesc(g)
 	case QueenRockCell:
@@ -434,12 +421,6 @@ func (g *Game) TerrainDesc(t rl.Cell, p gruid.Point) (desc string) {
 		desc = "Rubblestone is a collection of rocks broken into smaller stones. They are never well illuminated."
 	case CavernCell:
 		desc = "This is natural cave ground."
-	case FakeStairCell:
-		if g.Map.Depth == WinDepth {
-			desc = deepStairDesc
-		} else {
-			desc = normalStairDesc
-		}
 	case PotionCell:
 		desc = g.Objects.Potions[p].Desc(g)
 	case QueenRockCell:
@@ -534,11 +515,6 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 		r, fg = '^', ColorForeground
 	case CavernCell:
 		r, fg = ',', ColorForeground
-	case FakeStairCell:
-		r, fg = '>', ColorMagenta
-		if g.Map.Depth == WinDepth {
-			fg = ColorViolet
-		}
 	case PotionCell:
 		r, fg = g.Objects.Potions[p].Style(g)
 	case QueenRockCell:
