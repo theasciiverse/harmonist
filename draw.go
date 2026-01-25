@@ -76,6 +76,9 @@ func (md *model) Draw() gruid.Grid {
 			}
 		case modeGameMenu, modeHelpMenu, modeSettings:
 			md.gd.Copy(md.menu.Draw())
+			if md.description.Content.Text() != "" {
+				md.description.Draw(md.gd.Slice(md.gd.Range().Columns(UIWidth/2, UIWidth)))
+			}
 		case modeKeys, modeKeysChange:
 			gd := md.keysMenu.Draw()
 			max := gd.Size()

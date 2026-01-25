@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -178,6 +179,52 @@ func (k Action) String() (text string) {
 		text = "toggle normal/map/all wizard mode"
 	}
 	return text
+}
+
+// Desc returns a detailed description for some actions.
+func (k Action) Desc() (text string) {
+	switch k {
+	case ActionLogs:
+		text = "Opens a pager with previous message logs. The pager supports page-up/page-down, mouse scrolling, and other basic less-like keybindings."
+	case ActionDump:
+		if runtime.GOOS == "js" {
+			text = "Writes game statistics below."
+		} else {
+			text = "Writes game statistics to a dump.txt file in the game’s data directory."
+		}
+	case ActionSave:
+		text = "Saves current progress and quits the game. The next time you start the game, it will directly resume from here."
+	case ActionQuit:
+		text = "Deletes any saved progress for current playthrough and quits the game."
+	case ActionHelpMenu:
+		text = "Opens a menu leading to various help topics."
+	case ActionHelpKeybindings:
+		text = "Shows a short one-page summary with most default keybindings."
+	case ActionHelpBasics:
+		text = "Explains various core aspects of the game, in particular stealth."
+	case ActionHelpItems:
+		text = "Gives an overview about most fundamental items found in the game."
+	case ActionHelpStatuses:
+		text = "Explains in detail how the various status effects work, as well as the color conventions."
+	case ActionHelpTips:
+		text = "Provides various tips for new players."
+	case ActionSettings:
+		text = "Opens a configuration menu with various options."
+	}
+	return text
+}
+
+// updateActionDesc updates the description label for the given described action.
+func (md *model) updateActionDesc(a Action) {
+	l := md.description
+	stt := ui.StyledText{}.WithMarkups(Markups)
+	desc := a.Desc()
+	l.Box = &ui.Box{Title: ui.Text(a.String())}
+	if desc != "" {
+		l.Content = stt.WithText(desc).Format(UIWidth/2 - 2)
+	} else {
+		l.Content = stt.WithText("")
+	}
 }
 
 // ExamineModeAction reports whether the action is specific to examine mode.
@@ -571,6 +618,7 @@ func (md *model) openSettings() {
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
+	md.updateActionDesc(settingsActions[0])
 	md.menuMode = modeSettings
 }
 
@@ -656,6 +704,7 @@ func (md *model) openMenu() {
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
+	md.updateActionDesc(menuActions[0])
 	md.menuMode = modeGameMenu
 }
 
@@ -753,6 +802,7 @@ func (md *model) openHelp() {
 	md.menu.SetEntries(entries)
 	md.menu.SetActiveInvokable(0)
 	md.mode = modeMenu
+	md.updateActionDesc(helpActions[0])
 	md.menuMode = modeHelpMenu
 }
 

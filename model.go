@@ -825,31 +825,30 @@ func (md *model) updateMenu(msg gruid.Msg) gruid.Effect {
 				break
 			}
 			return md.EndTurn()
-		case modeGameMenu, modeHelpMenu:
-			if act != ui.MenuInvoke {
-				break
-			}
+		case modeGameMenu, modeHelpMenu, modeSettings:
 			var actions []Action
 			switch md.menuMode {
 			case modeGameMenu:
 				actions = menuActions
 			case modeHelpMenu:
 				actions = helpActions
+			case modeSettings:
+				actions = settingsActions
 			}
-			_, eff, err := md.DoAction(actions[md.menu.ActiveInvokable()])
-			if err != nil {
-				// should not happen
-				log.Printf("menu: %v", err)
+			idx := md.menu.ActiveInvokable()
+			if idx < 0 || idx >= len(actions) {
+				md.description.Content = ui.StyledText{}
+				break
 			}
-			return eff
-		case modeSettings:
+			action := actions[idx]
+			md.updateActionDesc(action)
 			if act != ui.MenuInvoke {
 				break
 			}
-			_, eff, err := md.DoAction(settingsActions[md.menu.Active()])
+			_, eff, err := md.DoAction(action)
 			if err != nil {
 				// should not happen
-				log.Printf("settings menu: %v", err)
+				log.Printf("menu: %v", err)
 			}
 			return eff
 		}
