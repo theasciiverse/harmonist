@@ -496,7 +496,7 @@ func (md *model) NextObject(np gruid.Point) {
 			break
 		}
 	}
-	if len(data.objects) == 0 || !IsKnown(g.Map.KnownTerrain.At(np)) && !seeObjects {
+	if len(data.objects) == 0 || !InMap(np) || !IsKnown(g.Map.KnownTerrain.At(np)) && !seeObjects {
 		return
 	}
 	if !md.targ.kbTargeting {
