@@ -118,9 +118,10 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 		'l': st.WithFg(ColorForeground).WithBg(ColorBackgroundSecondary),
 		'L': st.WithFg(ColorYellow).WithBg(ColorBackgroundSecondary),
 		'p': st.WithFg(ColorBlue).WithBg(ColorBackgroundSecondary),
-		'm': st.WithFg(ColorOrange),
+		'R': st.WithFg(ColorRed),
 		'M': st.WithFg(ColorOrange).WithBg(ColorBackgroundSecondary),
 		'P': st.WithFg(ColorMagenta),
+		'h': tst.WithFg(ColorMagenta),
 		'd': st.WithFg(ColorForegroundSecondary),
 		's': st.WithFg(ColorCyan),
 		'T': st.WithFg(ColorGreen),
@@ -130,19 +131,20 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 		'o': st.WithFg(ColorYellow),
 	})
 	rg := gd.Range()
-	text := fmt.Sprintf("     Harmonist %s\n", Version)
+	text := fmt.Sprintf("   @hHarmonist %s@N\n\n", Version)
 	text += `@t───────────────────────
- @d#@l##@W###############@d### 
-@d#.@L..@W#@t  HARMONIST  @W#@d.@b)@zt@d#
-@d#.@pb@L.@W###############@d.## 
-@d #@L...@r...@l#@d#@oπ@d.@P>@d##.....#  
-@d @l#@L..@r.@Mg@r..+@d..@mG@d..@P+@d.....#  
-@l#@p@@@L.@l#@d≈@m♫@d..##@o☼@d.@o&@d##..@T♣@d.".##
-@l#@L.@l#@d#≈≈≈..##@P+@d##..@mh@d."#.@s∩@d#
-@l#@L.@l.@d##≈≈≈.........""""##
+ @d#@l##@l#@d##############@d###
+@d#,@L,""@l#@t HARMONIST @d#@d^,@b)@zt@d#
+@d#,@pb@L,,"@l##@d#########@d^,,##
+@d #@L,,,@r,,,@l#@d#@oπ@d.@P>@d##,,,,,#
+@d @l#@L..@r.@Mg@r..+@d..@lG@d..@P+@d.,,,,#
+@l#@p@@@L.@l#@d≈≈,.##@o☼@d.@o&@d##.,@T♣@d,",##
+@l#@L.@l#@d#≈≈≈@R♫@d.##@P+@d##..@lh@d,"#,@s∩@d#
+@l#@L.@l.@d##≈≈≈.......,,""""##
 @t───────────────────────
 `
-	stt.WithText(text).Draw(gd.Slice(rg.Shift(20, 6, 0, 0)))
+	stt.WithText(text).Draw(gd.Slice(rg.Shift(23, 5, 0, 0)))
+	ui.Text("—Press any key to continue—").Draw(gd.Slice(rg.Shift(21, 18, 0, 0)))
 	return gd
 }
 
