@@ -1,7 +1,8 @@
 # v? ?
 
-This release polishes various gameplay aspects and brings many UI improvements,
-most of them inspired from Shamogu.
+This release is the first stable release of Harmonist. It polishes various
+gameplay aspects and brings many UI improvements, including many inspired from
+Shamogu.
 
 Improved and reworked content:
 
@@ -30,10 +31,10 @@ Improved and reworked content:
   artifact in exchange for a new special magara.
 * Monster noise visual marking now uses different colors for different kinds of
   noises, like in Shamogu. Also, it has been adjusted so that different kinds
-  of noises are heard at varied ranges. Also, cloak of hearing should now be
-  more interesting, as it helps hear in-place footsteps of watching monsters
-  (except satowalga plants, which make no noise at all), and even resting
-  monsters at a short range.
+  of noises are heard at varied ranges. Also, the “cloak of hearing” should now
+  be more interesting, as it helps hear in-place footsteps of watching monsters
+  (except satowalga plants, which make no noise at all), and even the breathing
+  of resting monsters at a short range.
 * It's now possible to jump off out-of-map (indestructible) walls. It felt
   strange that you couldn't move out of the map, but still couldn't consider
   the borders as walls.
@@ -41,11 +42,18 @@ Improved and reworked content:
   rate than before.
 * The “cloak of magic” has been removed, as it was a bit redundant with respect
   to the “cloak of conversion”. The latter is a bit more interesting and less
-  quantitative.
+  quantitative. Also, the “cloak of vitality” has been removed, too, but half
+  of the HP bonus (1) has been integrated into the “cloak of shadows”, as it
+  was a bit weaker than others.
 * Rename “paralysis” into more thematic “daze”, as it's the result of being
   trapped in harmonic illusions, not actual paralysis.
 * The “amulet of lignification” has been replaced by the “amulet of daze”,
-  which is more useful as an emergency amulet.
+  which is more useful as an emergency amulet. The “amulet of obstruction” has
+  been removed, as it wasn't reliable either in emergency situations.
+* Now rubble blocks vision, like in Shamogu. Previously, it only prevented
+  illumination, which was not much.
+* Some minor improvements in various vaults by better randomizing some parts of
+  them.
 
 UI, graphics, QoL:
 
@@ -62,9 +70,9 @@ UI, graphics, QoL:
   similar change in Shamogu).
 * Some tile drawings have been improved, including some improvements from
   Shamogu, like a more visible `?` sign on the exploration frontier.
-* Many other small UI improvements and fixes inspired from Shamogu, including
-  status bar and menu improvements, as well as updated/fixed titles in messages
-  and end of game summary pager windows.
+* *Many other small UI improvements and fixes*, including many inspired from
+  Shamogu, like status bar and menu improvements, as well as updated/fixed
+  titles in messages and end of game summary pager windows.
 * ASCII version (gruid-tcell): new `-t` option for terminals supporting “true
   color” to use the same selenized color palette as the tiles version.
 * SDL2 version (gruid-sdl): it now enables graphic acceleration and uses new
