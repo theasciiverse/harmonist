@@ -600,7 +600,6 @@ const (
 	AmuletConfusion
 	AmuletFog
 	AmuletDazing
-	AmuletObstruction
 	MarevorMagara
 )
 
@@ -620,11 +619,7 @@ func (it Item) IsCloak() bool {
 // IsAmulet reports whether the item is an amulet.
 func (it Item) IsAmulet() bool {
 	switch it.Kind {
-	case AmuletTeleport,
-		AmuletConfusion,
-		AmuletFog,
-		AmuletDazing,
-		AmuletObstruction:
+	case AmuletTeleport, AmuletConfusion, AmuletFog, AmuletDazing:
 		return true
 	}
 	return false
@@ -652,8 +647,6 @@ func (it Item) String() (desc string) {
 		desc = "amulet of fog"
 	case AmuletDazing:
 		desc = "amulet of daze"
-	case AmuletObstruction:
-		desc = "amulet of obstruction"
 	case MarevorMagara:
 		desc = "Moon Portal Artifact"
 	}
@@ -686,8 +679,6 @@ func (it Item) Desc(g *Game) (desc string) {
 		desc = "Releases fog and makes you swift when critically hurt."
 	case AmuletDazing:
 		desc = "Dazes foes that critically hit you."
-	case AmuletObstruction:
-		desc = "Uses a magical barrier to blow away monsters that critically hit you."
 	case MarevorMagara:
 		desc = "It was given to you by Marevor Helith so that he can create an escape portal when you reach Shaedra. Its sister magara, the Gem Portal Artifact, also crafted by Marevor, is the artifact that was stolen and that Shaedra was trying to retrieve before being captured.\n\nThis magara needs a lot of time to recharge, so you’ll only be able to use it once."
 	}
@@ -771,8 +762,7 @@ func (g *Game) RandomAmulet() Item {
 	amulets := []ItemKind{AmuletTeleport,
 		AmuletConfusion,
 		AmuletFog,
-		AmuletDazing,
-		AmuletObstruction}
+		AmuletDazing}
 	var it ItemKind
 loop:
 	for {

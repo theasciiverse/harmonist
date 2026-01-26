@@ -1184,17 +1184,6 @@ func (m *Monster) HitPlayer(g *Game) {
 	case AmuletFog:
 		g.LogStyled("Your amulet feels warm.", logNotable)
 		g.ActivateAmuletFog()
-	case AmuletObstruction:
-		opos := m.P
-		p := m.LeaveRoomForPlayer(g)
-		if p == invalidPos && !m.Blink(g) {
-			m.MoveTo(g, p)
-		}
-		if opos != m.P {
-			g.LogStyled("The amulet releases an oric wind.", logNotable)
-			g.MagicalBarrierAt(opos)
-			m.Exhaust(g)
-		}
 	case AmuletTeleport:
 		g.LogStyled("Your amulet shines.", logNotable)
 		m.TeleportAway(g)
