@@ -7,61 +7,65 @@ import (
 
 // Stats gathers various game statistics.
 type Stats struct {
-	Story             []string
-	Killed            int
-	KilledMons        map[monsterKind]int
-	Moves             int
-	Waits             int
-	Jumps             int
-	WallJumps         int
-	ReceivedHits      int
-	Dodges            int
-	MagarasUsed       int
-	DMagaraUses       [MaxDepth + 1]int
-	UsedStones        int
-	UsedMagaras       map[magaraKind]int
-	Damage            int
-	DDamage           [MaxDepth + 1]int
-	DExplPerc         [MaxDepth + 1]int
-	DSleepingPerc     [MaxDepth + 1]int
-	Burns             int
-	Digs              int
-	Rest              int
-	DRests            [MaxDepth + 1]int
-	Turns             int
-	TWounded          int
-	TMWounded         int
-	TMonsFOV          int
-	NSpotted          int
-	NUSpotted         int
-	DSpotted          [MaxDepth + 1]int
-	DUSpotted         [MaxDepth + 1]int
-	DUSpottedPerc     [MaxDepth + 1]int
-	Achievements      map[Achievement]int
-	AtNotablePos      map[gruid.Point]bool
-	HarmonicMagUse    int
-	OricMagUse        int
-	FireUse           int
-	DestructionUse    int
-	OricTelUse        int
-	ClimbedTree       int
-	TableHides        int
-	HoledWallsCrawled int
-	DoorsOpened       int
-	BarrelHides       int
-	Extinguishments   int
-	Lore              map[int]bool
-	Statuses          map[status]int
-	StolenBananas     int
-	DrankPotions      int
-	TimesPushed       int
-	TimesBlinked      int
-	TimesBlocked      int
+	Story             []string             // timeline messages
+	Killed            int                  // killed monsters
+	NadreExplosions   int                  // number of nadre explosions
+	KilledMons        map[monsterKind]int  // killed monsters (by kind)
+	Moves             int                  // times you moved
+	Waits             int                  // times you waited
+	Jumps             int                  // times you jumped over monsters
+	WallJumps         int                  // times you jumped off walls
+	ReceivedHits      int                  // times you were hurt
+	MagarasUsed       int                  // times you used magaras
+	DMagaraUses       [MaxDepth + 1]int    // magaras used per level
+	UsedMagaras       map[magaraKind]int   // magaras uses (by kind)
+	UsedStones        int                  // times you activated stones
+	Damage            int                  // received damage
+	DDamage           [MaxDepth + 1]int    // received damage per level
+	DExplPerc         [MaxDepth + 1]int    // exploration percentage per level
+	DSleepingPerc     [MaxDepth + 1]int    // sleeping monster percentage per level
+	Burns             int                  // number of terrain burns
+	Digs              int                  // number of digs
+	Rest              int                  // times you rested
+	DRests            [MaxDepth + 1]int    // times you rested per level
+	Turns             int                  // number of turns
+	DTurns            [MaxDepth + 1]int    // number of turns per level
+	TWounded          int                  // turns wounded
+	TMWounded         int                  // turns wounded with monsters in sight
+	TMonsFOV          int                  // turns with monsters in sight
+	NSpotted          int                  // total number of alerts
+	NUSpotted         int                  // total number of unique alerted monsters
+	DSpotted          [MaxDepth + 1]int    // alerts per level
+	DUSpotted         [MaxDepth + 1]int    // unique alerts per level
+	DUSpottedPerc     [MaxDepth + 1]int    // unique alerts percentage per level
+	Achievements      map[Achievement]int  // achievements
+	AtNotablePos      map[gruid.Point]bool // whether notable position has been reached already
+	HarmonicMagUse    int                  // harmonic magara uses
+	OricMagUse        int                  // oric magara uses
+	FireUse           int                  // fire uses
+	DestructionUse    int                  // destruction uses
+	OricTelUse        int                  // oric teleport uses
+	ClimbedTree       int                  // trees you climbed
+	TableHides        int                  // tables you hid under
+	HoledWallsCrawled int                  // holed walls you crawled under
+	DoorsOpened       int                  // doors you opened
+	BarrelHides       int                  // barrels you hid within
+	Extinguishments   int                  // campfires you extinguished
+	Lore              map[int]bool         // lore you read
+	Statuses          map[status]int       // times you got each status
+	StolenBananas     int                  // bananas stolen from you
+	DrankPotions      int                  // potions you drank
+	TimesPushed       int                  // times you were pushed
+	TimesBlinked      int                  // times you were blinked away
+	TimesBlocked      int                  // times you were blocked by an oric barrier
 }
 
 // TurnStats computes some turn-specific stats.
 func (g *Game) TurnStats() {
 	g.Stats.Turns++
+	if g.Map.Depth > 0 && g.Map.Depth <= MaxDepth {
+		g.Stats.DTurns[g.Map.Depth]++
+	}
 	if g.Player.HP < g.Player.HPMax() {
 		g.Stats.TWounded++
 	}
@@ -156,7 +160,7 @@ const (
 	AchNoviceExplorer      Achievement = "Novice Explorer"
 	AchInitiateExplorer    Achievement = "Initiate Explorer"
 	AchMasterExplorer      Achievement = "Master Explorer"
-	AchAssassin            Achievement = "Assassin"
+	AchMurderer            Achievement = "Murderer"
 	AchInsomniaNovice      Achievement = "Insomnia Novice"
 	AchInsomniaInitiate    Achievement = "Insomnia Initiate"
 	AchInsomniaMaster      Achievement = "Insomnia Master"

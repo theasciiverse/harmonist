@@ -256,7 +256,7 @@ func (g *Game) HandleKill(mons *Monster) {
 	g.Stats.Killed++
 	g.Stats.KilledMons[mons.Kind]++
 	if g.Player.Sees(mons.P) {
-		AchAssassin.Get(g)
+		AchMurderer.Get(g)
 	}
 	if g.Map.At(mons.P) == DoorCell {
 		g.ComputeFOV()

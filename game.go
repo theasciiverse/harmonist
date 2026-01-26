@@ -582,13 +582,13 @@ func (g *Game) Descend(style descendstyle) bool {
 		}
 	}
 	if g.Map.Depth >= 5 {
-		if g.Stats.DUSpotted[g.Map.Depth] < 3 && g.Stats.DSpotted[g.Map.Depth-1] < 3 && g.Stats.DSpotted[g.Map.Depth-2] < 3 {
+		if g.Stats.DUSpotted[g.Map.Depth]+g.Stats.DUSpotted[g.Map.Depth-1]+g.Stats.DUSpotted[g.Map.Depth-2] < 6 {
 			AchStealthInitiate.Get(g)
 		}
 	}
 	if g.Map.Depth >= 8 {
-		if g.Stats.DUSpotted[g.Map.Depth] < 3 && g.Stats.DUSpotted[g.Map.Depth-1] < 3 && g.Stats.DSpotted[g.Map.Depth-2] < 3 &&
-			g.Stats.DSpotted[g.Map.Depth-3] < 3 {
+		if g.Stats.DUSpotted[g.Map.Depth] < 3 &&
+			g.Stats.DUSpotted[g.Map.Depth-1]+g.Stats.DUSpotted[g.Map.Depth-2]+g.Stats.DUSpotted[g.Map.Depth-3] < 6 {
 			AchStealthMaster.Get(g)
 		}
 	}

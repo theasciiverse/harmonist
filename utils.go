@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand/v2"
 )
 
@@ -41,4 +42,17 @@ func Indefinite(s string, upper bool) (text string) {
 		}
 	}
 	return text
+}
+
+// Countable adds an "s" depending on quantity n.
+func Countable(s string, n int) string {
+	if len(s) == 0 || s[len(s)-1] == 's' || n == 1 {
+		return s
+	}
+	return s + "s"
+}
+
+// CountNoun adds an "s" depending on quantity n.
+func CountNoun(s string, n int) string {
+	return fmt.Sprintf("%d %s", n, Countable(s, n))
 }

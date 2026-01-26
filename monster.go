@@ -526,8 +526,8 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 	t := g.Map.At(p)
 	if t == ChasmCell && !m.Kind.CanFly() || t == WaterCell && !m.Kind.CanSwim() && !m.Kind.CanFly() {
 		m.Dead = true
+		g.HandleKill(m)
 		if g.Player.Sees(m.P) {
-			g.HandleKill(m)
 			switch t {
 			case ChasmCell:
 				g.Logf("%s falls into the abyss.", m.Kind.Definite(true))
@@ -636,6 +636,7 @@ func (m *Monster) Explode(g *Game) {
 	m.Dead = true
 	neighbors := g.CardinalNeighbors(m.P)
 	g.Logf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
+	g.Stats.NadreExplosions++
 	g.md.ExplosionAnimation(FireExplosion, m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
 	for _, p := range append(neighbors, m.P) {

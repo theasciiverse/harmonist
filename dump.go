@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"sort"
 	"strings"
@@ -63,10 +62,8 @@ func (g *Game) Dump() string {
 		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
 	}
 	if g.LiberatedShaedra {
-		fmt.Fprint(buf, "\n")
 		fmt.Fprint(buf, "You rescued Shaedra.\n")
 	} else {
-		fmt.Fprint(buf, "\n")
 		fmt.Fprint(buf, "You did not rescue Shaedra.\n")
 	}
 	if g.LiberatedArtifact {
@@ -74,46 +71,33 @@ func (g *Game) Dump() string {
 	} else {
 		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
+	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprintf(buf, "You have %d/%d HP, %d/%d MP and %d/%d bananas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas)
 	fmt.Fprintf(buf, "\n")
 	fmt.Fprint(buf, g.DumpStatuses())
-	fmt.Fprintf(buf, "\n\n")
-	fmt.Fprintf(buf, "Magaras:\n")
+	fmt.Fprintf(buf, "\n")
+	fmt.Fprintf(buf, "\nMagaras:\n")
 	for _, mag := range g.Player.Magaras {
 		if mag.Kind != NoMagara {
-			fmt.Fprintf(buf, "- %s (used %d times, charges: %d)\n", mag, g.Stats.UsedMagaras[mag.Kind], mag.Charges)
+			n := g.Stats.UsedMagaras[mag.Kind]
+			fmt.Fprintf(buf, "- %s (used %d %s, charges: %d)\n", mag, n, times(n), mag.Charges)
 		}
 	}
-	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, "Inventory:\n")
+	fmt.Fprintf(buf, "\nInventory:\n")
 	if g.Player.Inventory.Body.Kind != NoItem {
 		fmt.Fprintf(buf, "- %s (body)\n", g.Player.Inventory.Body.ShortDesc(g))
 	}
 	if g.Player.Inventory.Neck.Kind != NoItem {
 		fmt.Fprintf(buf, "- %s (neck)\n", g.Player.Inventory.Neck.ShortDesc(g))
 	}
-	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, "Miscellaneous:\n")
-	if g.Stats.Killed > 0 {
-		fmt.Fprintf(buf, "%d monsters died.\n", g.Stats.Killed)
-	}
-	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
-	maxDepth := max(g.Map.Depth, g.ExploredLevels)
-	s := "s"
-	if maxDepth == 1 {
-		s = ""
-	}
-	fmt.Fprintf(buf, "You explored %d level%s out of %d.\n", maxDepth, s, MaxDepth)
-	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, "Last messages:\n")
+	fmt.Fprintf(buf, "\nLast messages:\n")
 	for i := len(g.Logs) - 10; i < len(g.Logs); i++ {
 		if i >= 0 {
 			fmt.Fprintf(buf, "%s\n", g.Logs[i].dumpString())
 		}
 	}
-	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, "Dungeon:\n")
+	fmt.Fprintf(buf, "\nDungeon:\n")
 	fmt.Fprintf(buf, "┌%s┐\n", strings.Repeat("─", MapWidth))
 	buf.WriteString(g.DumpDungeon())
 	fmt.Fprintf(buf, "└%s┘\n", strings.Repeat("─", MapWidth))
@@ -121,164 +105,112 @@ func (g *Game) Dump() string {
 		fmt.Fprintf(buf, "\n")
 		fmt.Fprint(buf, g.DumpedKilledMonsters())
 	}
-	fmt.Fprintf(buf, "\n")
 	g.DetailedStatistics(buf)
-	fmt.Fprintf(buf, "\n")
-	fmt.Fprintf(buf, "Timeline:\n")
+	fmt.Fprintf(buf, "\nTimeline:\n")
 	fmt.Fprint(buf, g.DumpStory())
 	return buf.String()
 }
 
-func (g *Game) DetailedStatistics(w io.Writer) {
-	fmt.Fprintf(w, "Statistics:\n")
-	fmt.Fprintf(w, "You evoked magaras %d times (%d oric magaras, %d harmonic, %d others).\n",
-		g.Stats.MagarasUsed, g.Stats.OricMagUse,
+func (g *Game) DetailedStatistics(sb *strings.Builder) {
+	fmt.Fprintf(sb, "\nStatistics:\n")
+	fmt.Fprintf(sb, "You evoked magaras %d %s (%d oric, %d harmonic, %d others).\n",
+		g.Stats.MagarasUsed, times(g.Stats.MagarasUsed), g.Stats.OricMagUse,
 		g.Stats.HarmonicMagUse, g.Stats.MagarasUsed-g.Stats.OricMagUse-g.Stats.HarmonicMagUse)
-	fmt.Fprintf(w, "You activated %d magical stones.\n", g.Stats.UsedStones)
-	fmt.Fprintf(w, "You rested %d times.\n", g.Stats.Rest)
-	fmt.Fprintf(w, "You drank %d potions.\n", g.Stats.DrankPotions)
-	fmt.Fprintf(w, "You were spotted by %d monsters, %d times.\n", g.Stats.NUSpotted, g.Stats.NSpotted)
-	fmt.Fprintf(w, "You got hit %d times.\n", g.Stats.ReceivedHits)
-	fmt.Fprintf(w, "You endured %d damage.\n", g.Stats.Damage)
-	fmt.Fprintf(w, "You were confused %d times.\n", g.Stats.Statuses[StatusConfusion])
-	if g.Stats.Statuses[StatusIlluminated] > 0 {
-		fmt.Fprintf(w, "You were illuminated by an harmonic celmist %d times.\n", g.Stats.Statuses[StatusIlluminated])
+	fmt.Fprintf(sb, "You activated %d magical stones.\n", g.Stats.UsedStones)
+	fmt.Fprintf(sb, "You rested %d %s.\n", g.Stats.Rest, times(g.Stats.Rest))
+	fmt.Fprintf(sb, "You drank %d potions.\n", g.Stats.DrankPotions)
+	fmt.Fprintf(sb, "You were spotted by %d monsters, %d %s.\n", g.Stats.NUSpotted, g.Stats.NSpotted, times(g.Stats.NSpotted))
+	fmt.Fprintf(sb, "You got hit %d %s.\n", g.Stats.ReceivedHits, times(g.Stats.ReceivedHits))
+	fmt.Fprintf(sb, "You endured %d damage.\n", g.Stats.Damage)
+	if n := g.Stats.Statuses[StatusConfusion]; n > 0 {
+		fmt.Fprintf(sb, "You were confused %d %s.\n", n, times(n))
 	}
-	if g.Stats.TimesBlocked > 0 {
-		fmt.Fprintf(w, "You were blocked by an oric celmist barrier %d times.\n", g.Stats.TimesBlocked)
+	if n := g.Stats.Statuses[StatusLignification]; n > 0 {
+		fmt.Fprintf(sb, "You were lignified %d %s.\n", n, times(n))
 	}
-	if g.Stats.TimesPushed > 0 {
-		fmt.Fprintf(w, "You were pushed %d times by monsters.\n", g.Stats.TimesPushed)
+	if n := g.Stats.Statuses[StatusIlluminated]; n > 0 {
+		fmt.Fprintf(sb, "You were illuminated by an harmonic celmist %d %s.\n", n, times(n))
 	}
-	if g.Stats.TimesBlinked > 0 {
-		fmt.Fprintf(w, "You were blinked %d times by blinking frogs.\n", g.Stats.TimesBlinked)
+	if n := g.Stats.TimesBlocked; n > 0 {
+		fmt.Fprintf(sb, "You were blocked by an oric celmist barrier %d %s.\n", n, times(n))
+	}
+	if n := g.Stats.TimesPushed; n > 0 {
+		fmt.Fprintf(sb, "You were pushed %d %s by monsters.\n", n, times(n))
+	}
+	if n := g.Stats.TimesBlinked; n > 0 {
+		fmt.Fprintf(sb, "You were blinked %d %s by blinking frogs.\n", n, times(n))
 	}
 	if g.Stats.StolenBananas > 0 {
-		fmt.Fprintf(w, "You were stolen %d bananas by harpies.\n", g.Stats.StolenBananas)
+		fmt.Fprintf(sb, "You were stolen %d bananas by harpies.\n", g.Stats.StolenBananas)
 	}
-	fmt.Fprintf(w, "You jumped %d times over monsters.\n", g.Stats.Jumps)
-	fmt.Fprintf(w, "You jumped %d times by propelling yourself against walls.\n", g.Stats.WallJumps)
-	fmt.Fprintf(w, "You hid in %d barrels.\n", g.Stats.BarrelHides)
-	fmt.Fprintf(w, "You crawled through %d holed walls.\n", g.Stats.HoledWallsCrawled)
-	fmt.Fprintf(w, "You climbed %d trees.\n", g.Stats.ClimbedTree)
-	fmt.Fprintf(w, "You hid under %d tables.\n", g.Stats.TableHides)
-	fmt.Fprintf(w, "You opened %d doors.\n", g.Stats.DoorsOpened)
-	fmt.Fprintf(w, "You moved %d times.\n", g.Stats.Moves)
-	fmt.Fprintf(w, "You waited %d times.\n", g.Stats.Waits)
-	if g.Stats.Extinguishments > 0 {
-		fmt.Fprintf(w, "You extinguished %d campfires.\n", g.Stats.Extinguishments)
-	}
-	fmt.Fprintf(w, "You read %d lore messages out of %d.\n", len(g.Stats.Lore), len(g.Params.Lore))
+	fmt.Fprintf(sb, "You jumped %d %s over monsters.\n", g.Stats.Jumps, times(g.Stats.Jumps))
+	fmt.Fprintf(sb, "You jumped %d %s by propelling yourself against walls.\n", g.Stats.WallJumps, times(g.Stats.WallJumps))
+	fmt.Fprintf(sb, "You hid in %s.\n", CountNoun("barrel", g.Stats.BarrelHides))
+	fmt.Fprintf(sb, "You crawled through %s.\n", CountNoun("holed wall", g.Stats.HoledWallsCrawled))
+	fmt.Fprintf(sb, "You climbed %s.\n", CountNoun("tree", g.Stats.ClimbedTree))
+	fmt.Fprintf(sb, "You hid under %s.\n", CountNoun("table", g.Stats.TableHides))
+	fmt.Fprintf(sb, "You opened %s.\n", CountNoun("door", g.Stats.DoorsOpened))
+	fmt.Fprintf(sb, "You moved %d %s.\n", g.Stats.Moves, times(g.Stats.Moves))
+	fmt.Fprintf(sb, "You waited %d %s.\n", g.Stats.Waits, times(g.Stats.Waits))
+	fmt.Fprintf(sb, "You extinguished %s.\n", CountNoun("campfire", g.Stats.Extinguishments))
+	fmt.Fprintf(sb, "You read %d lore messages out of %d.\n", len(g.Stats.Lore), len(g.Params.Lore))
 	if g.Stats.Burns > 0 {
-		fmt.Fprintf(w, "There were %d fires.\n", g.Stats.Burns)
+		fmt.Fprintf(sb, "There were %s.\n", CountNoun("fire", g.Stats.Burns))
 	}
 	if g.Stats.Digs > 0 {
-		fmt.Fprintf(w, "There were %d destroyed walls.\n", g.Stats.Digs)
+		fmt.Fprintf(sb, "There were %s.\n", CountNoun("destroyed walls", g.Stats.Digs))
 	}
-	fmt.Fprintf(w, "You spent %d%% turns wounded.\n", g.Stats.TWounded*100/(g.Stats.Turns+1))
-	fmt.Fprintf(w, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsFOV*100/(g.Stats.Turns+1))
-	fmt.Fprintf(w, "You spent %d%% turns wounded with monsters in sight.\n", g.Stats.TMWounded*100/(g.Stats.Turns+1))
-	maxDepth := max(g.Map.Depth-1, g.ExploredLevels)
+	if g.Stats.NadreExplosions > 0 {
+		if g.Stats.NadreExplosions > 1 {
+			fmt.Fprintf(sb, "There were %d nadre explosions.\n", g.Stats.NadreExplosions)
+		} else {
+			sb.WriteString("There was 1 nadre explosion.\n")
+		}
+	}
+	if g.Stats.Killed > 0 {
+		fmt.Fprintf(sb, "You murdered %s.\n", CountNoun("monster", g.Stats.Killed))
+	}
+	fmt.Fprintf(sb, "You spent %d%% turns wounded.\n", g.Stats.TWounded*100/(g.Stats.Turns+1))
+	fmt.Fprintf(sb, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsFOV*100/(g.Stats.Turns+1))
+	fmt.Fprintf(sb, "You spent %d%% turns wounded with monsters in sight.\n", g.Stats.TMWounded*100/(g.Stats.Turns+1))
+	maxDepth := 1 + max(g.Map.Depth-1, g.ExploredLevels)
 	if g.Player.HP <= 0 {
 		maxDepth++
 	}
 	if maxDepth >= MaxDepth+1 {
 		// should not happen
-		maxDepth = -1
+		maxDepth = 0
 	}
-	fmt.Fprintf(w, "\n")
-	hfmt := "%-23s"
-	fmt.Fprintf(w, hfmt, "Quantity/Depth")
-	for i := 1; i <= maxDepth; i++ {
-		fmt.Fprintf(w, " %3d", i)
+	fmt.Fprintf(sb, "\n")
+	hfmt := "%-21s"
+	perLevel := func(title string, x []int) {
+		fmt.Fprintf(sb, hfmt, title)
+		for _, n := range x[1:] {
+			fmt.Fprintf(sb, " %4d", n)
+		}
+		sb.WriteByte('\n')
 	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Explored (%)")
-	for i, n := range g.Stats.DExplPerc {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
+	fmt.Fprintf(sb, hfmt, "Quantity/Depth")
+	for i := 1; i < maxDepth; i++ {
+		fmt.Fprintf(sb, " %4d", i)
 	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Sleeping monsters (%)")
-	for i, n := range g.Stats.DSleepingPerc {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
-	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Alerted monsters (%)")
-	for i, n := range g.Stats.DUSpottedPerc {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
-	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Total Alerts")
-	for i, n := range g.Stats.DSpotted {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
-	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Rests")
-	for i, n := range g.Stats.DRests {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
-	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Received damage")
-	for i, n := range g.Stats.DDamage {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
-	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, hfmt, "Magara uses")
-	for i, n := range g.Stats.DMagaraUses {
-		if i == 0 {
-			continue
-		}
-		if i > maxDepth {
-			break
-		}
-		fmt.Fprintf(w, " %3d", n)
-	}
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, "Achievements:\n")
+	sb.WriteByte('\n')
+	perLevel("Turns", g.Stats.DTurns[:maxDepth])
+	perLevel("Explored (%)", g.Stats.DExplPerc[:maxDepth])
+	perLevel("Sleeping monsters (%)", g.Stats.DSleepingPerc[:maxDepth])
+	perLevel("Alerted monsters (%)", g.Stats.DUSpottedPerc[:maxDepth])
+	perLevel("Total alerts", g.Stats.DSpotted[:maxDepth])
+	perLevel("Rests", g.Stats.DRests[:maxDepth])
+	perLevel("Received damage", g.Stats.DDamage[:maxDepth])
+	perLevel("Magara uses", g.Stats.DMagaraUses[:maxDepth])
+	fmt.Fprintf(sb, "\nAchievements:\n")
 	achvs := []string{}
 	for achv := range g.Stats.Achievements {
 		achvs = append(achvs, string(achv))
 	}
 	sort.Strings(achvs)
 	for _, achv := range achvs {
-		fmt.Fprintf(w, "- %s (turn %d)\n", achv, g.Stats.Achievements[Achievement(achv)])
+		fmt.Fprintf(sb, "- %s (turn %d)\n", achv, g.Stats.Achievements[Achievement(achv)])
 	}
 }
 
@@ -371,12 +303,6 @@ func (g *Game) SimplifedDump(msg string, err error) string {
 		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
 	}
 	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
-	maxDepth := max(g.Map.Depth, g.ExploredLevels)
-	s := "s"
-	if maxDepth == 1 {
-		s = ""
-	}
-	fmt.Fprintf(buf, "You explored %d level%s out of %d.\n", maxDepth, s, MaxDepth)
 	fmt.Fprintf(buf, "\n")
 	if err != nil {
 		fmt.Fprintf(buf, "Error writing dump: %v.\n", err)
@@ -385,4 +311,11 @@ func (g *Game) SimplifedDump(msg string, err error) string {
 		fmt.Fprintln(buf, msg)
 	}
 	return buf.String()
+}
+
+func times(n int) string {
+	if n == 1 {
+		return "time"
+	}
+	return "times"
 }
