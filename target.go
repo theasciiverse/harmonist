@@ -22,7 +22,7 @@ type examination struct {
 	sortedStairs []gruid.Point // sorted stair points
 	stairIndex   int           // index of stair
 	info         posInfo       // extra examine information
-	scroll       bool          // whether scrolling once (descriptions)
+	scroll       int           // scrolling amount (descriptions)
 }
 
 // HideCursor hides the target cursor.
@@ -68,7 +68,7 @@ func (md *model) examine(p gruid.Point) {
 		md.g.MonsterTargFOV = nil
 	}
 	md.updatePosInfo()
-	md.targ.ex.scroll = false
+	md.targ.ex.scroll = 0
 }
 
 // KeyboardExamine toggels keyboard examination mode on the player.
@@ -104,10 +104,15 @@ func (md *model) drawPosInfo() {
 		p.X += MapWidth/2 + 1
 	}
 	info := md.targ.ex.info
-
+	n := md.targ.ex.scroll
 	y := 2
 	stt := ui.StyledText{}.WithMarkups(Markups)
 	formatBox := func(title, s string, fg gruid.Color) {
+		if n > 0 {
+			// Scrolling.
+			n--
+			return
+		}
 		md.description.Content = stt.WithText(s).Format(MapWidth/2 - 3)
 		if md.description.Content.Size().Y+y > MapHeight {
 			md.description.Box = &ui.Box{Title: stt.WithText(title).WithStyle(gruid.Style{Fg: fg}),
@@ -154,9 +159,7 @@ func (md *model) drawPosInfo() {
 	} else {
 		desc = g.TerrainDesc(info.Cell, info.P)
 	}
-	if !md.targ.ex.scroll {
-		formatBox(t, desc, fg)
-	}
+	formatBox(t, desc, fg)
 
 	if info.Player {
 		formatBox("Syu", "This is you, the monkey named Syu.", ColorBlue)

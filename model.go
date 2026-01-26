@@ -457,10 +457,10 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	if md.targ.ex.p != invalidPos {
 		switch msg.Key {
 		case gruid.KeyPageDown:
-			md.targ.ex.scroll = true
+			md.targ.ex.scroll++
 			return nil
 		case gruid.KeyPageUp:
-			md.targ.ex.scroll = false
+			md.targ.ex.scroll = 0
 			return nil
 		}
 	}
@@ -488,11 +488,11 @@ func (md *model) updateMouse(msg gruid.MsgMouse) gruid.Effect {
 	switch msg.Action {
 	case gruid.MouseWheelUp:
 		if md.targ.ex.p != invalidPos {
-			md.targ.ex.scroll = false
+			md.targ.ex.scroll = 0
 		}
 	case gruid.MouseWheelDown:
 		if md.targ.ex.p != invalidPos {
-			md.targ.ex.scroll = true
+			md.targ.ex.scroll++
 		}
 	case gruid.MouseMove:
 		if md.auto || md.targ.kbTargeting {
