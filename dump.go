@@ -120,7 +120,6 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	fmt.Fprintf(sb, "You rested %d %s.\n", g.Stats.Rest, times(g.Stats.Rest))
 	fmt.Fprintf(sb, "You drank %d potions.\n", g.Stats.DrankPotions)
 	fmt.Fprintf(sb, "You were spotted by %d monsters, %d %s.\n", g.Stats.NUSpotted, g.Stats.NSpotted, times(g.Stats.NSpotted))
-	fmt.Fprintf(sb, "You got hit %d %s.\n", g.Stats.ReceivedHits, times(g.Stats.ReceivedHits))
 	fmt.Fprintf(sb, "You endured %d damage.\n", g.Stats.Damage)
 	if n := g.Stats.Statuses[StatusConfusion]; n > 0 {
 		fmt.Fprintf(sb, "You were confused %d %s.\n", n, times(n))

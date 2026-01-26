@@ -15,7 +15,6 @@ type Stats struct {
 	Waits             int                  // times you waited
 	Jumps             int                  // times you jumped over monsters
 	WallJumps         int                  // times you jumped off walls
-	ReceivedHits      int                  // times you were hurt
 	MagarasUsed       int                  // times you used magaras
 	DMagaraUses       [MaxDepth + 1]int    // magaras used per level
 	UsedMagaras       map[magaraKind]int   // magaras uses (by kind)

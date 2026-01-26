@@ -11,7 +11,6 @@ import (
 
 // InflictDamage makes the monster inflict 1 damage on the player.
 func (m *Monster) InflictDamage(g *Game) {
-	g.Stats.ReceivedHits++
 	oldHP := g.Player.HP
 	g.damagePlayer()
 	g.md.WoundedAnimation()
