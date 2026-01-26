@@ -109,7 +109,7 @@ func (md *model) drawPosInfo() {
 	stt := ui.StyledText{}.WithMarkups(Markups)
 	formatBox := func(title, s string, fg gruid.Color) {
 		md.description.Content = stt.WithText(s).Format(MapWidth/2 - 3)
-		if md.description.Content.Size().Y+2 > MapHeight {
+		if md.description.Content.Size().Y+y > MapHeight {
 			md.description.Box = &ui.Box{Title: stt.WithText(title).WithStyle(gruid.Style{Fg: fg}),
 				Footer: ui.NewStyledText("scroll/page down for more...", gruid.Style{Fg: ColorMagenta})}
 		} else {
