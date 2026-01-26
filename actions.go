@@ -185,7 +185,7 @@ func (k Action) String() (text string) {
 func (k Action) Desc() (text string) {
 	switch k {
 	case ActionLogs:
-		text = "Opens a pager with previous message logs. The pager supports page-up/page-down, mouse scrolling, and other basic less-like keybindings."
+		text = "Opens a pager with previous message logs. The pager supports page up/down, mouse scrolling, and other basic less-like keybindings."
 	case ActionDump:
 		if runtime.GOOS == "js" {
 			text = "Writes game statistics below."
