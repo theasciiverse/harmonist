@@ -125,7 +125,7 @@ func IsEnclosing(t rl.Cell) bool {
 // AllowsFog reports whether the terrain may be filled with fog.
 func AllowsFog(t rl.Cell) bool {
 	switch t {
-	case WallCell, HoledWallCell, WindowCell, StoryCell:
+	case WallCell, HoledWallCell, WindowCell, StoryCell, RubbleCell:
 		return false
 	default:
 		return true
