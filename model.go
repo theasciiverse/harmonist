@@ -238,6 +238,9 @@ func (md *model) init() gruid.Effect {
 		g.Init()
 		g.InitLevel()
 		g.checks()
+		md.g.ComputeNoise()
+		md.g.ComputeFOV()
+		md.g.ComputeMonsterFOV()
 	} else {
 		g.rand = rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 	}
@@ -245,10 +248,6 @@ func (md *model) init() gruid.Effect {
 		g.LogStyled("Warning: could not load old saved game… starting new game.", logError)
 		log.Printf("Error: %v", err)
 	}
-
-	md.g.ComputeNoise()
-	md.g.ComputeFOV()
-	md.g.ComputeMonsterFOV()
 	md.updateStatusInfo()
 	md.targ.ex = &examination{}
 	md.CancelExamine()
