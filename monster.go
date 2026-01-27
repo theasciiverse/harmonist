@@ -1490,7 +1490,7 @@ func (m *Monster) VampireSpit(g *Game) bool {
 		return false
 	}
 	g.LogStyled("The vampire spits at you.", logNotable)
-	g.StoryPrint("A vampire spitted at you.")
+	g.StoryPrint("Spat at by vampire")
 	g.PutConfusion()
 	m.Exhaust(g)
 	return true

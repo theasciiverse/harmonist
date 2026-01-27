@@ -836,13 +836,13 @@ func (g *Game) DrinkPotion(p gruid.Point) {
 			return
 		}
 		g.Player.HP++
-		g.StoryPrintf("Drank %s (HP: %d).", ptn, g.Player.HP)
+		g.StoryPrintf("Drank %s (HP: %d)", ptn, g.Player.HP)
 	case MagicPotion:
 		if g.Player.MP >= g.Player.MPMax() {
 			return
 		}
 		g.Player.MP++
-		g.StoryPrintf("Drank %s (MP: %d).", ptn, g.Player.MP)
+		g.StoryPrintf("Drank %s (MP: %d)", ptn, g.Player.MP)
 	}
 	g.Logf("You drink %s.", ptn.ShortDesc(g))
 	g.Stats.DrankPotions++

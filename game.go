@@ -619,7 +619,7 @@ func (g *Game) Descend(style descendstyle) bool {
 func (g *Game) EnterWizardMode() {
 	g.Wizard = WizardNormal
 	g.LogStyled("Wizard mode enabled.", logSpecial)
-	g.StoryPrint("Entered wizard mode.")
+	g.StoryPrint("Entered wizard mode")
 }
 
 // ApplyRest handles hp and mp regeneration.
