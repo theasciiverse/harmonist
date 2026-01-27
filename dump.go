@@ -190,13 +190,13 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	}
 	if maxDepth >= MaxDepth+1 {
 		// should not happen
-		maxDepth = 0
+		maxDepth = 1
 	}
 	fmt.Fprintf(sb, "\n")
 	hfmt := "%-21s"
 	perLevel := func(title string, x []int) {
 		fmt.Fprintf(sb, hfmt, title)
-		for _, n := range x[1:] {
+		for _, n := range x[min(len(x), 1):] {
 			fmt.Fprintf(sb, " %4d", n)
 		}
 		sb.WriteByte('\n')
