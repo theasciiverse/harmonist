@@ -23,70 +23,18 @@ const (
 
 // Animations provides support for animations.
 type Animations struct {
-	frames []AnimFrame
-	grid   gruid.Grid
-	pgrid  gruid.Grid
-	idx    int
-	draw   bool
+	frames []AnimFrame // frame queue
+	grid   gruid.Grid  // drawing grid
+	mgrid  gruid.Grid  // map grid (slice of grid)
+	pgrid  gruid.Grid  // previous drawing grid
+	idx    int         // animation sequence counter
+	draw   bool        // whether to draw an animation frame or not
 }
 
 // AnimFrame represents an animation frame.
 type AnimFrame struct {
 	Cells    []gruid.FrameCell
 	Duration time.Duration
-}
-
-type msgAnim int
-
-func (md *model) initAnimations() {
-	gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
-	max := gd.Size()
-	md.anims.grid = gruid.NewGrid(max.X, max.Y)
-	md.anims.pgrid = gruid.NewGrid(max.X, max.Y)
-	md.anims.grid.Copy(gd)
-	md.anims.pgrid.Copy(gd)
-}
-
-func (md *model) animNext() gruid.Cmd {
-	d := md.anims.frames[0].Duration
-	idx := md.anims.idx
-	return func() gruid.Msg {
-		t := time.NewTimer(d)
-		<-t.C
-		return msgAnim(idx)
-	}
-}
-
-func (md *model) animCmd() gruid.Cmd {
-	if len(md.anims.frames) == 0 {
-		return nil
-	}
-	idx := md.anims.idx
-	return func() gruid.Msg {
-		return msgAnim(idx)
-	}
-}
-
-func (md *model) startAnimSeq() {
-	if md.anims.Done() {
-		md.resetAnimations()
-	}
-	it := md.g.Map.Terrain.Iterator()
-	for it.Next() {
-		p := it.P()
-		r, fg, bg := md.positionDrawing(p)
-		attrs := AttrInMap
-		if md.g.highlight[p] || p == md.targ.ex.p {
-			attrs |= AttrReverse
-		}
-		md.anims.grid.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
-	}
-}
-
-func (md *model) resetAnimations() {
-	gd := md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1))
-	md.anims.grid.Copy(gd)
-	md.anims.pgrid.Copy(gd)
 }
 
 // Finish clears the frame queue.
@@ -101,21 +49,45 @@ func (a *Animations) Done() bool {
 }
 
 // Draw sets a given rune and foreground color at a given position.
-func (a *Animations) Draw(p gruid.Point, r rune, fg, bg gruid.Color) {
-	c := a.grid.At(p)
+func (a *Animations) Draw(p gruid.Point, r rune, fg gruid.Color) {
+	c := a.mgrid.At(p)
 	c.Rune = r
 	c.Style.Fg = fg
-	c.Style.Bg = bg
-	a.grid.Set(p, c)
+	a.mgrid.Set(p, c)
 }
 
-func (a *Animations) DrawReverse(p gruid.Point, r rune, fg, bg gruid.Color) {
-	c := a.grid.At(p)
+// DrawWith sets a given rune and foreground and background color and
+// attributes at a given position.
+func (a *Animations) DrawWith(p gruid.Point, r rune, fg, bg gruid.Color, attrs gruid.AttrMask) {
+	c := a.mgrid.At(p)
 	c.Rune = r
 	c.Style.Fg = fg
 	c.Style.Bg = bg
+	c.Style.Attrs = attrs
+	a.mgrid.Set(p, c)
+}
+
+// DrawRune sets a given rune at a given position.
+func (a *Animations) DrawRune(p gruid.Point, r rune) {
+	c := a.mgrid.At(p)
+	c.Rune = r
+	a.mgrid.Set(p, c)
+}
+
+// DrawColor sets a given color at a given position.
+func (a *Animations) DrawColor(p gruid.Point, fg gruid.Color) {
+	c := a.mgrid.At(p)
+	c.Style.Fg = fg
+	a.mgrid.Set(p, c)
+}
+
+// DrawReverse sets a given rune and foreground color with reverse attribute.
+func (a *Animations) DrawReverse(p gruid.Point, r rune, fg gruid.Color) {
+	c := a.mgrid.At(p)
+	c.Rune = r
+	c.Style.Fg = fg
 	c.Style.Attrs |= AttrReverse
-	a.grid.Set(p, c)
+	a.mgrid.Set(p, c)
 }
 
 // Frame emits a new animation frame with given duration.
@@ -134,6 +106,65 @@ func (a *Animations) Frame(d time.Duration) {
 	a.pgrid.Copy(a.grid)
 }
 
+type msgAnim int
+
+// InitAnimations initializes drawing grids for animations.
+func (md *model) InitAnimations() {
+	sz := md.gd.Size()
+	md.anims.grid = gruid.NewGrid(sz.X, sz.Y)
+	md.anims.mgrid = md.anims.grid.Slice(md.anims.grid.Range().Shift(0, 2, 0, -1))
+	md.anims.pgrid = gruid.NewGrid(sz.X, sz.Y)
+	md.anims.grid.Copy(md.gd)
+	md.anims.pgrid.Copy(md.gd)
+}
+
+// AnimNext returns a ticker command appropriately timed for the next frame.
+func (md *model) AnimNext() gruid.Cmd {
+	d := md.anims.frames[0].Duration
+	idx := md.anims.idx
+	return func() gruid.Msg {
+		t := time.NewTimer(d)
+		<-t.C
+		return msgAnim(idx)
+	}
+}
+
+// AnimCmd returns a command with current animation sequence counter, which is
+// used when updating to check whether the current animation is still relevant
+// or not.
+func (md *model) AnimCmd() gruid.Cmd {
+	if len(md.anims.frames) == 0 {
+		return nil
+	}
+	idx := md.anims.idx
+	return func() gruid.Msg {
+		return msgAnim(idx)
+	}
+}
+
+// startAnimSeq is a helper function for starting a new animation sequence from
+// a freshly drawn map representing the current state.
+func (md *model) startAnimSeq() {
+	if md.anims.Done() {
+		// Compute new frame with respect to last drawn grid.
+		md.anims.pgrid.Copy(md.gd)
+	}
+	agrid := md.anims.grid
+	rg := agrid.Range()
+	// Draw log.
+	gdlog := agrid.Slice(rg.Lines(0, 2))
+	gdlog.Fill(gruid.Cell{Rune: ' '})
+	md.log.Content = md.DrawLog()
+	md.log.Draw(gdlog)
+	// Draw map.
+	md.drawMap(md.anims.mgrid)
+	// Draw status.
+	md.updateStatusInfo()
+	gdstatus := agrid.Slice(rg.Line(UIHeight - 1))
+	gdstatus.Fill(gruid.Cell{Rune: ' '})
+	gdstatus.Copy(md.status.Draw())
+}
+
 // AnimationFrameFast updates the map and waits very briefly.
 func (md *model) AnimationFrameFast() {
 	if DisableAnimations {
@@ -148,13 +179,11 @@ func (md *model) SwappingAnimation(mp, pp gruid.Point) {
 		return
 	}
 	md.startAnimSeq()
-	_, fgm, bgColorm := md.positionDrawing(mp)
-	_, _, bgColorp := md.positionDrawing(pp)
-	md.anims.Draw(mp, 'Φ', fgm, bgColorp)
-	md.anims.Draw(pp, 'Φ', ColorBlue, bgColorm)
+	md.anims.DrawRune(mp, 'Φ')
+	md.anims.Draw(pp, 'Φ', ColorBlue)
 	md.anims.Frame(AnimDurMedium)
-	md.anims.Draw(mp, 'Φ', ColorBlue, bgColorp)
-	md.anims.Draw(pp, 'Φ', fgm, bgColorm)
+	md.anims.Draw(mp, 'Φ', ColorBlue)
+	md.anims.DrawRune(pp, 'Φ')
 	md.anims.Frame(AnimDurMedium)
 }
 
@@ -163,14 +192,12 @@ func (md *model) TeleportAnimation(from, to gruid.Point, showto bool) {
 		return
 	}
 	md.startAnimSeq()
-	_, _, bgColorf := md.positionDrawing(from)
-	_, _, bgColort := md.positionDrawing(to)
 	if showto {
-		md.anims.Draw(from, 'Φ', ColorBlue, bgColorf)
-		md.anims.Draw(to, 'Φ', ColorCyan, bgColort)
+		md.anims.Draw(from, 'Φ', ColorBlue)
+		md.anims.Draw(to, 'Φ', ColorCyan)
 		md.anims.Frame(AnimDurMediumLong)
 	} else {
-		md.anims.Draw(from, 'Φ', ColorCyan, bgColorf)
+		md.anims.Draw(from, 'Φ', ColorCyan)
 		md.anims.Frame(AnimDurMediumLong)
 	}
 }
@@ -190,21 +217,18 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 	md.startAnimSeq()
 	for i := range len(ray) {
 		p := ray[i]
-		or, fgColor, bgColor := md.positionDrawing(p)
-		md.anims.Draw(p, r, fg, bgColor)
+		md.anims.Draw(p, r, fg)
 		md.anims.Frame(AnimDurVeryShort)
-		md.anims.Draw(p, or, fgColor, bgColor)
 	}
 }
 
 func (md *model) WaveDrawAt(p gruid.Point, fg gruid.Color) {
-	r, _, bgColor := md.positionDrawing(p)
-	md.anims.DrawReverse(p, r, fg, bgColor)
+	c := md.anims.mgrid.At(p)
+	md.anims.DrawReverse(p, c.Rune, c.Style.Fg)
 }
 
 func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
 	g := md.g
-	_, _, bgColor := md.positionDrawing(p)
 	mons := g.MonsterAt(p)
 	r := ';'
 	switch RandInt(9) {
@@ -224,7 +248,7 @@ func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
 	if mons.Exists() || g.Player.P == p {
 		r = '√'
 	}
-	md.anims.DrawReverse(p, r, fg, bgColor)
+	md.anims.DrawReverse(p, r, fg)
 }
 
 func (md *model) NoiseAnimation(noises []gruid.Point) {
@@ -236,11 +260,9 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 	for i := range 2 {
 		for _, p := range noises {
 			r := '♫'
-			_, _, bgColor := md.positionDrawing(p)
-			md.anims.DrawReverse(p, r, colors[i], bgColor)
+			md.anims.DrawReverse(p, r, colors[i])
 		}
-		_, _, bgColor := md.positionDrawing(md.g.Player.P)
-		md.anims.DrawReverse(md.g.Player.P, '@', colors[i], bgColor)
+		md.anims.DrawReverse(md.g.Player.P, '@', colors[i])
 		md.anims.Frame(AnimDurShort)
 	}
 
@@ -363,8 +385,7 @@ func (md *model) WallExplosionAnimation(p gruid.Point) {
 	md.startAnimSeq()
 	colors := [2]gruid.Color{ColorViolet, ColorMagenta}
 	for _, fg := range colors {
-		_, _, bgColor := md.positionDrawing(p)
-		md.anims.DrawReverse(p, '%', fg, bgColor)
+		md.anims.DrawReverse(p, '%', fg)
 		md.anims.Frame(AnimDurVeryShort)
 	}
 }
@@ -396,12 +417,11 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	for range 3 {
 		for i := len(ray) - 1; i >= 0; i-- {
 			p := ray[i]
-			_, _, bgColor := md.positionDrawing(p)
 			r := '*'
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			md.anims.DrawReverse(p, r, fg, bgColor)
+			md.anims.DrawReverse(p, r, fg)
 		}
 		md.anims.Frame(AnimDurShort)
 	}
@@ -415,10 +435,8 @@ func (md *model) JavelinThrowAnimation(ray []gruid.Point) {
 	md.startAnimSeq()
 	for i := range len(ray) {
 		p := ray[i]
-		r, fgColor, bgColor := md.positionDrawing(p)
-		md.anims.Draw(p, md.projectileSymbol(DirNorm(g.Player.P, p)), ColorRed, bgColor)
+		md.anims.Draw(p, md.projectileSymbol(DirNorm(g.Player.P, p)), ColorRed)
 		md.anims.Frame(AnimDurVeryShort)
-		md.anims.Draw(p, r, fgColor, bgColor)
 	}
 }
 
@@ -442,13 +460,8 @@ func (md *model) WoundedAnimation() {
 	}
 	g := md.g
 	md.startAnimSeq()
-	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorYellow, bg)
-	md.anims.Frame(AnimDurShortMedium)
-	if g.Player.HP <= 15 {
-		md.anims.Draw(g.Player.P, r, ColorRed, bg)
-		md.anims.Frame(AnimDurShortMedium)
-	}
+	md.anims.DrawColor(g.Player.P, ColorOrange)
+	md.anims.Frame(AnimDurMedium)
 }
 
 func (md *model) PlayerGoodEffectAnimation() {
@@ -457,22 +470,14 @@ func (md *model) PlayerGoodEffectAnimation() {
 	}
 	g := md.g
 	md.startAnimSeq()
-	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorGreen, bg)
+	md.anims.DrawColor(g.Player.P, ColorGreen)
 	md.anims.Frame(AnimDurShortMedium)
-	md.anims.Draw(g.Player.P, r, ColorYellow, bg)
+	md.anims.DrawColor(g.Player.P, ColorYellow)
 	md.anims.Frame(AnimDurShortMedium)
 }
 
 func (md *model) StatusEndAnimation() {
-	if DisableAnimations {
-		return
-	}
-	g := md.g
-	md.startAnimSeq()
-	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorViolet, bg)
-	md.anims.Frame(AnimDurShortMedium)
+	md.EffectAtPPAnimation(ColorViolet)
 }
 
 func (md *model) EffectAtPPAnimation(cl gruid.Color) {
@@ -481,8 +486,7 @@ func (md *model) EffectAtPPAnimation(cl gruid.Color) {
 	}
 	g := md.g
 	md.startAnimSeq()
-	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, cl, bg)
+	md.anims.DrawColor(g.Player.P, cl)
 	md.anims.Frame(AnimDurShortMedium)
 }
 
@@ -491,8 +495,7 @@ func (md *model) FoundFakeStairsAnimation() {
 		return
 	}
 	g := md.g
-	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorForeground, bg)
+	md.anims.DrawColor(g.Player.P, ColorForeground)
 	md.anims.Frame(AnimDurMediumLong)
 }
 
@@ -505,11 +508,10 @@ func (md *model) PushAnimation(path []gruid.Point) {
 		return
 	}
 	md.startAnimSeq()
-	_, _, bg := md.positionDrawing(path[0])
 	for _, p := range path[:len(path)-1] {
-		md.anims.Draw(p, '×', ColorBlue, bg)
+		md.anims.Draw(p, '×', ColorBlue)
 	}
-	md.anims.Draw(path[len(path)-1], '@', ColorBlue, bg)
+	md.anims.Draw(path[len(path)-1], '@', ColorBlue)
 	md.anims.Frame(AnimDurMediumLong)
 }
 
@@ -526,7 +528,7 @@ func (md *model) AbyssFallAnimation() {
 		it := gd.Iterator()
 		for it.Next() {
 			if it.Cell() == rl.Cell(i) {
-				md.anims.Draw(it.P(), ' ', ColorForeground, ColorBackground)
+				md.anims.DrawWith(it.P(), ' ', ColorForeground, ColorBackground, AttrInMap)
 			}
 		}
 		md.anims.Frame(AnimDurVeryShort)
@@ -552,8 +554,7 @@ func (md *model) FreeingShaedra() {
 	case 1:
 		if !DisableAnimations {
 			md.startAnimSeq()
-			_, _, bg := md.positionDrawing(g.Places.Monolith)
-			md.anims.Draw(g.Places.Monolith, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Monolith, 'Φ', ColorCyan)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -562,8 +563,7 @@ func (md *model) FreeingShaedra() {
 		if !DisableAnimations {
 			md.startAnimSeq()
 			md.anims.Frame(AnimDurMediumLong)
-			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
@@ -575,9 +575,8 @@ func (md *model) FreeingShaedra() {
 	default:
 		if !DisableAnimations {
 			md.startAnimSeq()
-			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
-			md.anims.Draw(g.Places.Shaedra, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan)
+			md.anims.Draw(g.Places.Shaedra, 'Φ', ColorCyan)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Map.Set(g.Places.Shaedra, GroundCell)
@@ -616,8 +615,7 @@ func (md *model) TakingArtifact() {
 		g.Map.KnownTerrain.Set(g.Places.Artifact, GroundCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
-			_, _, bg := md.positionDrawing(g.Places.Monolith)
-			md.anims.Draw(g.Places.Monolith, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Monolith, 'Φ', ColorCyan)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Stairs[g.Places.Monolith] = WinStair
@@ -625,8 +623,7 @@ func (md *model) TakingArtifact() {
 		g.Map.KnownTerrain.Set(g.Places.Monolith, StairCell)
 		if !DisableAnimations {
 			md.startAnimSeq()
-			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Objects.Story[g.Places.Marevor] = StoryMarevor
@@ -639,8 +636,7 @@ func (md *model) TakingArtifact() {
 	default:
 		if !DisableAnimations {
 			md.startAnimSeq()
-			_, _, bg := md.positionDrawing(g.Places.Marevor)
-			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan, bg)
+			md.anims.Draw(g.Places.Marevor, 'Φ', ColorCyan)
 			md.anims.Frame(AnimDurMediumLong)
 		}
 		g.Map.Set(g.Places.Marevor, GroundCell)

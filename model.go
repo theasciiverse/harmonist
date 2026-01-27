@@ -251,7 +251,7 @@ func (md *model) init() gruid.Effect {
 	md.updateStatusInfo()
 	md.targ.ex = &examination{}
 	md.CancelExamine()
-	md.initAnimations()
+	md.InitAnimations()
 	if runtime.GOOS == "js" {
 		return nil
 	}
@@ -296,11 +296,13 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 	md.anims.draw = false
 	if msg, ok := msg.(msgAnim); ok {
 		if int(msg) != md.anims.idx {
+			// The animation message is from a finished animation
+			// sequence, so we just skip it.
 			return nil
 		}
 		if !md.anims.Done() {
 			md.anims.draw = true
-			return md.animNext()
+			return md.AnimNext()
 		}
 		md.anims.Finish()
 		return nil
@@ -314,7 +316,7 @@ func (md *model) Update(msg gruid.Msg) gruid.Effect {
 		md.g.StopAuto()
 	}
 	eff := md.update(msg)
-	if cmd := md.animCmd(); !anims && cmd != nil {
+	if cmd := md.AnimCmd(); !anims && cmd != nil {
 		return gruid.Batch(eff, cmd)
 	}
 	return eff

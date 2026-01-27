@@ -231,10 +231,10 @@ func (g *Game) WallJump(p gruid.Point) error {
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body.Kind != CloakAcrobat {
 		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
+	g.Log("You jump by propelling yourself against the wall.")
 	g.md.PushAnimation(path)
 	g.PlacePlayerAt(q)
 	g.Stats.WallJumps++
-	g.Log("You jump by propelling yourself against the wall.")
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}

@@ -760,8 +760,8 @@ func (g *Game) EvokeNoise() error {
 		noises = append(noises, target)
 		g.Map.NoiseIllusion[target] = true
 	}
-	g.md.NoiseAnimation(noises)
 	g.Log("Monsters are tricked by magical sounds.")
+	g.md.NoiseAnimation(noises)
 	return nil
 }
 
