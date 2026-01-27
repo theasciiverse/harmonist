@@ -14,7 +14,7 @@ import (
 
 // maxIterations is used for loops that theoretically may not finish but do in
 // practice, just in case.
-const maxIterations = 1000
+const maxIterations = 1500
 
 // WallCell returns a random wall position.
 func (mg *MapGen) WallCell() gruid.Point {
@@ -868,16 +868,15 @@ func (mg *MapGen) outsideCavernMiddleCell(g *Game) gruid.Point {
 		if t == GroundCell && count < 400 || t == FoliageCell && count < 350 {
 			continue
 		}
-		if IsGround(t) && !mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
+		if IsGround(t) && !mg.vault[p] && !mg.m.HasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
 }
 
-// hasTooManyWallNeighbors reports whether the given position has more than 2
+// HasTooManyWallNeighbors reports whether the given position has more than 2
 // wall neighbors (excluding boundaries).
-func (mg *MapGen) hasTooManyWallNeighbors(p gruid.Point) bool {
-	m := mg.m
+func (m *Map) HasTooManyWallNeighbors(p gruid.Point) bool {
 	count := 0
 	for q := range AllNeighbors(p) {
 		if !Passable(m.At(q)) {

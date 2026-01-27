@@ -497,7 +497,10 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 	ppos := g.Player.P
 	g.Player.P = p
 	if m.Exists() {
-		m.MoveTo(g, ppos)
+		if !m.MoveTo(g, ppos) {
+			// Ensure swapping even in unlikely edge-cases.
+			m.PlaceAt(g, ppos)
+		}
 		m.Swapped = true
 	}
 	if g.Map.At(g.Player.P) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {

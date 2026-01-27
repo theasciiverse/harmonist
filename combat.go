@@ -134,10 +134,11 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 		if !mons.CanPass(g, g.Player.P) {
 			p := mons.LeaveRoomForPlayer(g)
 			if p != invalidPos {
-				mons.MoveTo(g, p)
-				mons.Swapped = true
-				g.PlacePlayerAt(op)
-				return false, nil
+				if mons.MoveTo(g, p) {
+					mons.Swapped = true
+					g.PlacePlayerAt(op)
+					return false, nil
+				}
 			}
 			// otherwise (which should not happen in practice), swap anyways
 		}

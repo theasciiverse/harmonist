@@ -410,6 +410,11 @@ func (m *Monster) CanPass(g *Game, p gruid.Point) bool {
 	if !InMap(p) {
 		return false
 	}
+	if mons := g.MonsterAt(p); mons.Exists() && (mons.Kind == MonsSatowalgaPlant || mons.Status(MonsLignified)) {
+		// Monsters cannot pass through tiles that have a non-moving
+		// monster.
+		return false
+	}
 	t := g.Map.At(p)
 	return Passable(t) ||
 		IsDoorPassable(t) && m.Kind.CanOpenDoors() ||
@@ -464,16 +469,17 @@ func (m *Monster) TeleportAway(g *Game) bool {
 		return false
 	}
 	var p gruid.Point
-	i := 0
 	count := 0
 	for {
 		count++
 		if count > maxIterations {
-			panic("TeleportOther")
+			panic("infinite loop")
 		}
 		p = g.FreePassableCell()
-		if Distance(p, m.P) < 15 && i < maxIterations {
-			i++
+		if Distance(p, m.P) < 15 {
+			continue
+		}
+		if m.Kind == MonsSatowalgaPlant && count < maxIterations/2 && g.Map.HasTooManyWallNeighbors(p) {
 			continue
 		}
 		break
@@ -497,7 +503,12 @@ func (m *Monster) TeleportAway(g *Game) bool {
 }
 
 // MoveTo attemps to move the monster to the given target point.
-func (m *Monster) MoveTo(g *Game, p gruid.Point) {
+func (m *Monster) MoveTo(g *Game, p gruid.Point) bool {
+	if mons := g.MonsterAt(p); mons != nil && (mons.Kind == MonsSatowalgaPlant || mons.Status(MonsLignified)) {
+		// The monster cannot swap places with a monster that cannot
+		// move.
+		return false
+	}
 	if g.Player.Sees(p) {
 		m.UpdateKnowledge(g, p)
 	} else if g.Player.Sees(m.P) {
@@ -536,6 +547,7 @@ func (m *Monster) MoveTo(g *Game, p gruid.Point) {
 			}
 		}
 	}
+	return true
 }
 
 // PlaceAtStart sets a monster at the given starting position.
@@ -1014,21 +1026,24 @@ func (m *Monster) HandleMove(g *Game) bool {
 				}
 				g.StopAuto()
 			}
-			m.MoveTo(g, target)
-			m.Path = m.Path[1:]
+			if m.MoveTo(g, target) {
+				m.Path = m.Path[1:]
+			}
 		} else if !m.CanPass(g, target) {
 			m.Path = m.APath(g, m.P, m.Target)
 		} else {
 			m.InvertFoliage(g)
-			m.MoveTo(g, target)
-			m.Path = m.Path[1:]
+			if m.MoveTo(g, target) {
+				m.Path = m.Path[1:]
+			}
 		}
 	case (mons.P == target && m.P == monstarget || m.Waiting > 5+RandInt(2)) && !mons.Status(MonsLignified):
 		target := mons.P
-		m.MoveTo(g, target)
-		m.Path = m.Path[1:]
-		if len(mons.Path) > 0 {
-			mons.Path = mons.Path[1:]
+		if m.MoveTo(g, target) {
+			m.Path = m.Path[1:]
+			if len(mons.Path) > 0 {
+				mons.Path = mons.Path[1:]
+			}
 		}
 	case m.State == Hunting && mons.State != Hunting:
 		if m.Waiting > 2+RandInt(3) {
@@ -1607,19 +1622,18 @@ func (m *Monster) AbsorbMana(g *Game) bool {
 }
 
 // Blink attemps to make the monster blink away.
-func (m *Monster) Blink(g *Game) bool {
+func (m *Monster) Blink(g *Game) {
 	if m.Status(MonsLignified) {
-		return false
+		return
 	}
 	npos := g.BlinkPos(true)
 	if !InMap(npos) || npos == g.Player.P || npos == m.P {
-		return false
+		return
 	}
 	opos := m.P
 	g.Logf("The %s blinks away.", m.Kind)
 	g.md.TeleportAnimation(opos, npos, true)
 	m.MoveTo(g, npos)
-	return true
 }
 
 // MakeHunt makes the monster hunt the player.

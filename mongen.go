@@ -779,7 +779,7 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if (t == GroundCell || t == CavernCell) && !mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
+		if (t == GroundCell || t == CavernCell) && !mg.vault[p] && !mg.m.HasTooManyWallNeighbors(p) {
 			return p
 		}
 	}
@@ -790,7 +790,7 @@ func (mg *MapGen) satowalgaCell(g *Game) gruid.Point {
 			continue
 		}
 		t := mg.m.At(p)
-		if (t == GroundCell || t == CavernCell) && mg.vault[p] && !mg.hasTooManyWallNeighbors(p) {
+		if (t == GroundCell || t == CavernCell) && mg.vault[p] && !mg.m.HasTooManyWallNeighbors(p) {
 			return p
 		}
 		if t == WallCell && g.HasNonWallNeighbors(p) {
