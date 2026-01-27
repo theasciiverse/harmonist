@@ -32,7 +32,6 @@ type Game struct {
 	LightFOV         *rl.FOV              // light map
 
 	Events            *rl.EventQueue // event queue
-	ExploredLevels    int            // number of explored levels
 	LiberatedArtifact bool           // whether we got the artifact
 	LiberatedShaedra  bool           // whether Shaedra was liberated
 	Turn              int            // current turn
@@ -67,6 +66,7 @@ type Game struct {
 	autoexploring         bool         // whether currently auto-exploring
 	resting               bool         // whether currently resting
 	restingTurns          int          // number of turns resting
+	win                   bool         // whether the player already won
 }
 
 // ProcInfo contains procgen information for specific map levels.
@@ -595,8 +595,7 @@ func (g *Game) Descend(style descendstyle) bool {
 	t := g.Map.At(g.Player.P)
 	if t == StairCell && g.Objects.Stairs[g.Player.P] == WinStair {
 		g.StoryPrint("Escaped!")
-		g.ExploredLevels = g.Map.Depth
-		g.Map.Depth = -1
+		g.win = true
 		return true
 	}
 	if style != DescendNormal {

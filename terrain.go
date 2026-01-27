@@ -506,7 +506,7 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 		r, fg = 'Θ', ColorViolet
 	case ChasmCell:
 		r, fg = '◊', ColorForeground
-		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth || g.Map.Depth == -1 {
+		if g.Map.Depth == MaxDepth || g.Map.Depth == WinDepth {
 			fg = ColorViolet
 		}
 	case WaterCell:

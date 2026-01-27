@@ -251,7 +251,7 @@ func (md *model) updateStatusInfo() {
 	stt := ui.StyledText{}.WithMarkups(Markups)
 	// depth
 	var depth string
-	if g.Map.Depth == -1 {
+	if g.win {
 		depth = " D:Out! "
 	} else {
 		depth = fmt.Sprintf(" D:%d ", g.Map.Depth)
@@ -361,7 +361,7 @@ func (md *model) updateStatusInfo() {
 		entries = append(entries, ui.MenuEntry{
 			Text:     stt.WithText("@RDead@N "),
 			Disabled: true})
-	case g.Map.Depth == -1:
+	case g.win:
 		entries = append(entries, ui.MenuEntry{
 			Text:     stt.WithText("@BEscaped!@N "),
 			Disabled: true})

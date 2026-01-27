@@ -54,7 +54,7 @@ func (g *Game) Dump() string {
 	if g.Wizard != WizardNone {
 		fmt.Fprintf(sb, "ENABLED WIZARD MODE.\n")
 	}
-	if g.Player.HP > 0 && g.Map.Depth == -1 {
+	if g.Player.HP > 0 && g.win {
 		fmt.Fprintf(sb, "You escaped from Dayoriah Clan’s domain alive!\n")
 	} else if g.Player.HP <= 0 {
 		fmt.Fprintf(sb, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
@@ -184,13 +184,10 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	fmt.Fprintf(sb, "You spent %d%% turns wounded.\n", g.Stats.TWounded*100/(g.Stats.Turns+1))
 	fmt.Fprintf(sb, "You spent %d%% turns with monsters in sight.\n", g.Stats.TMonsFOV*100/(g.Stats.Turns+1))
 	fmt.Fprintf(sb, "You spent %d%% turns wounded with monsters in sight.\n", g.Stats.TMWounded*100/(g.Stats.Turns+1))
-	maxDepth := 1 + max(g.Map.Depth-1, g.ExploredLevels)
-	if g.Player.HP <= 0 {
+	maxDepth := g.Map.Depth
+	if g.Player.HP <= 0 || g.win {
+		// Player won or died, so include last depth.
 		maxDepth++
-	}
-	if maxDepth >= MaxDepth+1 {
-		// should not happen
-		maxDepth = 1
 	}
 	fmt.Fprintf(sb, "\n")
 	hfmt := "%-21s"
@@ -201,19 +198,21 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 		}
 		sb.WriteByte('\n')
 	}
-	fmt.Fprintf(sb, hfmt, "Quantity/Depth")
-	for i := 1; i < maxDepth; i++ {
-		fmt.Fprintf(sb, " %4d", i)
+	if maxDepth > 1 {
+		fmt.Fprintf(sb, hfmt, "Quantity/Depth")
+		for i := 1; i < maxDepth; i++ {
+			fmt.Fprintf(sb, " %4d", i)
+		}
+		sb.WriteByte('\n')
+		perLevel("Turns", g.Stats.DTurns[:maxDepth])
+		perLevel("Explored (%)", g.Stats.DExplPerc[:maxDepth])
+		perLevel("Sleeping monsters (%)", g.Stats.DSleepingPerc[:maxDepth])
+		perLevel("Alerted monsters (%)", g.Stats.DUSpottedPerc[:maxDepth])
+		perLevel("Total alerts", g.Stats.DSpotted[:maxDepth])
+		perLevel("Rests", g.Stats.DRests[:maxDepth])
+		perLevel("Received damage", g.Stats.DDamage[:maxDepth])
+		perLevel("Magara uses", g.Stats.DMagaraUses[:maxDepth])
 	}
-	sb.WriteByte('\n')
-	perLevel("Turns", g.Stats.DTurns[:maxDepth])
-	perLevel("Explored (%)", g.Stats.DExplPerc[:maxDepth])
-	perLevel("Sleeping monsters (%)", g.Stats.DSleepingPerc[:maxDepth])
-	perLevel("Alerted monsters (%)", g.Stats.DUSpottedPerc[:maxDepth])
-	perLevel("Total alerts", g.Stats.DSpotted[:maxDepth])
-	perLevel("Rests", g.Stats.DRests[:maxDepth])
-	perLevel("Received damage", g.Stats.DDamage[:maxDepth])
-	perLevel("Magara uses", g.Stats.DMagaraUses[:maxDepth])
 	fmt.Fprintf(sb, "\nAchievements:\n")
 	achvs := []string{}
 	for achv := range g.Stats.Achievements {
@@ -296,7 +295,7 @@ func (g *Game) SimplifedDump(msg string, err error) string {
 	if g.Wizard != WizardNone {
 		fmt.Fprintf(buf, "ENABLED WIZARD MODE.\n")
 	}
-	if g.Player.HP > 0 && g.Map.Depth == -1 {
+	if g.Player.HP > 0 && g.win {
 		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
 	} else if g.Player.HP <= 0 {
 		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
