@@ -196,8 +196,8 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	hfmt := "%-21s"
 	perLevel := func(title string, x []int) {
 		fmt.Fprintf(sb, hfmt, title)
-		for _, n := range x[min(len(x), 1):] {
-			fmt.Fprintf(sb, " %4d", n)
+		for i := 1; i < len(x); i++ {
+			fmt.Fprintf(sb, " %4d", x[i])
 		}
 		sb.WriteByte('\n')
 	}
