@@ -120,7 +120,7 @@ for my $l (@letters) {
     }
     my $img = Imager->new(xsize => 16, ysize => 24);
     $img->box(filled => 1, color => 'black');
-    if ($l eq "#" or $l eq "◊") {
+    if ($l eq "#") {
         $img->string(font => $fontbold, text => $l, x => 1, y => 18);
     } else {
         $img->string(font => $font, text => $l, x => 1, y => 18);

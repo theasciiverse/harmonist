@@ -157,6 +157,9 @@ func (md *model) drawMap(gd gruid.Grid) {
 		if md.g.highlight[p] && md.g.Wizard != WizardMap || p == md.targ.ex.p {
 			attrs |= AttrReverse
 		}
+		if r == '#' {
+			attrs |= AttrBold
+		}
 		gd.Set(p, gruid.Cell{Rune: r, Style: gruid.Style{Fg: fg, Bg: bg, Attrs: attrs}})
 	}
 }

@@ -26,7 +26,7 @@ const (
 
 // Those constants represent available styling attributes.
 const (
-	AttrInMap gruid.AttrMask = 1 + iota
+	AttrInMap gruid.AttrMask = 1 << iota
 	AttrReverse
 	AttrBold
 )
