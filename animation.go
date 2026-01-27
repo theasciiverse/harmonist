@@ -407,28 +407,22 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 	}
 }
 
-func (md *model) SlowingMagaraAnimation(ray []gruid.Point) {
+func (md *model) JavelinThrowAnimation(ray []gruid.Point) {
 	if DisableAnimations {
 		return
 	}
+	g := md.g
 	md.startAnimSeq()
-	colors := [2]gruid.Color{ColorGreen, ColorCyan}
-	for range 3 {
-		for i := len(ray) - 1; i >= 0; i-- {
-			fg := colors[RandInt(2)]
-			p := ray[i]
-			_, _, bgColor := md.positionDrawing(p)
-			r := '*'
-			if RandInt(2) == 0 {
-				r = '×'
-			}
-			md.anims.DrawReverse(p, r, fg, bgColor)
-		}
-		md.anims.Frame(AnimDurShortMedium)
+	for i := range len(ray) {
+		p := ray[i]
+		r, fgColor, bgColor := md.positionDrawing(p)
+		md.anims.Draw(p, md.projectileSymbol(DirNorm(g.Player.P, p)), ColorRed, bgColor)
+		md.anims.Frame(AnimDurVeryShort)
+		md.anims.Draw(p, r, fgColor, bgColor)
 	}
 }
 
-func (md *model) ProjectileSymbol(dir gruid.Point) (r rune) {
+func (md *model) projectileSymbol(dir gruid.Point) (r rune) {
 	switch dir {
 	case gruid.Point{1, 0}, gruid.Point{-1, 0}:
 		r = '—'
@@ -440,21 +434,6 @@ func (md *model) ProjectileSymbol(dir gruid.Point) (r rune) {
 		r = '\\'
 	}
 	return r
-}
-
-func (md *model) MonsterJavelinAnimation(ray []gruid.Point, hit bool) {
-	if DisableAnimations {
-		return
-	}
-	g := md.g
-	md.startAnimSeq()
-	for i := range len(ray) {
-		p := ray[i]
-		r, fgColor, bgColor := md.positionDrawing(p)
-		md.anims.Draw(p, md.ProjectileSymbol(DirNorm(g.Player.P, p)), ColorRed, bgColor)
-		md.anims.Frame(AnimDurVeryShort)
-		md.anims.Draw(p, r, fgColor, bgColor)
-	}
 }
 
 func (md *model) WoundedAnimation() {
@@ -496,14 +475,14 @@ func (md *model) StatusEndAnimation() {
 	md.anims.Frame(AnimDurShortMedium)
 }
 
-func (md *model) EffectAtPPAnimation() {
+func (md *model) EffectAtPPAnimation(cl gruid.Color) {
 	if DisableAnimations {
 		return
 	}
 	g := md.g
 	md.startAnimSeq()
 	r, _, bg := md.positionDrawing(g.Player.P)
-	md.anims.Draw(g.Player.P, r, ColorCyan, bg)
+	md.anims.Draw(g.Player.P, r, cl, bg)
 	md.anims.Frame(AnimDurShortMedium)
 }
 

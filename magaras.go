@@ -612,7 +612,7 @@ func (cl Cloud) String() (s string) {
 func (g *Game) EvokeFog() error {
 	g.Fog(g.Player.P, 3)
 	g.Log("You are surrounded by a dense fog.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorForeground)
 	return nil
 }
 
@@ -638,7 +638,7 @@ func (g *Game) EvokeShadows() error {
 		return errors.New("You are already surrounded by shadows.")
 	}
 	g.Log("You are surrounded by shadows.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorForeground)
 	return nil
 }
 
@@ -786,7 +786,7 @@ func (g *Game) EvokeFire() error {
 		return errors.New("You are not surrounded by any flammable terrain.")
 	}
 	g.Log("Sparks emanate from the magara.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorViolet)
 	for _, p := range burnpos {
 		g.Burn(p)
 	}
@@ -856,7 +856,7 @@ func (g *Game) EvokeTransparencyMagara() error {
 		return errors.New("You are already transparent.")
 	}
 	g.Log("Light makes you diaphanous.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorYellow)
 	return nil
 }
 
@@ -865,7 +865,7 @@ func (g *Game) EvokeDisguiseMagara() error {
 		return errors.New("You are already disguised.")
 	}
 	g.Log("You look now like a normal guard.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorViolet)
 	return nil
 }
 
@@ -876,7 +876,7 @@ func (g *Game) EvokeDelayedNoiseMagara() error {
 	g.PushEventD(&PosEvent{P: g.Player.P, Action: DelayedHarmonicNoiseEvent,
 		Timer: DurationHarmonicNoiseDelay}, DurationTurn)
 	g.Log("Timer activated.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorMagenta)
 	return nil
 }
 
@@ -885,7 +885,7 @@ func (g *Game) EvokeDispersalMagara() error {
 		return errors.New("You are already dispersing.")
 	}
 	g.Log("You feel unstable.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorCyan)
 	return nil
 }
 
@@ -896,6 +896,6 @@ func (g *Game) EvokeOricExplosionMagara() error {
 	g.PushEventD(&PosEvent{P: g.Player.P, Action: DelayedOricExplosionEvent,
 		Timer: DurationOricExplosionDelay}, DurationTurn)
 	g.Log("Timer activated.")
-	g.md.EffectAtPPAnimation()
+	g.md.EffectAtPPAnimation(ColorMagenta)
 	return nil
 }

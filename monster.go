@@ -1491,6 +1491,7 @@ func (m *Monster) VampireSpit(g *Game) bool {
 	}
 	g.LogStyled("The vampire spits at you.", logNotable)
 	g.StoryPrint("Spat at by vampire")
+	g.md.MonsterProjectileAnimation(g.Ray(m.P), '*', ColorOrange)
 	g.PutConfusion()
 	m.Exhaust(g)
 	return true
@@ -1502,8 +1503,9 @@ func (m *Monster) ThrowSpores(g *Game) bool {
 	if blocked || g.Player.HasStatus(StatusLignification) {
 		return false
 	}
-	g.LogStyled("The tree mushroom releases spores.", logNotable)
+	g.LogStyled("The tree mushroom releases spores at you.", logNotable)
 	g.StoryPrintf("Lignified by %s", m.Kind)
+	g.md.BeamsAnimation(g.Ray(m.P), BeamLignification)
 	g.EnterLignification()
 	m.Exhaust(g)
 	return true
@@ -1523,7 +1525,7 @@ func (m *Monster) ThrowJavelin(g *Game) bool {
 	}
 	g.Logf("%s throws a javelin at you (1 dmg).%s", m.Kind.Definite(true), sclang)
 	g.StoryPrintf("Targeted by %s javelin", m.Kind)
-	g.md.MonsterJavelinAnimation(g.Ray(m.P), true)
+	g.md.JavelinThrowAnimation(g.Ray(m.P))
 	g.MakeNoise(noise, g.Player.P)
 	m.InflictDamage(g)
 	m.ExhaustTime(g, 10+RandInt(5))
