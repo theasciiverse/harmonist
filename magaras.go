@@ -254,7 +254,11 @@ func (g *Game) UseMagara(i int) (err error) {
 }
 
 func (mag Magara) String() (desc string) {
-	switch mag.Kind {
+	return mag.Kind.String()
+}
+
+func (magk magaraKind) String() (desc string) {
+	switch magk {
 	case NoMagara:
 		desc = "empty slot"
 	case BlinkMagara:
