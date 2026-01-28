@@ -647,37 +647,26 @@ func (m *Monster) AttackAction(g *Game) bool {
 func (m *Monster) Explode(g *Game) {
 	m.Dead = true
 	neighbors := g.CardinalNeighbors(m.P)
-	g.Logf("%s %s explodes with a loud boom.", g.ExplosionSound(), m.Kind.Definite(true))
+	g.Logf("%s blows up! %s", m.Kind.Definite(true), g.ExplosionSound())
 	g.Stats.NadreExplosions++
-	g.md.ExplosionAnimation(FireExplosion, m.P)
+	g.md.NadreExplosionAnimation(m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
 	for _, p := range append(neighbors, m.P) {
 		t := g.Map.At(p)
 		if Flammable(t) {
 			g.Burn(p)
 		}
-		mons := g.MonsterAt(p)
-		if mons.Exists() && !mons.Status(MonsConfused) {
+		if g.Player.P == p {
+			m.InflictDamage(g)
+		} else if mons := g.MonsterAt(p); mons.Exists() && !mons.Status(MonsConfused) {
 			mons.PutConfusion(g)
 			if mons.State != Hunting && mons.State != Watching {
 				mons.StartWatching()
 			}
-		} else if g.Player.P == p {
-			m.InflictDamage(g)
-		} else if IsDestructible(t) && RandInt(3) > 0 {
-			if IsDiggable(t) {
-				g.Map.Set(p, RubbleCell)
-			} else {
-				g.Map.Set(p, GroundCell)
-			}
-			if t == BarrelCell {
-				delete(g.Objects.Barrels, p)
-			}
+		}
+		if IsDiggable(t) {
+			g.Map.Set(p, RubbleCell)
 			g.Stats.Digs++
-			if g.Player.Sees(p) {
-				g.md.WallExplosionAnimation(p)
-			}
-			g.MakeNoise(WallNoise, p)
 			g.Fog(p, 1)
 		}
 	}

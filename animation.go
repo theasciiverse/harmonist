@@ -90,6 +90,16 @@ func (a *Animations) DrawReverse(p gruid.Point, r rune, fg gruid.Color) {
 	a.mgrid.Set(p, c)
 }
 
+// DrawReverse sets a given rune and foreground color with reverse attribute.
+func (a *Animations) DrawReverseChar(p gruid.Point, r rune, fg gruid.Color) {
+	c := a.mgrid.At(p)
+	c.Rune = r
+	c.Style.Fg = fg
+	c.Style.Attrs ^= AttrInMap
+	c.Style.Attrs |= AttrReverse
+	a.mgrid.Set(p, c)
+}
+
 // Frame emits a new animation frame with given duration.
 func (a *Animations) Frame(d time.Duration) {
 	frame := AnimFrame{}
@@ -202,14 +212,6 @@ func (md *model) TeleportAnimation(from, to gruid.Point, showto bool) {
 	}
 }
 
-type explosionStyle int
-
-const (
-	FireExplosion explosionStyle = iota
-	WallExplosion
-	AroundWallExplosion
-)
-
 func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.Color) {
 	if DisableAnimations {
 		return
@@ -225,30 +227,6 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 func (md *model) WaveDrawAt(p gruid.Point, fg gruid.Color) {
 	c := md.anims.mgrid.At(p)
 	md.anims.DrawReverse(p, c.Rune, c.Style.Fg)
-}
-
-func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
-	g := md.g
-	mons := g.MonsterAt(p)
-	r := ';'
-	switch RandInt(9) {
-	case 0, 6:
-		r = ','
-	case 1:
-		r = '}'
-	case 2:
-		r = '%'
-	case 3, 7:
-		r = ':'
-	case 4:
-		r = '\\'
-	case 5:
-		r = '~'
-	}
-	if mons.Exists() || g.Player.P == p {
-		r = '√'
-	}
-	md.anims.DrawReverse(p, r, fg)
 }
 
 func (md *model) NoiseAnimation(noises []gruid.Point) {
@@ -268,31 +246,70 @@ func (md *model) NoiseAnimation(noises []gruid.Point) {
 
 }
 
-func (md *model) ExplosionAnimation(es explosionStyle, p gruid.Point) {
+func (md *model) OricExplosionAnimation(ps []gruid.Point) {
+	if DisableAnimations {
+		return
+	}
+	g := md.g
+	md.startAnimSeq()
+	colors := [3]gruid.Color{ColorForeground, ColorForegroundSecondary, ColorForegroundEmph}
+	for range 4 {
+		for _, p := range ps {
+			fg := colors[g.rand.IntN(3)]
+			if !g.Player.Sees(p) {
+				continue
+			}
+			md.ExplosionDrawAt(p, fg)
+		}
+		md.anims.Frame(AnimDurMediumLong)
+	}
+}
+
+func (md *model) NadreExplosionAnimation(p gruid.Point) {
 	if DisableAnimations {
 		return
 	}
 	g := md.g
 	md.startAnimSeq()
 	colors := [2]gruid.Color{ColorYellow, ColorOrange}
-	if es == WallExplosion || es == AroundWallExplosion {
-		colors[0] = ColorViolet
-		colors[1] = ColorMagenta
-	}
-	for range 3 {
-		nb := g.PlayerPassableNeighbors(p)
-		if es != AroundWallExplosion {
-			nb = append(nb, p)
-		}
+	nb := g.CardinalNeighbors(p)
+	nb = append(nb, p)
+	for range 4 {
 		for _, q := range nb {
-			fg := colors[RandInt(2)]
-			if !g.Player.AFOV[q] {
+			fg := colors[g.rand.IntN(2)]
+			if !g.Player.Sees(q) {
 				continue
 			}
 			md.ExplosionDrawAt(q, fg)
 		}
 		md.anims.Frame(AnimDurMediumLong)
 	}
+}
+
+// ExplosionDrawAt draws a random colored explosion character at the given
+// point.
+func (md *model) ExplosionDrawAt(p gruid.Point, fg gruid.Color) {
+	g := md.g
+	r := ';'
+	switch RandInt(9) {
+	case 0, 6:
+		r = ','
+	case 1:
+		r = '}'
+	case 2:
+		r = '%'
+	case 3, 7:
+		r = ':'
+	case 4:
+		r = '\\'
+	case 5:
+		r = '~'
+	}
+	mons := g.MonsterAt(p)
+	if mons.Exists() || g.Player.P == p {
+		r = '√'
+	}
+	md.anims.DrawReverseChar(p, r, fg)
 }
 
 func (g *Game) Waves(maxCost int, ws wavestyle, center gruid.Point) (dists []int, cdists map[int][]int) {
@@ -378,18 +395,6 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 	md.anims.Frame(AnimDurVeryShort)
 }
 
-func (md *model) WallExplosionAnimation(p gruid.Point) {
-	if DisableAnimations {
-		return
-	}
-	md.startAnimSeq()
-	colors := [2]gruid.Color{ColorViolet, ColorMagenta}
-	for _, fg := range colors {
-		md.anims.DrawReverse(p, '%', fg)
-		md.anims.Frame(AnimDurVeryShort)
-	}
-}
-
 type beamstyle int
 
 const (
@@ -421,7 +426,7 @@ func (md *model) BeamsAnimation(ray []gruid.Point, bs beamstyle) {
 			if RandInt(2) == 0 {
 				r = '×'
 			}
-			md.anims.DrawReverse(p, r, fg)
+			md.anims.DrawReverseChar(p, r, fg)
 		}
 		md.anims.Frame(AnimDurShort)
 	}

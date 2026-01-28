@@ -236,7 +236,7 @@ func (g *Game) OricExplosion(at gruid.Point) {
 	mp := &GridPath{}
 	g.MakeNoise(OricExplosionNoise, at)
 	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{at}, 7)
-	fogs := []gruid.Point{}
+	ps := []gruid.Point{} // destroyed diggable tiles
 	for _, n := range nodes {
 		t := g.Map.At(n.P)
 		if !IsDiggable(t) {
@@ -244,15 +244,13 @@ func (g *Game) OricExplosion(at gruid.Point) {
 		}
 		g.Map.Set(n.P, RubbleCell)
 		g.Stats.Digs++
-		if g.Player.Sees(n.P) {
-			g.md.WallExplosionAnimation(n.P)
-		}
-		fogs = append(fogs, n.P)
+		ps = append(ps, n.P)
 		if IsKnown(g.Map.KnownTerrain.At(n.P)) {
 			g.Map.KnownTerrain.Set(n.P, RubbleCell)
 		}
 	}
-	for _, p := range fogs {
+	g.md.OricExplosionAnimation(ps)
+	for _, p := range ps {
 		g.Fog(p, 1)
 	}
 	g.ComputeFOV()
