@@ -109,7 +109,7 @@ func (g *Game) Dump() string {
 		magaraUses := []string{}
 		for mag, n := range g.Stats.UsedMagaras {
 			if mag != NoMagara {
-				magaraUses = append(magaraUses, fmt.Sprintf("- %s (used %d %s)\n", mag, n, times(n)))
+				magaraUses = append(magaraUses, fmt.Sprintf("- %s: %d\n", mag, n))
 			}
 		}
 		sort.Strings(magaraUses)
@@ -125,28 +125,28 @@ func (g *Game) Dump() string {
 
 func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	fmt.Fprintf(sb, "\nStatistics:\n")
-	fmt.Fprintf(sb, "You evoked magaras %d %s (%d oric, %d harmonic, %d others).\n",
-		g.Stats.MagarasUsed, times(g.Stats.MagarasUsed), g.Stats.OricMagUse,
+	fmt.Fprintf(sb, "You evoked magaras %s (%d oric, %d harmonic, %d other).\n",
+		times(g.Stats.MagarasUsed), g.Stats.OricMagUse,
 		g.Stats.HarmonicMagUse, g.Stats.MagarasUsed-g.Stats.OricMagUse-g.Stats.HarmonicMagUse)
 	fmt.Fprintf(sb, "You activated %s.\n", CountNoun("magical stone", g.Stats.UsedStones))
-	fmt.Fprintf(sb, "You rested %d %s.\n", g.Stats.Rest, times(g.Stats.Rest))
+	fmt.Fprintf(sb, "You rested %s.\n", times(g.Stats.Rest))
 	fmt.Fprintf(sb, "You drank %s.\n", CountNoun("potion", g.Stats.DrankPotions))
-	fmt.Fprintf(sb, "You were spotted by %s, %d %s.\n", CountNoun("monster", g.Stats.NUSpotted), g.Stats.NSpotted, times(g.Stats.NSpotted))
+	fmt.Fprintf(sb, "You were spotted by %s, %s.\n", CountNoun("monster", g.Stats.NUSpotted), times(g.Stats.NSpotted))
 	fmt.Fprintf(sb, "You endured %d damage.\n", g.Stats.Damage)
 	if n := g.Stats.Statuses[StatusConfusion]; n > 0 {
-		fmt.Fprintf(sb, "You were confused %d %s.\n", n, times(n))
+		fmt.Fprintf(sb, "You were confused %s.\n", times(n))
 	}
 	if n := g.Stats.Statuses[StatusLignification]; n > 0 {
-		fmt.Fprintf(sb, "You were lignified %d %s.\n", n, times(n))
+		fmt.Fprintf(sb, "You were lignified %s.\n", times(n))
 	}
 	if n := g.Stats.Statuses[StatusIlluminated]; n > 0 {
-		fmt.Fprintf(sb, "You were illuminated by an harmonic celmist %d %s.\n", n, times(n))
+		fmt.Fprintf(sb, "You were illuminated by an harmonic celmist %s.\n", times(n))
 	}
 	if n := g.Stats.TimesBlocked; n > 0 {
-		fmt.Fprintf(sb, "You were blocked by an oric celmist barrier %d %s.\n", n, times(n))
+		fmt.Fprintf(sb, "You were blocked by an oric celmist barrier %s.\n", times(n))
 	}
 	if n := g.Stats.TimesPushed; n > 0 {
-		fmt.Fprintf(sb, "You were pushed %d %s by monsters.\n", n, times(n))
+		fmt.Fprintf(sb, "You were pushed %s by monsters.\n", times(n))
 	}
 	if n := g.Stats.TimesBlinked; n > 0 {
 		fmt.Fprintf(sb, "You were blinked %d %s by blinking frogs.\n", n, times(n))
@@ -154,29 +154,25 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	if g.Stats.StolenBananas > 0 {
 		fmt.Fprintf(sb, "You were stolen %d bananas by harpies.\n", g.Stats.StolenBananas)
 	}
-	fmt.Fprintf(sb, "You jumped %d %s over monsters.\n", g.Stats.Jumps, times(g.Stats.Jumps))
-	fmt.Fprintf(sb, "You jumped %d %s by propelling yourself against walls.\n", g.Stats.WallJumps, times(g.Stats.WallJumps))
+	fmt.Fprintf(sb, "You jumped %s over monsters.\n", times(g.Stats.Jumps))
+	fmt.Fprintf(sb, "You jumped %s by propelling yourself against walls.\n", times(g.Stats.WallJumps))
 	fmt.Fprintf(sb, "You hid in %s.\n", CountNoun("barrel", g.Stats.BarrelHides))
 	fmt.Fprintf(sb, "You crawled through %s.\n", CountNoun("holed wall", g.Stats.HoledWallsCrawled))
 	fmt.Fprintf(sb, "You climbed %s.\n", CountNoun("tree", g.Stats.ClimbedTree))
 	fmt.Fprintf(sb, "You hid under %s.\n", CountNoun("table", g.Stats.TableHides))
 	fmt.Fprintf(sb, "You opened %s.\n", CountNoun("door", g.Stats.DoorsOpened))
-	fmt.Fprintf(sb, "You moved %d %s.\n", g.Stats.Moves, times(g.Stats.Moves))
-	fmt.Fprintf(sb, "You waited %d %s.\n", g.Stats.Waits, times(g.Stats.Waits))
+	fmt.Fprintf(sb, "You moved %s.\n", times(g.Stats.Moves))
+	fmt.Fprintf(sb, "You waited %s.\n", times(g.Stats.Waits))
 	fmt.Fprintf(sb, "You extinguished %s.\n", CountNoun("campfire", g.Stats.Extinguishments))
-	fmt.Fprintf(sb, "You read %d lore messages out of %d.\n", len(g.Stats.Lore), len(g.Params.Lore))
+	fmt.Fprintf(sb, "You read %s out of %d.\n", CountNoun("lore message", len(g.Stats.Lore)), len(g.Params.Lore))
 	if g.Stats.Burns > 0 {
-		fmt.Fprintf(sb, "There were %s.\n", CountNoun("fire", g.Stats.Burns))
+		fmt.Fprintf(sb, "%s.\n", there("fire", g.Stats.Burns))
 	}
 	if g.Stats.Digs > 0 {
-		fmt.Fprintf(sb, "There were %s.\n", CountNoun("destroyed walls", g.Stats.Digs))
+		fmt.Fprintf(sb, "%s.\n", there("destroyed wall", g.Stats.Digs))
 	}
 	if g.Stats.NadreExplosions > 0 {
-		if g.Stats.NadreExplosions > 1 {
-			fmt.Fprintf(sb, "There were %d nadre explosions.\n", g.Stats.NadreExplosions)
-		} else {
-			sb.WriteString("There was 1 nadre explosion.\n")
-		}
+		fmt.Fprintf(sb, "%s.\n", there("nadre explosion", g.Stats.NadreExplosions))
 	}
 	if g.Stats.Killed > 0 {
 		fmt.Fprintf(sb, "You murdered %s.\n", CountNoun("monster", g.Stats.Killed))
@@ -323,9 +319,13 @@ func (g *Game) SimplifedDump(msg string, err error) string {
 	return buf.String()
 }
 
-func times(n int) string {
+func there(s string, n int) string {
 	if n == 1 {
-		return "time"
+		return "There was " + CountNoun(s, n)
 	}
-	return "times"
+	return "There were " + CountNoun(s, n)
+}
+
+func times(n int) string {
+	return CountNoun("time", n)
 }
