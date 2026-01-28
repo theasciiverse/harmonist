@@ -555,7 +555,7 @@ func (md *model) readScroll() {
 	st := gruid.Style{}
 	switch sc {
 	case ScrollLore:
-		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorCyan))})
+		md.smallPager.SetBox(&ui.Box{Title: ui.Text("Lore Message").WithStyle(st.WithFg(ColorViolet))})
 		stts := []ui.StyledText{}
 		text := ui.Text(sc.Text(md.g)).Format(56)
 		for s := range strings.SplitSeq(text.Text(), "\n") {
