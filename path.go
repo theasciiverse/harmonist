@@ -48,6 +48,25 @@ func (gp *GridPath) Neighbors(p gruid.Point) []gruid.Point {
 	return gp.nbs.Cardinal(p, InMap)
 }
 
+// OricExplosionPath is a pather for oric explosions.
+type OricExplosionPath struct {
+	m   *Map
+	nbs paths.Neighbors
+}
+
+func (op *OricExplosionPath) Neighbors(p gruid.Point) []gruid.Point {
+	return op.nbs.Cardinal(p, InMap)
+}
+
+func (op *OricExplosionPath) Cost(from, to gruid.Point) int {
+	if IsDiggable(op.m.At(from)) {
+		// Double cost for walls, to avoid destroying too much interior
+		// walls.
+		return 3
+	}
+	return 1
+}
+
 // EarthStonePath is used for earth stone.
 type EarthStonePath struct {
 	m   *Map

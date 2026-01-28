@@ -233,9 +233,9 @@ func (g *Game) OricExplosion(at gruid.Point) {
 	g.Player.Statuses[StatusDelay] = 0
 	g.Log(g.CrackSound())
 	g.Map.Noise[at] = true
-	mp := &GridPath{}
+	mp := &OricExplosionPath{m: g.Map}
 	g.MakeNoise(OricExplosionNoise, at)
-	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{at}, 7)
+	nodes := g.PR.DijkstraMap(mp, []gruid.Point{at}, 9)
 	ps := []gruid.Point{} // destroyed diggable tiles
 	for _, n := range nodes {
 		t := g.Map.At(n.P)
