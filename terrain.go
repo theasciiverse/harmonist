@@ -481,7 +481,7 @@ func (g *Game) TerrainStyle(t rl.Cell, p gruid.Point) (r rune, fg gruid.Color) {
 		st := g.Objects.Stairs[p]
 		r, fg = st.Style(g)
 	case MagaraCell:
-		r, fg = '/', ColorYellow
+		r, fg = '/', ColorCyan
 	case BananaCell:
 		r, fg = ')', ColorYellow
 	case LightCell:

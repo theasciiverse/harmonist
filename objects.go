@@ -689,7 +689,7 @@ func (it Item) Desc(g *Game) (desc string) {
 }
 
 func (it Item) Style(g *Game) (r rune, fg gruid.Color) {
-	fg = ColorYellow
+	fg = ColorCyan
 	if it.IsAmulet() {
 		r = '='
 	} else if it.IsCloak() {
