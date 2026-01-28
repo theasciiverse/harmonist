@@ -245,12 +245,12 @@ func (g *Game) OricExplosion(at gruid.Point) {
 		g.Map.Set(n.P, RubbleCell)
 		g.Stats.Digs++
 		ps = append(ps, n.P)
-		if IsKnown(g.Map.KnownTerrain.At(n.P)) {
-			g.Map.KnownTerrain.Set(n.P, RubbleCell)
-		}
 	}
 	g.md.OricExplosionAnimation(ps)
 	for _, p := range ps {
+		if IsKnown(g.Map.KnownTerrain.At(p)) {
+			g.Map.KnownTerrain.Set(p, RubbleCell)
+		}
 		g.Fog(p, 1)
 	}
 	g.ComputeFOV()
