@@ -421,7 +421,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 		if IsDiggable(t) && t != HoledWallCell {
 			g.Map.Set(p, RubbleCell)
 			g.MakeNoise(WallNoise, p)
-			g.Log(g.CrackSound())
+			g.LogStyled(g.CrackSound(), logNotable)
 			g.Fog(p, 1)
 			g.Stats.Digs++
 			g.Stats.DestructionUse++
@@ -504,7 +504,7 @@ func (g *Game) PlacePlayerAt(p gruid.Point) {
 	}
 	if g.Map.At(g.Player.P) == QueenRockCell && !g.Player.HasStatus(StatusLevitation) {
 		g.MakeNoise(QueenRockFootstepNoise, g.Player.P)
-		g.Log("Tap-tap.")
+		g.LogStyled("Tap-Tap.", logNotable)
 	}
 	g.CollectGround()
 	g.ComputeFOV()

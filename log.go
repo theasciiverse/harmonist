@@ -151,13 +151,13 @@ func (g *Game) StoryPrintf(format string, a ...any) {
 func (g *Game) CrackSound() (text string) {
 	switch RandInt(4) {
 	case 0:
-		text = "Crack!"
+		text = "CRACK!"
 	case 1:
-		text = "Crash!"
+		text = "CRASH!"
 	case 2:
-		text = "Crunch!"
+		text = "CRUNCH!"
 	case 3:
-		text = "Creak!"
+		text = "CREAK!"
 	}
 	return text
 }
@@ -166,11 +166,11 @@ func (g *Game) CrackSound() (text string) {
 func (g *Game) ExplosionSound() (text string) {
 	switch RandInt(3) {
 	case 0:
-		text = "Bang!"
+		text = "BANG!"
 	case 1:
-		text = "Pop!"
+		text = "POP!"
 	case 2:
-		text = "Boom!"
+		text = "BOOM!"
 	}
 	return text
 }

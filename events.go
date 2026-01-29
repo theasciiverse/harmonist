@@ -189,10 +189,8 @@ func (cev *PosEvent) Handle(g *Game) {
 			g.Turn+DurationPurpleMistProgression+RandInt(DurationPurpleMistProgression/4))
 	case Earthquake:
 		g.LogStyled("The earth suddenly shakes with force!", logSpecial)
-		g.LogStyled("Craack!", logSpecial)
 		g.StoryPrint("Special event: earthquake!")
-		g.MakeNoise(EarthquakeNoise, cev.P)
-		g.Map.Noise[cev.P] = true
+		g.LogStyled("CREAK-CRACK!", logNotable)
 		it := g.Map.Terrain.Iterator()
 		for it.Next() {
 			p := it.P()
@@ -206,10 +204,12 @@ func (cev *PosEvent) Handle(g *Game) {
 			g.Map.Set(p, RubbleCell)
 			g.Fog(p, 1)
 		}
+		g.MakeNoise(EarthquakeNoise, cev.P)
+		g.Map.Noise[cev.P] = true
 	case DelayedHarmonicNoiseEvent:
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
-			g.Log("Pop!")
+			g.LogStyled("RING-RING!", logNotable)
 			g.Map.Noise[cev.P] = true
 			g.MakeNoise(DelayedHarmonicNoise, cev.P)
 		} else {
@@ -231,10 +231,8 @@ func (cev *PosEvent) Handle(g *Game) {
 // OricExplosion produces an oric explosion centered around the given position.
 func (g *Game) OricExplosion(at gruid.Point) {
 	g.Player.Statuses[StatusDelay] = 0
-	g.Log(g.CrackSound())
-	g.Map.Noise[at] = true
+	g.LogStyled(g.CrackSound(), logNotable)
 	mp := &OricExplosionPath{m: g.Map}
-	g.MakeNoise(OricExplosionNoise, at)
 	nodes := g.PR.DijkstraMap(mp, []gruid.Point{at}, 9)
 	ps := []gruid.Point{} // destroyed diggable tiles
 	for _, n := range nodes {
@@ -253,6 +251,8 @@ func (g *Game) OricExplosion(at gruid.Point) {
 		}
 		g.Fog(p, 1)
 	}
+	g.MakeNoise(OricExplosionNoise, at)
+	g.Map.Noise[at] = true
 	g.ComputeFOV()
 }
 

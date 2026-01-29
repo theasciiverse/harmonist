@@ -321,6 +321,7 @@ func (g *Game) ActivateQueenStone() {
 	mp := &NoisePath{g: g}
 	g.PR.BreadthFirstMap(mp, []gruid.Point{g.Player.P}, QueenStoneDistance)
 	g.Log("The stone releases confusing sounds.")
+	g.LogStyled("RING!", logNotable)
 	g.md.FOVWavesAnimation(QueenStoneDistance, WaveHarmonicNoise, g.Player.P)
 	for _, m := range g.Monsters {
 		if !m.Exists() {

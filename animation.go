@@ -476,9 +476,7 @@ func (md *model) PlayerGoodEffectAnimation() {
 	g := md.g
 	md.startAnimSeq()
 	md.anims.DrawColor(g.Player.P, ColorGreen)
-	md.anims.Frame(AnimDurShortMedium)
-	md.anims.DrawColor(g.Player.P, ColorYellow)
-	md.anims.Frame(AnimDurShortMedium)
+	md.anims.Frame(AnimDurMediumLong)
 }
 
 func (md *model) StatusEndAnimation() {
@@ -492,7 +490,7 @@ func (md *model) EffectAtPPAnimation(cl gruid.Color) {
 	g := md.g
 	md.startAnimSeq()
 	md.anims.DrawColor(g.Player.P, cl)
-	md.anims.Frame(AnimDurShortMedium)
+	md.anims.Frame(AnimDurMedium)
 }
 
 func (md *model) FoundFakeStairsAnimation() {

@@ -298,5 +298,5 @@ const (
 
 // ClangMsg returns text for a noisy hit.
 func (g *Game) ClangMsg() (sclang string) {
-	return " Smash!"
+	return "Smash!"
 }

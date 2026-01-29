@@ -647,7 +647,8 @@ func (m *Monster) AttackAction(g *Game) bool {
 func (m *Monster) Explode(g *Game) {
 	m.Dead = true
 	neighbors := g.CardinalNeighbors(m.P)
-	g.Logf("%s blows up! %s", m.Kind.Definite(true), g.ExplosionSound())
+	g.Logf("%s blows up!", m.Kind.Definite(true))
+	g.LogStyled(g.ExplosionSound(), logNotable)
 	g.Stats.NadreExplosions++
 	g.md.NadreExplosionAnimation(m.P)
 	g.MakeNoise(ExplosionNoise, m.P)
@@ -853,7 +854,7 @@ func (m *Monster) HandleMonsSpecifics(g *Game) (done bool) {
 		}
 	case MonsCrazyImp:
 		if g.Player.Sees(m.P) && RandInt(2) == 0 && !m.Status(MonsConfused) && !m.Status(MonsExhausted) {
-			g.LogStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logSpecial)
+			g.LogStyled("Crazy Imp: “♫ larilon, larila ♫ ♪”", logNotable)
 			g.MakeNoise(SingingNoise, m.P)
 			m.Exhaust(g)
 		}
@@ -1009,9 +1010,9 @@ func (m *Monster) HandleMove(g *Game) bool {
 				// XXX use dijkstra distance ?
 				switch t {
 				case WallCell:
-					g.Logf("%s You hear an earth-splitting noise.", g.CrackSound())
+					g.LogfStyled("%s You hear an earth-splitting noise.", logNotable, g.CrackSound())
 				case BarrelCell, DoorCell, TableCell:
-					g.Logf("%s You hear an wood-splitting noise.", g.CrackSound())
+					g.LogfStyled("%s You hear an wood-splitting noise.", logNotable, g.CrackSound())
 				}
 				g.StopAuto()
 			}
@@ -1172,7 +1173,10 @@ func (m *Monster) HitPlayer(g *Game) {
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.LogfStyled("%s hits you (1 dmg).%s", logDamage, m.Kind.Definite(true), sclang)
+	g.LogfStyled("%s hits you (1 dmg).", logDamage, m.Kind.Definite(true))
+	if sclang != "" {
+		g.LogStyled(sclang, logNotable)
+	}
 	m.InflictDamage(g)
 	if g.Player.HP <= 0 {
 		return
@@ -1463,8 +1467,10 @@ func (m *Monster) CreateBarrier(g *Game) bool {
 // Illuminate attemps to illuminate the player.
 func (m *Monster) Illuminate(g *Game) bool {
 	if g.PutStatus(StatusIlluminated, DurationIlluminated) {
-		g.LogStyled("The harmonic celmist casts magical harmonies on you.", logNotable)
+		g.Log("The harmonic celmist casts magical harmonies on you.")
+		g.LogStyled("Buzz!", logNotable)
 		g.StoryPrintf("Illuminated by %s", m.Kind)
+		g.md.EffectAtPPAnimation(ColorYellow)
 		g.MakeNoise(HarmonicNoise, g.Player.P)
 		m.Exhaust(g)
 		return true
@@ -1512,7 +1518,10 @@ func (m *Monster) ThrowJavelin(g *Game) bool {
 	if clang {
 		sclang = g.ClangMsg()
 	}
-	g.Logf("%s throws a javelin at you (1 dmg).%s", m.Kind.Definite(true), sclang)
+	g.Logf("%s throws a javelin at you (1 dmg).", m.Kind.Definite(true))
+	if sclang != "" {
+		g.LogStyled(sclang, logNotable)
+	}
 	g.StoryPrintf("Targeted by %s javelin", m.Kind)
 	g.md.JavelinThrowAnimation(g.Ray(m.P))
 	g.MakeNoise(noise, g.Player.P)
@@ -1566,7 +1575,7 @@ func (m *Monster) NixeAttraction(g *Game) bool {
 		return false
 	}
 	g.MakeNoise(MagicCastNoise, m.P)
-	g.LogfStyled("%s lures you to her.", logDamage, m.Kind.Definite(true))
+	g.Logf("%s lures you to her.", m.Kind.Definite(true))
 	g.StoryPrintf("Lured by %s", m.Kind)
 	g.md.TeleportAnimation(g.Player.P, ray[1], true)
 	g.PlacePlayerAt(ray[1])
@@ -1669,6 +1678,7 @@ func (m *Monster) MakeAware(g *Game) bool {
 	noticed := m.MakeHunt(g)
 	if noticed && m.Kind == MonsDog {
 		g.Logf("%s barks.", m.Kind.Definite(true))
+		g.LogStyled("WOOF!", logNotable)
 		g.StoryPrintf("Barked at by %s", m.Kind)
 		g.MakeNoise(BarkNoise, m.P)
 	}
