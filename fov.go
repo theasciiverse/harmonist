@@ -87,7 +87,7 @@ func (lt *lighter) MaxCost(src gruid.Point) int {
 	case MonsterRay:
 		return DefaultMonsterFOVRange + 1
 	case LightRay:
-		return LightRange
+		return LightRange + 1
 	default:
 		return DefaultFOVRange + 1
 	}
