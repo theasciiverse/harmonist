@@ -27,7 +27,7 @@ const (
 	FireMagara
 	FogMagara
 	ShadowsMagara
-	NoiseMagara
+	NoisesMagara
 	ConfusionMagara
 	SleepingMagara
 	TeleportOtherMagara
@@ -47,7 +47,7 @@ const (
 // purposes).
 func (mag Magara) Harmonic() bool {
 	switch mag.Kind {
-	case FogMagara, ShadowsMagara, NoiseMagara, ConfusionMagara,
+	case FogMagara, ShadowsMagara, NoisesMagara, ConfusionMagara,
 		SleepingMagara, DazingMagara, TransparencyMagara, DisguiseMagara,
 		DelayedNoiseMagara:
 		return true
@@ -72,13 +72,16 @@ func (mag Magara) Oric() bool {
 // DefaultCharges returns the default number of charges for a magara kind.
 func (m magaraKind) DefaultCharges() int {
 	switch m {
-	case LevitationMagara, ShadowsMagara, FogMagara, NoiseMagara, FireMagara, DelayedNoiseMagara:
+	case LevitationMagara, ShadowsMagara, FogMagara, NoisesMagara, FireMagara, DelayedNoiseMagara:
 		return 6
-	case DazingMagara, ObstructionMagara, TransparencyMagara, DispersalMagara, OricExplosionMagara:
+	case ObstructionMagara, TransparencyMagara, BlinkMagara, LignificationMagara, DispersalMagara:
 		return 5
 	case EnergyMagara:
 		return 1
 	default:
+		// ConfusionMagara, DigMagara, TeleportMagara, SwiftnessMagara,
+		// TeleportOtherMagara, SleepingMagara, SwappingMagara,
+		// DazingMagara, DisguiseMagara:
 		return 4
 	}
 }
@@ -87,7 +90,7 @@ func (m magaraKind) DefaultCharges() int {
 func (g *Game) RandomStartingMagara() Magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
-		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
+		ShadowsMagara, NoisesMagara, ConfusionMagara, SleepingMagara,
 		TeleportOtherMagara, SwappingMagara, DazingMagara,
 		ObstructionMagara, LignificationMagara, TransparencyMagara,
 		DelayedNoiseMagara, DisguiseMagara}
@@ -109,7 +112,7 @@ loop:
 func (g *Game) RandomMagara() Magara {
 	mags := []magaraKind{BlinkMagara, DigMagara, TeleportMagara,
 		SwiftnessMagara, LevitationMagara, FireMagara, FogMagara,
-		ShadowsMagara, NoiseMagara, ConfusionMagara, SleepingMagara,
+		ShadowsMagara, NoisesMagara, ConfusionMagara, SleepingMagara,
 		TeleportOtherMagara, SwappingMagara, DazingMagara,
 		ObstructionMagara, LignificationMagara, TransparencyMagara,
 		DelayedNoiseMagara, DisguiseMagara, EnergyMagara}
@@ -171,7 +174,7 @@ func (g *Game) UseMagara(i int) (err error) {
 		err = g.EvokeFog()
 	case ShadowsMagara:
 		err = g.EvokeShadows()
-	case NoiseMagara:
+	case NoisesMagara:
 		err = g.EvokeNoise()
 	case ConfusionMagara:
 		err = g.EvokeConfusion()
@@ -277,8 +280,8 @@ func (magk magaraKind) String() (desc string) {
 		desc = "magara of fog"
 	case ShadowsMagara:
 		desc = "magara of shadows"
-	case NoiseMagara:
-		desc = "magara of noise"
+	case NoisesMagara:
+		desc = "magara of noises"
 	case ConfusionMagara:
 		desc = "magara of confusion"
 	case SleepingMagara:
@@ -339,24 +342,24 @@ func (mag Magara) Desc(g *Game) (desc string) {
 		desc = "Creates a dense fog cloud in a 3-range radius using harmonic energies. The cloud will dissipate with time."
 	case ShadowsMagara:
 		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusShadows.String(), DurationShadows, StatusShadows.Desc())
-	case NoiseMagara:
+	case NoisesMagara:
 		desc = "Tricks monsters in a 12-range area with harmonic magical sounds, making them go away from you for a few turns. The possible monster destinations will be marked with noise symbols in the map. It only works on monsters that are not already seeing you."
 	case ConfusionMagara:
 		desc = fmt.Sprintf("Confuses monsters in sight with harmonic light, leaving them unable to attack you for %d turns.", DurationConfusionMonster)
 	case DazingMagara:
 		desc = fmt.Sprintf("Makes monsters in sight unable to act by disturbing their senses with harmonic illusions for %d turns.", DurationDazeMonster)
 	case SleepingMagara:
-		desc = "Induces deep sleeping and exhaustion for monsters you see in cardinal directions using hypnotic illusions."
+		desc = "Induces deep sleeping and exhaustion for monsters you see in cardinal directions using hypnotic harmonic illusions."
 	case TeleportOtherMagara:
 		desc = "Creates oric energy disturbances, teleporting monsters you see in cardinal directions."
 	case SwappingMagara:
-		desc = "Makes you swap positions with the farthest monster in sight. If there is more than one at the same distance, it will be chosen randomly."
+		desc = "Creates an oric distortion that makes you swap positions with the farthest monster in sight. If there is more than one at the same distance, it will be chosen randomly."
 	case ObstructionMagara:
 		desc = fmt.Sprintf("Creates temporal barriers with oric energy between you and monsters in sight. They last at least %d turns.", DurationMagicalBarrier)
 	case LignificationMagara:
 		desc = fmt.Sprintf("Liberates magical beams that lignify monsters in view, so that they cannot move for %d turns. The monsters can still fight.", DurationLignificationMonster)
 	case EnergyMagara:
-		desc = "Replenishes your MP and HP."
+		desc = "Replenishes your MP and HP. Unlike other magaras, it doesn’t require MP to use."
 	case TransparencyMagara:
 		desc = fmt.Sprintf("Gives @B%s@N for %d turns. %s", StatusTransparent.String(), DurationTransparency, StatusTransparent.Desc())
 	case DisguiseMagara:
