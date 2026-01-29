@@ -384,20 +384,17 @@ func (g *Game) DeepChasmDepth() bool {
 // PlayerBump handles player "bump" movement.
 func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 	if !InMap(p) {
-		err = g.WallJump(p)
-		return
+		return g.WallJump(p)
 	}
 	t := g.Map.At(p)
 	switch t {
 	case BarrierCell:
 		if !g.Player.HasStatus(StatusLevitation) {
-			err = g.WallJump(p)
-			return
+			return g.WallJump(p)
 		}
 	case WallCell, WindowCell:
 		if !g.Player.HasStatus(StatusDig) {
-			err = g.WallJump(p)
-			return
+			return g.WallJump(p)
 		}
 	case BarrelCell:
 		if g.MonsterFOV[g.Player.P] {

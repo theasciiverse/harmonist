@@ -190,14 +190,14 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 }
 
 // WallJump performs a jump by propulsing off a wall.
-func (g *Game) WallJump(p gruid.Point) error {
+func (g *Game) WallJump(p gruid.Point) (bool, error) {
 	from := g.Player.P
 	t := g.Map.At(from)
 	if IsEnclosing(t) {
-		return fmt.Errorf("You cannot jump from %s.", g.TerrainShortDesc(t, from))
+		return false, fmt.Errorf("You cannot jump from %s.", g.TerrainShortDesc(t, from))
 	}
 	if g.Player.HasStatus(StatusExhausted) {
-		return errors.New("You cannot jump while exhausted.")
+		return false, errors.New("You cannot jump while exhausted.")
 	}
 	dir := DirNorm(p, from)
 	jp, free, reach := from, from, from // last jump-passable/free/reachable tile
@@ -212,31 +212,37 @@ func (g *Game) WallJump(p gruid.Point) error {
 		}
 		free = jp
 	}
+	abyssJump := func() (bool, error) {
+		if g.Map.At(jp) != ChasmCell || g.Player.HasStatus(StatusLevitation) {
+			return false, nil
+		}
+		if g.Player.Sees(jp) {
+			return true, g.AbyssJump()
+		}
+		// Fall into (unseen) the abyss.
+		g.PushEventFirst(AbyssFallEvent{}, g.Turn)
+		return true, nil
+	}
 	switch {
 	case jp == from:
-		return errors.New("There’s not enough room for a wall-jump.")
+		return false, errors.New("There’s not enough room for a wall-jump.")
 	case free == from:
 		if m := g.MonsterAt(from.Add(dir)); m.Exists() {
 			// If there's no free tile to jump and a monster is
 			// next to you, perform a classic over-monster jump.
-			if ok, err := g.Jump(m); ok {
-				return err
-			}
+			return g.Jump(m)
 		}
-		if g.Map.At(jp) == ChasmCell {
-			if g.Player.Sees(jp) {
-				return g.AbyssJump()
-			} else {
-				// Fall into (unseen) the abyss.
-				g.PushEventFirst(AbyssFallEvent{}, g.Turn)
-				return nil
-			}
+		if ok, err := abyssJump(); ok {
+			return ok, err
 		}
 		// Very rarely, just freely find a jump target, nearby if
 		// possible, like when jumping over a monster.
 		free = g.FindJumpTarget(from.Add(dir))
 	case Distance(free, from) == 1 && g.Player.Sees(reach):
-		return errors.New("Wall-jumping from there is useless.")
+		if ok, err := abyssJump(); ok {
+			return ok, err
+		}
+		return false, errors.New("Wall-jumping from there is useless.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body.Kind != CloakAcrobat {
 		g.PutStatus(StatusExhausted, DurationExhaustion)
@@ -248,7 +254,7 @@ func (g *Game) WallJump(p gruid.Point) error {
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}
-	return nil
+	return true, nil
 }
 
 // HitNoise returns the amount of noise corresponding to a hit.
