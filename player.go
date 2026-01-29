@@ -247,22 +247,7 @@ func (g *Game) Teleportation() bool {
 		g.LogStyled("You resist teleportation while lignified.", logNotable)
 		return false
 	}
-	var p gruid.Point
-	i := 0
-	count := 0
-	for {
-		count++
-		if count > maxIterations {
-			panic("Teleportation")
-		}
-		p = g.FreePassableCell()
-		if Distance(p, g.Player.P) < 15 && i < maxIterations {
-			i++
-			continue
-		}
-		break
-
-	}
+	p := g.TeleportPos()
 	if InMap(p) {
 		// should always happen
 		opos := g.Player.P
@@ -274,6 +259,23 @@ func (g *Game) Teleportation() bool {
 		g.Log("Something went wrong with the teleportation.")
 	}
 	return true
+}
+
+// TeleportPos returns a position suitable for teleportation.
+func (g *Game) TeleportPos() gruid.Point {
+	count := 0
+	for {
+		count++
+		if count > maxIterations {
+			panic("Teleportation")
+		}
+		p := g.FreePassableCell()
+		if Distance(p, g.Player.P) < 15 && count < maxIterations/2 {
+			continue
+		}
+		return p
+
+	}
 }
 
 // MaxBananas represents the maximum number of bananas the player can carry.

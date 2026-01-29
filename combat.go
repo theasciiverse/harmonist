@@ -99,26 +99,32 @@ func (m *Monster) LeaveRoomForPlayer(g *Game) gruid.Point {
 // (or else the player would be blocked). Thematically, we can think that the
 // gawalt propulses itself using the monsters (so several small jumps in a
 // row).
-func (g *Game) FindJumpTarget(m *Monster) gruid.Point {
+func (g *Game) FindJumpTarget(p gruid.Point) gruid.Point {
 	mp := &JumpPath{g: g}
-	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{m.P}, 10)
+	nodes := g.PR.BreadthFirstMap(mp, []gruid.Point{p}, 10)
 	free := invalidPos
 	dist := unreachable
 	for _, n := range nodes {
 		if !g.PlayerCanJumpTo(n.P) {
 			continue
 		}
-		if n.P == g.Player.P || n.P == m.P {
+		if n.P == g.Player.P || n.P == p {
 			continue
 		}
 		mons := g.MonsterAt(n.P)
 		if mons.Exists() {
 			continue
 		}
-		if Distance(n.P, m.P) < dist {
+		if Distance(n.P, p) < dist {
 			free = n.P
-			dist = Distance(n.P, m.P)
+			dist = Distance(n.P, p)
 		}
+	}
+	if !g.PlayerCanPass(p) {
+		// Very rarely, if there is no passable position nearby, we
+		// just choose a teleport one, which makes no sense, but is a
+		// simple way to handle an extremely rare edge-case.
+		free = g.TeleportPos()
 	}
 	// free should be valid except in really rare cases
 	return free
@@ -161,12 +167,9 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 		}
 	}
 	if !g.PlayerCanJumpTo(p) {
-		p = g.FindJumpTarget(mons)
-		if !g.PlayerCanPass(p) {
+		p = g.FindJumpTarget(mons.P)
+		if !InMap(p) {
 			// should not happen in practice, but better safe than sorry
-			if g.Teleportation() {
-				return false, nil
-			}
 			return false, errors.New("You cannot jump there.")
 		}
 	}
@@ -188,52 +191,59 @@ func (g *Game) Jump(mons *Monster) (bool, error) {
 
 // WallJump performs a jump by propulsing off a wall.
 func (g *Game) WallJump(p gruid.Point) error {
-	t := g.Map.At(g.Player.P)
+	from := g.Player.P
+	t := g.Map.At(from)
 	if IsEnclosing(t) {
-		return fmt.Errorf("You cannot jump from %s.", g.TerrainShortDesc(t, g.Player.P))
+		return fmt.Errorf("You cannot jump from %s.", g.TerrainShortDesc(t, from))
 	}
 	if g.Player.HasStatus(StatusExhausted) {
 		return errors.New("You cannot jump while exhausted.")
 	}
-	dir := DirNorm(p, g.Player.P)
-	p = g.Player.P
-	q := p
-	count := 0
-	path := []gruid.Point{q}
-	for count < 4 {
-		p = p.Add(dir)
-		if !g.PlayerCanJumpPass(p) {
+	dir := DirNorm(p, from)
+	jp, free, reach := from, from, from // last jump-passable/free/reachable tile
+	for range 3 {
+		reach = reach.Add(dir)
+		if !g.PlayerCanJumpPass(reach) {
 			break
 		}
-		count++
-		q = p
-		path = append(path, q)
-		m := g.MonsterAt(p)
-		if !m.Exists() && count == 3 {
-			break
+		jp = reach
+		if m := g.MonsterAt(jp); m.Exists() || !g.PlayerCanPass(jp) {
+			continue
 		}
+		free = jp
 	}
-	m := g.MonsterAt(q)
-	if m.Exists() {
-		return errors.New("There’s not enough room to jump.")
-	}
-	if count == 3 && !g.PlayerCanPass(q) {
-		q = path[len(path)-2]
-		m := g.MonsterAt(q)
-		if m.Exists() {
-			return errors.New("There’s not enough room to jump.")
+	switch {
+	case jp == from:
+		return errors.New("There’s not enough room for a wall-jump.")
+	case free == from:
+		if m := g.MonsterAt(from.Add(dir)); m.Exists() {
+			// If there's no free tile to jump and a monster is
+			// next to you, perform a classic over-monster jump.
+			if ok, err := g.Jump(m); ok {
+				return err
+			}
 		}
-		path = path[:len(path)-1]
-	}
-	if !g.PlayerCanPass(q) || (count != 3 && count != 2) {
-		return errors.New("There’s not enough room to jump.")
+		if g.Map.At(jp) == ChasmCell {
+			if g.Player.Sees(jp) {
+				return g.AbyssJump()
+			} else {
+				// Fall into (unseen) the abyss.
+				g.PushEventFirst(AbyssFallEvent{}, g.Turn)
+				return nil
+			}
+		}
+		// Very rarely, just freely find a jump target, nearby if
+		// possible, like when jumping over a monster.
+		free = g.FindJumpTarget(from.Add(dir))
+	case Distance(free, from) == 1 && g.Player.Sees(reach):
+		return errors.New("Wall-jumping from there is useless.")
 	}
 	if !g.Player.HasStatus(StatusSwift) && g.Player.Inventory.Body.Kind != CloakAcrobat {
 		g.PutStatus(StatusExhausted, DurationExhaustion)
 	}
 	g.Log("You jump by propelling yourself against the wall.")
-	g.md.PushAnimation(path)
-	g.PlacePlayerAt(q)
+	g.PlacePlayerAt(free)
+	g.md.MoveAnimation(from, free)
 	g.Stats.WallJumps++
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)

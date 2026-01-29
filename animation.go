@@ -520,6 +520,33 @@ func (md *model) PushAnimation(path []gruid.Point) {
 	md.anims.Frame(AnimDurMediumLong)
 }
 
+// MoveAnimation animates an actor's straight movement between two positions
+// (possibly adjacent).
+func (md *model) MoveAnimation(from, to gruid.Point) {
+	if DisableAnimations {
+		return
+	}
+	if from == to {
+		// should not happen
+		return
+	}
+	done := false
+	delta := to.Sub(from)
+	delta = delta.Div(max(delta.X, -delta.X, delta.Y, -delta.Y))
+	for p := from; p != to; p = p.Add(delta) {
+		if md.g.Player.Sees(p) {
+			if !done {
+				done = true
+				md.startAnimSeq()
+			}
+			md.anims.Draw(p, '×', ColorForeground)
+		}
+	}
+	if done {
+		md.anims.Frame(AnimDurMedium)
+	}
+}
+
 func (md *model) AbyssFallAnimation() {
 	if DisableAnimations {
 		return

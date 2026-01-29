@@ -138,10 +138,7 @@ type JumpPath struct {
 }
 
 func (jp *JumpPath) Neighbors(p gruid.Point) []gruid.Point {
-	keep := func(q gruid.Point) bool {
-		return jp.g.PlayerCanPass(q)
-	}
-	nbs := jp.nbs.Cardinal(p, keep)
+	nbs := jp.nbs.Cardinal(p, jp.g.PlayerCanPass)
 	nbs = jp.g.ShufflePos(nbs)
 	return nbs
 }
