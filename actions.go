@@ -926,7 +926,7 @@ func (md *model) helpItems() {
 
 @CBarrels@N are found in every level. You can hide within them as long as nobody can see you while doing so. You can eat a banana and rest inside using the @MInteract Key@N(e) to recover both HP and MP.
 
-@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
+@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges and also require MP to use. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
 
 @CCloaks@N are magical items found on some levels. They can be equipped using the @MInteract Key@N(e) and offer some kind of passive benefit.
 
