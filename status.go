@@ -361,6 +361,10 @@ func (md *model) updateStatusInfo() {
 		entries = append(entries, ui.MenuEntry{
 			Text:     stt.WithText("@RDead@N "),
 			Disabled: true})
+	case g.md.mode == modeStory:
+		entries = append(entries, ui.MenuEntry{
+			Text:     stt.WithText("@M[Story]@N "),
+			Disabled: true})
 	case g.win:
 		entries = append(entries, ui.MenuEntry{
 			Text:     stt.WithText("@BEscaped!@N "),

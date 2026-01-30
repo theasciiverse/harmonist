@@ -680,6 +680,7 @@ func (md *model) EndTurn() gruid.Effect {
 		md.death()
 		return nil
 	}
+	md.g.CheckForStorySequence()
 	if md.critical {
 		md.g.LogStyled("*** CRITICAL HP WARNING ***", logDamage)
 		md.critical = false

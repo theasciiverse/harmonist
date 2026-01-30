@@ -733,7 +733,6 @@ func (g *Game) EndTurn() {
 			}
 		case EndTurnEvent:
 			g.ProgressNoise()
-			g.CheckForStorySequence()
 			return
 		case Event:
 			ev.Handle(g)
@@ -775,9 +774,6 @@ func (g *Game) CheckForStorySequence() {
 		// places, we cannot free Shaedra yet.
 		return
 	}
-	// We compute field of view again to ensure that it's up-to-date before
-	// checking whether we see Shaedra or not.
-	g.ComputeFOV()
 	if !g.Player.Sees(p) {
 		return
 	}
@@ -789,7 +785,6 @@ func (g *Game) CheckForStorySequence() {
 	}
 	// We liberate Shaedra and start story sequence.
 	g.LiberatedShaedra = true
-	g.LogStyled("You see Shaedra. She is wounded!", logNotable)
 	g.LogStyled("Shaedra: “Oh, it’s you, Syu! Let’s flee with Marevor’s magara!”", logSpecial)
 	g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 	g.md.mode = modeStory
