@@ -74,7 +74,8 @@ func (m magaraKind) DefaultCharges() int {
 	switch m {
 	case LevitationMagara, ShadowsMagara, FogMagara, NoisesMagara, FireMagara, DelayedNoiseMagara:
 		return 6
-	case ObstructionMagara, TransparencyMagara, BlinkMagara, LignificationMagara, DispersalMagara:
+	case ObstructionMagara, TransparencyMagara, BlinkMagara, LignificationMagara,
+		OricExplosionMagara, DispersalMagara:
 		return 5
 	case EnergyMagara:
 		return 1
