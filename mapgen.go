@@ -126,8 +126,10 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 		nspecial--
 		normal--
 	}
+	barrels := 4
 	switch ml {
 	case RandomWalkCave:
+		barrels--
 		mg.genVaults(vaultBigTemplates, nspecial-1, PlacementRandom)
 		mg.genVaults(vaultNormalTemplates, normal, PlacementRandom)
 	case RandomWalkTreeCave:
@@ -138,6 +140,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 		mg.genVaults(vaultBigTemplates, nspecial, PlacementRandom)
 		mg.genVaults(vaultNormalTemplates, normal+5, PlacementRandom)
 	case NaturalCave:
+		barrels--
 		nspecial++
 		if g.Map.Depth == WinDepth {
 			nspecial += 2
@@ -176,7 +179,7 @@ func (g *Game) GenMapWithLayout(ml maplayout) {
 			mg.genFakeStairs(g)
 		}
 	}
-	for i := 0; i < 4+mg.rand.IntN(2); i++ {
+	for i := 0; i < barrels+mg.rand.IntN(2); i++ {
 		mg.genBarrel(g)
 	}
 	mg.addSpecialFeatures(g, ml)
