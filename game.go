@@ -320,13 +320,14 @@ func (g *Game) InitFirstLevel() {
 		}
 	}
 	g.Params.ExtraBanana = map[int]int{}
-	for i := range 2 {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)]++
+	// Guaranteed extra banana in late game.
+	g.Params.ExtraBanana[6+RandInt(6)]++
+	// Extra banana in random level (except first).
+	g.Params.ExtraBanana[2+RandInt(10)]++
+	for range 2 {
+		// Less bananas in early-mid game.
+		g.Params.ExtraBanana[1+RandInt(7)]--
 	}
-	for i := range 2 {
-		g.Params.ExtraBanana[1+5*i+RandInt(5)]--
-	}
-
 	g.Params.Windows = map[int]bool{}
 	if RandInt(MaxDepth) > MaxDepth/2 {
 		g.Params.Windows[2+RandInt(MaxDepth-1)] = true
