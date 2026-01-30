@@ -14,8 +14,8 @@ type Map struct {
 	KnownTerrain    rl.Grid                 // player's terrain knowledge
 	MagicalBarriers map[gruid.Point]rl.Cell // original terrain (under the barrier)
 	Clouds          map[gruid.Point]Cloud   // clouds
-	Noise           map[gruid.Point]bool    // noise sources
-	NoiseIllusion   map[gruid.Point]bool    // harmonic noise from noise magara
+	Noise           map[gruid.Point]int     // noise sources
+	NoiseIllusion   map[gruid.Point]int     // harmonic noise from noise magara
 }
 
 // At returns the terrain cell at the given point.

@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v0.7.0-dev.18"
+var Version string = "v0.7.0-dev.19"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as
@@ -212,6 +212,7 @@ func (g *Game) InitPlayer() {
 	// Testing
 	// g.Player.Inventory.Body = Item{Kind: CloakHear}
 	// g.Player.Inventory.Neck = Item{Kind: AmuletDazing}
+	g.Player.Magaras[1] = Magara{Kind: NoisesMagara, Charges: 10}
 	// g.Player.Magaras[1] = Magara{Kind: SwiftnessMagara, Charges: 10}
 	// g.Player.Magaras[2] = Magara{Kind: NoiseMagara, Charges: 10}
 	// g.Player.Magaras[3] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}
@@ -395,8 +396,8 @@ func putRandomLevels(m map[int]bool, n int) {
 
 // InitLevelStructures (re-)initializes various level-specific structures.
 func (g *Game) InitLevelStructures() {
-	g.Map.Noise = map[gruid.Point]bool{}
-	g.Map.NoiseIllusion = map[gruid.Point]bool{}
+	g.Map.Noise = map[gruid.Point]int{}
+	g.Map.NoiseIllusion = map[gruid.Point]int{}
 	g.Map.MagicalBarriers = map[gruid.Point]rl.Cell{}
 	g.Map.Clouds = map[gruid.Point]Cloud{}
 	g.MonstersPosCache = make([]int, MapSize)
@@ -713,7 +714,6 @@ func (g *Game) Died() bool {
 
 // EndTurn finalizes a turn.
 func (g *Game) EndTurn() {
-	clear(g.Map.Noise)
 	g.Events.Push(EndTurnEvent{}, g.Turn+DurationTurn)
 	for {
 		if g.Died() {
@@ -732,12 +732,31 @@ func (g *Game) EndTurn() {
 				return
 			}
 		case EndTurnEvent:
+			g.ProgressNoise()
 			g.CheckForStorySequence()
 			return
 		case Event:
 			ev.Handle(g)
 		default:
 			log.Printf("bad event: %v", ev)
+		}
+	}
+}
+
+// ProgressNoise decrease noise counters.
+func (g *Game) ProgressNoise() {
+	for p, n := range g.Map.Noise {
+		if n <= 1 {
+			delete(g.Map.Noise, p)
+		} else {
+			g.Map.Noise[p]--
+		}
+	}
+	for p, n := range g.Map.NoiseIllusion {
+		if n <= 1 {
+			delete(g.Map.NoiseIllusion, p)
+		} else {
+			g.Map.NoiseIllusion[p]--
 		}
 	}
 }

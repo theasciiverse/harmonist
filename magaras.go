@@ -761,7 +761,7 @@ func (g *Game) EvokeNoise() error {
 		}
 		mons.Target = target
 		noises = append(noises, target)
-		g.Map.NoiseIllusion[target] = true
+		g.Map.NoiseIllusion[target] = 3
 	}
 	g.Log("Monsters are tricked by magical sounds.")
 	g.md.NoiseAnimation(noises)

@@ -195,10 +195,10 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		if mons := g.MonsterAt(p); mons.Exists() && mons.Noise {
 			r = '♫'
 			fgColor = mons.noiseColor()
-		} else if g.Map.Noise[p] {
+		} else if g.Map.Noise[p] > 0 {
 			r = '♪'
 			fgColor = ColorMagenta
-		} else if g.Map.NoiseIllusion[p] {
+		} else if g.Map.NoiseIllusion[p] > 0 {
 			r = '♪'
 			fgColor = ColorCyan
 		}
@@ -275,10 +275,10 @@ func (md *model) positionDrawing(p gruid.Point) (r rune, fgColor, bgColor gruid.
 		} else if mons := g.MonsterAt(p); mons.Exists() && mons.Noise {
 			r = '♫'
 			fgColor = mons.noiseColor()
-		} else if g.Map.Noise[p] {
+		} else if g.Map.Noise[p] > 0 {
 			r = '♪'
 			fgColor = ColorMagenta
-		} else if g.Map.NoiseIllusion[p] {
+		} else if g.Map.NoiseIllusion[p] > 0 {
 			r = '♪'
 			fgColor = ColorCyan
 		} else if mons := g.KnownMonsterAt(p); mons.Exists() {

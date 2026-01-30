@@ -205,12 +205,12 @@ func (cev *PosEvent) Handle(g *Game) {
 			g.Fog(p, 1)
 		}
 		g.MakeNoise(EarthquakeNoise, cev.P)
-		g.Map.Noise[cev.P] = true
+		g.Map.Noise[cev.P] = 3
 	case DelayedHarmonicNoiseEvent:
 		if cev.Timer <= 1 {
 			g.Player.Statuses[StatusDelay] = 0
 			g.LogStyled("RING-RING!", logNotable)
-			g.Map.Noise[cev.P] = true
+			g.Map.Noise[cev.P] = 3
 			g.MakeNoise(DelayedHarmonicNoise, cev.P)
 		} else {
 			cev.Timer--
@@ -252,7 +252,7 @@ func (g *Game) OricExplosion(at gruid.Point) {
 		g.Fog(p, 1)
 	}
 	g.MakeNoise(OricExplosionNoise, at)
-	g.Map.Noise[at] = true
+	g.Map.Noise[at] = 3
 	g.ComputeFOV()
 }
 
