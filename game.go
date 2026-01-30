@@ -212,7 +212,6 @@ func (g *Game) InitPlayer() {
 	// Testing
 	// g.Player.Inventory.Body = Item{Kind: CloakHear}
 	// g.Player.Inventory.Neck = Item{Kind: AmuletDazing}
-	g.Player.Magaras[1] = Magara{Kind: NoisesMagara, Charges: 10}
 	// g.Player.Magaras[1] = Magara{Kind: SwiftnessMagara, Charges: 10}
 	// g.Player.Magaras[2] = Magara{Kind: NoiseMagara, Charges: 10}
 	// g.Player.Magaras[3] = Magara{Kind: DelayedOricExplosionMagara, Charges: 10}
