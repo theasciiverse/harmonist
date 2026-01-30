@@ -52,8 +52,8 @@ Improved and reworked content:
   been removed, as it wasn't reliable either in emergency situations.
 * Now rubble blocks vision, like in Shamogu. Previously, it only prevented
   illumination, which was not much.
-* Some minor improvements in various vaults by better randomizing some parts of
-  them.
+* Some minor variety improvements in various vaults by better randomizing some
+  parts of them.
 
 UI, graphics, QoL:
 
@@ -70,6 +70,8 @@ UI, graphics, QoL:
   similar change in Shamogu).
 * Some tile drawings have been improved, including some improvements from
   Shamogu, like a more visible `?` sign on the exploration frontier.
+* Various animation improvements. Also, now logs and status bar get updated
+  incrementally during animations.
 * *Many other small UI improvements and fixes*, including many inspired from
   Shamogu, like status bar and menu improvements, as well as updated/fixed
   titles in messages and end of game summary pager windows.
@@ -92,6 +94,11 @@ Fixes:
   stairs (that made swapping and teleport the only ways to get to such place,
   which was kind of fun, but problematic). It was very rare, but somehow not
   impossible.
+* Better handle some edge-cases when monsters swap positions between them (they
+  previously could sometimes swap with satowalga plants and lignified
+  monsters).
+* Fix edge-case with light propagation where lights at a room corner could
+  sometimes leak outside diagonally.
 * Minor fix in story sequence when liberating Shaedra: half of the story
   sequence animation could happen out of view if a nixe or some other monsters
   moved you away during the same turn you reached Shaedra. Now the story
