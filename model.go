@@ -131,6 +131,10 @@ func (md *model) initKeys() {
 		gruid.KeyEnter:      ActionWaitTurn,
 		"o":                 ActionExplore,
 		"x":                 ActionExamineToggle,
+		"u":                 ActionExamineScrollUp,
+		gruid.KeyPageUp:     ActionExamineScrollUp,
+		"d":                 ActionExamineScrollDown,
+		gruid.KeyPageDown:   ActionExamineScrollDown,
 		"v":                 ActionEvoke,
 		"V":                 ActionEvoke,
 		"z":                 ActionEvoke,
@@ -454,16 +458,6 @@ func (md *model) updateKeyDown(msg gruid.MsgKeyDown) gruid.Effect {
 	md.statusFocus = false
 	if !md.targ.kbTargeting && InMap(md.targ.ex.p) {
 		md.CancelExamine()
-	}
-	if md.targ.ex.p != invalidPos {
-		switch msg.Key {
-		case gruid.KeyPageDown:
-			md.targ.ex.scroll++
-			return nil
-		case gruid.KeyPageUp:
-			md.targ.ex.scroll = 0
-			return nil
-		}
 	}
 	again, eff, err := md.normalModeKeyDown(msg.Key, msg.Mod&gruid.ModShift != 0)
 	if err != nil {

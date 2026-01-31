@@ -37,6 +37,8 @@ const (
 	ActionDescend
 	ActionExplore
 	ActionExamineToggle
+	ActionExamineScrollUp
+	ActionExamineScrollDown
 	ActionEvoke
 	ActionInteract
 	ActionInventory
@@ -85,6 +87,8 @@ var ConfigurableKeyActions = [...]Action{
 	ActionInteract,
 	ActionInventory,
 	ActionExamineToggle,
+	ActionExamineScrollUp,
+	ActionExamineScrollDown,
 	ActionLogs,
 	ActionPreviousMonster,
 	ActionNextMonster,
@@ -123,6 +127,10 @@ func (k Action) String() (text string) {
 		text = "Descend stairs"
 	case ActionExamineToggle:
 		text = "Examine"
+	case ActionExamineScrollUp:
+		text = "Scroll examine boxes up"
+	case ActionExamineScrollDown:
+		text = "Scroll examine boxes down"
 	case ActionEvoke:
 		text = "Evoke card"
 	case ActionInteract:
@@ -403,6 +411,12 @@ func (md *model) DoAction(action Action) (again bool, eff gruid.Effect, err erro
 		} else {
 			md.KeyboardExamine()
 		}
+	case ActionExamineScrollUp:
+		again = true
+		md.targ.ex.scroll = 0
+	case ActionExamineScrollDown:
+		again = true
+		md.targ.ex.scroll++
 	case ActionHelpMenu:
 		again = true
 		md.openHelp()
@@ -819,6 +833,7 @@ func (md *model) keysHelp() {
 		"Close menu, inventory...", "SPACE or ESC or mouse left outside",
 		"Advanced Game Actions", "",
 		"View previous messages", "m",
+		"Scroll examine boxes up/down", "u/d or page up/down or mouse scroll",
 		"Examine previous/next monster", "- +",
 		"Examine next stair/magical item", "> n",
 		"Run (auto-move in direction)", "shift+arrows or HJKL",
