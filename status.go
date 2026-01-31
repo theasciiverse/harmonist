@@ -161,7 +161,7 @@ func (st status) Short() string {
 	case StatusSwift:
 		return "Sw"
 	case StatusLignification:
-		return "Lgf"
+		return "Lig"
 	case StatusConfusion:
 		return "Co"
 	case StatusFlames:
@@ -175,7 +175,7 @@ func (st status) Short() string {
 	case StatusLight:
 		return "Lit"
 	case StatusLevitation:
-		return "Lvt"
+		return "Lev"
 	case StatusShadows:
 		return "Sh"
 	case StatusIlluminated:
@@ -183,11 +183,11 @@ func (st status) Short() string {
 	case StatusTransparent:
 		return "Tr"
 	case StatusDisguised:
-		return "Dgs"
+		return "Dg"
 	case StatusDelay:
 		return "Del"
 	case StatusDispersal:
-		return "Dps"
+		return "Dp"
 	default:
 		// should not happen
 		return "?"
