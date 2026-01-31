@@ -183,7 +183,7 @@ func (st status) Short() string {
 	case StatusTransparent:
 		return "Tr"
 	case StatusDisguised:
-		return "Dg"
+		return "Dgs"
 	case StatusDelay:
 		return "Del"
 	case StatusDispersal:
