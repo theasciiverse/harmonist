@@ -157,13 +157,13 @@ func (st status) Desc() string {
 func (st status) Short() string {
 	switch st {
 	case StatusExhausted:
-		return "Ex"
+		return "Exh"
 	case StatusSwift:
 		return "Sw"
 	case StatusLignification:
 		return "Lig"
 	case StatusConfusion:
-		return "Co"
+		return "Con"
 	case StatusFlames:
 		return "Fl"
 	case StatusHidden:
@@ -179,7 +179,7 @@ func (st status) Short() string {
 	case StatusShadows:
 		return "Sh"
 	case StatusIlluminated:
-		return "Il"
+		return "Ill"
 	case StatusTransparent:
 		return "Tr"
 	case StatusDisguised:
