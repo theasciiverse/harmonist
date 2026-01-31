@@ -128,9 +128,9 @@ func (k Action) String() (text string) {
 	case ActionExamineToggle:
 		text = "Examine"
 	case ActionExamineScrollUp:
-		text = "Scroll examine boxes up"
+		text = "Scroll description boxes up"
 	case ActionExamineScrollDown:
-		text = "Scroll examine boxes down"
+		text = "Scroll description boxes down"
 	case ActionEvoke:
 		text = "Evoke card"
 	case ActionInteract:
@@ -833,7 +833,7 @@ func (md *model) keysHelp() {
 		"Close menu, inventory...", "SPACE or ESC or mouse left outside",
 		"Advanced Game Actions", "",
 		"View previous messages", "m",
-		"Scroll examine boxes up/down", "u/d or page up/down or mouse scroll",
+		"Scroll description boxes up/down", "u/d or page up/down or mouse scroll",
 		"Examine previous/next monster", "- +",
 		"Examine next stair/magical item", "> n",
 		"Run (auto-move in direction)", "shift+arrows or HJKL",
