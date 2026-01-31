@@ -926,11 +926,13 @@ func (md *model) helpItems() {
 
 @CBarrels@N are found in every level. You can hide within them as long as nobody can see you while doing so. You can eat a banana and rest inside using the @MInteract Key@N(e) to recover both HP and MP.
 
-@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges and also require MP to use. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
+@CPotions@N are found on most levels and drunk by moving onto them.
+
+@CAmulets@N are magical items found on some levels. They can be equipped using the @MInteract Key@N(e) and offer special protection when being critically hit (left with 1 HP).
 
 @CCloaks@N are magical items found on some levels. They can be equipped using the @MInteract Key@N(e) and offer some kind of passive benefit.
 
-@CAmulets@N are magical items found on some levels. They can be equipped using the @MInteract Key@N(e) and offer special protection when being critically hit (left with 1 HP).
+@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges and also require MP to use. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
 
 @CMagical Stones@N are static items found in every level. Pressing the @MInteract Key@N(e) will activate them.
 
@@ -945,7 +947,7 @@ func (md *model) helpStatuses() {
 	var sb strings.Builder
 	sb.WriteString(`@YCOLORS@N
 
-In the status bar and descriptions, positive status effects are shown as @BBlue@N and negative ones are @RRed@N, while statuses that are neither are shown as @YYellow@N.
+In the status bar and descriptions, positive status effects are shown as @BBlue@N, and negative ones are @RRed@N, while statuses that are neither are shown as @YYellow@N.
 
 On the map, monster color may change depending on active status effects.  By default, status-free wandering monsters are @OOrange@N and hunting monsters are @RRed@N. Peaceful monsters are @BBlue@N and sleeping ones are @VViolet@N. @YYellow@N indicates lignification, @GGreen@N confusion, @CCyan@N daze.`)
 	sb.WriteString("\n\n")
@@ -965,7 +967,7 @@ On the map, monster color may change depending on active status effects.  By def
 	}
 	sb.WriteString(`@YMONSTER STATUSES@N`)
 	sb.WriteString("\n\n")
-	sb.WriteString(`Monster statuses are less varied than player ones in Harmonist. Most happen as the result as using some magaras.
+	sb.WriteString(`Monster statuses are less varied than player ones in Harmonist. Most happen as the result of using some magaras.
 
 @YLignified@N monsters cannot move, but may attack you if adjacent, while @Cdazed@N monsters cannot act at all, and @Gconfused@N monsters can move as usual but cannot attack you. Some monsters may become exhausted or @Bsatiated@N after performing some special techniques and need to wait a few turns before performing them again.`)
 	sb.WriteString("\n\n")
@@ -1005,7 +1007,7 @@ Try to take advantage of the various different kinds of terrains, like foliage, 
 
 Magical stones can be useful for facilitating escape or incapacitating monsters in various ways, but they are also interesting for their map-revealing effects, so you might sometimes want to use some of them even if there are no monsters around. It may help exploration.
 
-@CJumping off a wall@N is a useful escape tactic that can make you avoid harm even if cornered in a dead-end. However, it’s of course usually better to avoid dead-ends if you can! In the worst case, you can jump over a monster, too, though that will give the monster time to hit you once.
+@CJumping off a wall@N is a useful escape tactic that can make you avoid harm even if cornered in a dead-end. However, it’s of course usually better to avoid dead-ends if you can! Otherwise, without a wall for propulsion, you can still perform a shorter jump over a monster, though that will give the monster time to hit you once.
 
 Monsters don’t look behind diagonally, so performing lateral evasion tactics in the open is a simple way to escape an adjacent monster’s field of view by getting into one of its blind corners.
 
