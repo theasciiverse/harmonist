@@ -947,7 +947,7 @@ func (md *model) helpItems() {
 
 @CCloaks@N are magical items found on some levels. They can be equipped using the @MInteract Key@N(e) and offer some kind of passive benefit.
 
-@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v). They have a finite number of charges and also require MP to use. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
+@CMagaras@N are found once on most levels. They are magical rods that you can equip by moving onto them and then @MEvoke@N(v) to use them. They have a finite number of charges and also require MP to use. When all magara slots are filled, you’ll have to equip any new one with the @MInteract Key@N(e) and select another magara to leave on the ground. That action will spend one turn.
 
 @CMagical Stones@N are static items found in every level. Pressing the @MInteract Key@N(e) will activate them.
 
