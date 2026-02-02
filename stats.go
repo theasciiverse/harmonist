@@ -155,7 +155,7 @@ const (
 	AchDoors               Achievement = "Door Opener"
 	AchBarrels             Achievement = "Barrel Enthousiast"
 	AchExtinguisher        Achievement = "Light Extinguisher"
-	AchLoreStudent         Achievement = "Lore student"
+	AchLoreStudent         Achievement = "Lore Student"
 	AchLoremaster          Achievement = "Loremaster"
 	AchNoviceExplorer      Achievement = "Novice Explorer"
 	AchInitiateExplorer    Achievement = "Initiate Explorer"
