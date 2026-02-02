@@ -19,7 +19,7 @@ var LoreMessages = []string{
 `,
 	`“Cold… So cold… There’s something wrong in here. I can tell there were saijits living in this place. But now… there are nothing but monsters. Monsters everywhere! And fear is so cold. So cold…!”
 
-[Blood-stained piece of paper, Anonym]
+[Blood-stained piece of paper, anonymous]
 `,
 	`“If flowers are gone,
  I’ll seed them again,
@@ -45,7 +45,7 @@ No one answered.”
  I’ve lost them both,
  I’m orphan now.”
 
-[Piece of yellow paper, Anonym]
+[Piece of yellow paper, anonymous]
 `,
 	`“I love her smile, her eyes, her soul,
  I love her cheerful mind and might,
@@ -58,7 +58,7 @@ No one answered.”
 
 [Fragment of the Scientist’s diary]
 `,
-	`“For this beam of peace I saw once in my life
+	`“For this beam of peace I saw once in my life,
  I will hold my promise and cling to my last days,
  I will raise this old knife, and then… come what may.”
 
@@ -155,15 +155,15 @@ After so many days… guess I’d be better off not coming back.”
 `,
 	`“There was a loud sound somewhere in the dungeon… A hound? A dragon? Whatever. I don’t want to know.”
 
-[Piece of thick paper, anonym]
+[Piece of thick paper, anonymous]
 `,
 	`“Someone told me that was a good place to find bananas. I thought he was joking. But now that I’m here, I know he wasn’t. The Underground banana trees are so rare! They don’t seem to even need a source of moonstone light. That’s my chance to shine! I’ll keep studying them as much as I can.”
 
 [The rest of the paper is full of signs you don’t understand. It’s not Abrianese. You sigh: those saijits really make things complicated…]
 `,
-	`“No rival for me to kill
+	`“No rival for me to kill,
  that’s some kind of an ordeal,
- no one’s life for me to steal
+ no one’s life for me to steal,
  please, come back, and pay the bill.”
 
 [Fragment of a poem entitled The Greedy Raven, the rest of the letters have faded.]
@@ -188,11 +188,11 @@ if you want to say hello, it’s this way, come on, come…”
 
 [Rafiluna the Goblin Coward]
 `,
-	`“I wonder why monsters exist. I wonder why we, saijits, exist. Why are we eating each other? What for have we been created? Are we even real?”
+	`“I wonder why monsters exist. I wonder why we, saijits, exist. Why are we eating each other? What have we been created for? Are we even real?”
 
 [The page is rather long… Snorting, you stop reading. Crazy saijits, that’s too much]
 `,
-	`“Let’s see… You were a shoemaker, you have good ideals, you want to make a better world, you like sunny days and you love birds. Man… Why in the world do you want to join a clan like ours?”
+	`“Let’s see… You were a shoemaker, you have good ideals, you want to make the world a better place, you like sunny days and you love birds. Man… Why in the world do you want to join a clan like ours?”
 
 [Interview with an applicant for the Dark Dayoriah Clan]
 `,
@@ -265,11 +265,11 @@ Does he think everyone here is just as happy and dreamy as he is? So naive it hu
 `,
 	`“Cling! clang! clong…! Are they water drops on a queenstone? It makes so much noise. Cling, clang, clong… I am so tired I could fall asleep even with that dreadful sound. But perhaps something wrong is happening over there. I will go and take a look.”
 
-[Mimi the Guard]
+[Piece of paper signed: Mimi the Guard]
 `,
-	`“What have you done, young novice? You are but weak, useless, worthless, and you still want to eat with us, the Dayoriah Guards? You don’t seem to understand your place. Just crawl, crawl until we just see in you a mere worm. Maybe then, you’ll get some leftovers.
+	`“What have you done, young novice? You are but weak, useless, worthless, and you still want to eat with us, the Dayoriah Guards? You don’t seem to know your place. Just crawl, crawl until we just see in you a mere worm. Maybe then, you’ll get some leftovers.
 
-The worm who would climb the ladder must begin at the bottom.”
+The worm who wish to climb the ladder must begin at the bottom.”
 
 [Piece of paper wet with tears]
 `,
