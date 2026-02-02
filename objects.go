@@ -438,6 +438,7 @@ func (g *Game) ActivateSealStone() {
 	if g.Map.Depth == MaxDepth {
 		g.Objects.Story[g.Places.Artifact] = StoryArtifact
 		g.Log("You feel oric energies dissipating.")
+		g.SeeTerrainAt(g.Places.Artifact)
 		return
 	}
 	for p, st := range g.Objects.Stairs {
