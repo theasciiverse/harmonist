@@ -363,7 +363,7 @@ func (md *model) updateStatusInfo() {
 			Disabled: true})
 	case g.md.mode == modeStory:
 		entries = append(entries, ui.MenuEntry{
-			Text:     stt.WithText("@M[Story]@N "),
+			Text:     stt.WithText("@C[Story]@N "),
 			Disabled: true})
 	case g.win:
 		entries = append(entries, ui.MenuEntry{

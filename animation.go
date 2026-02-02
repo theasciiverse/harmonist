@@ -677,3 +677,42 @@ func (md *model) TakingArtifact() {
 		md.mode = modeNormal
 	}
 }
+
+// PortalEscapeAnimation animates the portal escape.
+func (md *model) PortalEscapeAnimation() {
+	if DisableAnimations {
+		return
+	}
+	md.startAnimSeq()
+	g := md.g
+	c := gruid.Cell{Style: gruid.Style{Attrs: AttrInMap}}
+	for k := range 7 {
+		for p := range g.Map.Terrain.Points() {
+			c.Style.Bg = ColorBackground
+			if p.X >= 6 && p.X < 6+62 && p.Y >= 7 && p.Y < 7+5 {
+				c.Rune = ' '
+				c.Style.Fg = ColorForeground
+				c.Style.Bg = ColorBackgroundSecondary
+			} else if p.X >= 5 && p.X < 7+62 && p.Y >= 6 && p.Y < 8+5 {
+				c.Rune = ')'
+				c.Style.Fg = ColorYellow
+				c.Style.Bg = ColorBackgroundSecondary
+			} else if p.X >= 4 && p.X < 8+62 && p.Y >= 5 && p.Y < 9+5 {
+				c.Rune = '♣'
+				c.Style.Fg = ColorGreen
+			} else {
+				c.Rune = '"'
+				c.Style.Fg = ColorForeground
+			}
+			switch g.rand.IntN(4) {
+			case 0:
+				md.anims.mgrid.Set(p, c)
+			case 1:
+				if k >= 4 {
+					md.anims.mgrid.Set(p, c)
+				}
+			}
+		}
+		md.anims.Frame(AnimDurMediumLong)
+	}
+}

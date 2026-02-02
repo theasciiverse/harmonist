@@ -26,7 +26,11 @@ func (md *model) Draw() gruid.Grid {
 	}
 	// Draw map in all other cases, as it may be covered only partially by
 	// other modes.
-	md.drawMap(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
+	if md.g.win {
+		md.drawWin(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
+	} else {
+		md.drawMap(md.gd.Slice(md.gd.Range().Shift(0, 2, 0, -1)))
+	}
 	md.log.Content = md.DrawLog()
 	md.log.Draw(md.gd.Slice(md.gd.Range().Lines(0, 2)))
 	switch md.mode {
@@ -146,6 +150,27 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 	stt.WithText(text).Draw(gd.Slice(rg.Shift(23, 5, 0, 0)))
 	ui.Text("—Press any key to continue—").Draw(gd.Slice(rg.Shift(21, 18, 0, 0)))
 	return gd
+}
+
+func (md *model) drawWin(gd gruid.Grid) {
+	st := gruid.Style{Attrs: AttrInMap}
+	gd.Fill(gruid.Cell{Rune: '"', Style: st})
+	treegd := gd.Slice(gruid.NewRange(4, 5, 8+62, 9+5))
+	treegd.Fill(gruid.Cell{Rune: '♣', Style: st.WithFg(ColorGreen)})
+	bananagd := gd.Slice(gruid.NewRange(5, 6, 7+62, 8+5))
+	bananagd.Fill(gruid.Cell{Rune: ')', Style: st.WithFg(ColorYellow).WithBg(ColorBackgroundSecondary)})
+	textgd := gd.Slice(gruid.NewRange(6, 7, 6+62, 7+5))
+	textgd.Fill(gruid.Cell{Rune: ' ', Style: gruid.Style{Bg: ColorBackgroundSecondary}})
+	stt := ui.StyledText{}.WithMarkups(Markups).WithStyle(gruid.Style{Bg: ColorBackgroundSecondary})
+	var text string
+	if md.g.LiberatedArtifact {
+		text = `You escaped after both saving Shaedra and retrieving the artifact. ` +
+			`What a journey! Shaedra and Marevor will surely give you some bananas!`
+	} else {
+		text = `You saved Shaedra, and that’s what mattered most to you! ` +
+			`Marevor seems a bit disappointed, but he will surely still give you some bananas.`
+	}
+	stt.WithText(text).Format(60).Draw(textgd.Slice(textgd.Range().Shift(1, 1, -1, -1)))
 }
 
 func (md *model) drawMap(gd gruid.Grid) {

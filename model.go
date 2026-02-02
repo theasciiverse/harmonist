@@ -892,13 +892,14 @@ func (md *model) death() {
 func (md *model) win() {
 	g := md.g
 	if g.Wizard != WizardNone {
-		g.LogStyled("You escape by the magic portal! **WIZARD**", logSpecial)
+		g.LogStyled("You escape through the magic portal! **WIZARD**", logSpecial)
 		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 	} else {
-		g.LogStyled("You escape by the magic portal!", logSpecial)
+		g.LogStyled("You escape through the magic portal!", logSpecial)
 		g.LogStyled("[SPACE/ESC to continue]", logConfirm)
 	}
 	md.mode = modeEnd
+	g.md.PortalEscapeAnimation()
 }
 
 func (md *model) dump(msg string, err error) {
