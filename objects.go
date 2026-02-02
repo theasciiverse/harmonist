@@ -219,6 +219,9 @@ func (g *Game) UseStone(p gruid.Point) {
 	g.StoryPrintf("Activated %s", g.Objects.Stones[p])
 	g.Objects.Stones[p] = InertStone
 	g.Stats.UsedStones++
+	if g.Stats.UsedStones == 10 {
+		AchStoneEnthousiast.Get(g)
+	}
 	g.Log("The stone becomes inert.")
 }
 

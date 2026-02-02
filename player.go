@@ -423,17 +423,7 @@ func (g *Game) PlayerBump(p gruid.Point) (again bool, err error) {
 			g.MakeNoise(WallNoise, p)
 			g.LogStyled(g.CrackSound(), logNotable)
 			g.Fog(p, 1)
-			g.Stats.Digs++
-			g.Stats.DestructionUse++
-			if g.Stats.DestructionUse == 20 {
-				AchDestructorNovice.Get(g)
-			}
-			if g.Stats.DestructionUse == 40 {
-				AchDestructorInitiate.Get(g)
-			}
-			if g.Stats.DestructionUse == 60 {
-				AchDestructorMaster.Get(g)
-			}
+			g.NewDigStats()
 		}
 		if g.Player.Inventory.Body.Kind == CloakSmoke {
 			_, ok := g.Map.Clouds[g.Player.P]

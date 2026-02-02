@@ -126,6 +126,7 @@ type Achievement string
 const (
 	NoAchievement          Achievement = "Pitiful Death"
 	AchBananaCollector     Achievement = "Banana Collector"
+	AchStoneEnthousiast    Achievement = "Magic Stone Enthousiast"
 	AchHarmonistNovice     Achievement = "Harmonist Novice"
 	AchHarmonistInitiate   Achievement = "Harmonist Initiate"
 	AchHarmonistMaster     Achievement = "Harmonist Master"
@@ -222,5 +223,21 @@ func (g *Game) Reach(p gruid.Point) {
 		if g.Stats.BarrelHides == 20 {
 			AchBarrels.Get(g)
 		}
+	}
+}
+
+// NewDigStats handle digging (caused by the player) for statistics and
+// achievement purposes.
+func (g *Game) NewDigStats() {
+	g.Stats.Digs++
+	g.Stats.DestructionUse++
+	if g.Stats.DestructionUse == 25 {
+		AchDestructorNovice.Get(g)
+	}
+	if g.Stats.DestructionUse == 100 {
+		AchDestructorInitiate.Get(g)
+	}
+	if g.Stats.DestructionUse == 200 {
+		AchDestructorMaster.Get(g)
 	}
 }

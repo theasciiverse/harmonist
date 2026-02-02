@@ -241,7 +241,7 @@ func (g *Game) OricExplosion(at gruid.Point) {
 			continue
 		}
 		g.Map.Set(n.P, RubbleCell)
-		g.Stats.Digs++
+		g.NewDigStats()
 		ps = append(ps, n.P)
 	}
 	g.md.OricExplosionAnimation(ps)
