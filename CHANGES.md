@@ -35,6 +35,10 @@ Improved and reworked content:
   be more interesting, as it helps hear in-place footsteps of watching monsters
   (except satowalga plants, which make no noise at all), and even the breathing
   of resting monsters at a short range.
+* Various improved or new lore texts by kaoseto, the author of the "Ciclo de
+  Shaedra" libre series that served as inspiration material for the flavor and
+  story, including various original monster species, like milfids, nadres, or
+  nixes.
 * It's now possible to jump off out-of-map (indestructible) walls. It felt
   strange that you couldn't move out of the map, but still couldn't consider
   the borders as walls.

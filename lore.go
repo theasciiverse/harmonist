@@ -1,12 +1,13 @@
 package main
 
+// LoreMessages (written for Harmonist by kaoseto, the author of the "Ciclo de
+// Shaedra" libre series).
 var LoreMessages = []string{
 	`“Below and above, left or right,
- there’s no way to flee, there’s no way to hide,
- no hope, no rest, no friend, no might,
- my eyes are hurting, life is no lie.”
+ there’s no way to flee, there’s no hole to hide,
+ footsteps are nearing… Should I try and talk?”
 
-[Diary of Kaashtriman Deez Meir]
+[Diary of Kaashtriman Deez Meir the Diplomath]
 `,
 	`“This is the place where I come from,
  this is my dark kingdom,
@@ -34,10 +35,10 @@ No one answered.”
 
 [Fragment of the Tales of the horrific maid, by Kow Yhers]
 `,
-	`“I don’t mind if you die
- I don’t mind if I die,
- it’s so boring to die
- when you don’t give a damn.”
+	`“There are seven directions in life:
+ North and East, West and South, Sky and Earth…
+ The seventh one saved me from this dark maze.
+ Make a guess… or just wait.”
 
 [Fragment of the Foul-mouthed Fool’s Tricky Poems]
 `,
@@ -93,10 +94,6 @@ I’m happy. I don’t hate monsters. They were the only living creatures that c
  I’m just taking a break.”
 
 [Fragment of Red-Snake Naran’s Diary]
-`,
-	`“La malbono grandas en la mallumo, sed la espero pli grandas en la koroj.”
-
-[Piece of paper signed La Esperantisto]
 `,
 	`“Ho, ve, monstro terura! Vi ne povas vidi min, ne rigardu, ne plu revenu, ne plu revenu, ne plu revenu…”
 
@@ -290,5 +287,40 @@ I wish I could change them, but for now, all I can do is take care of my dear li
  recovers the tears that were shed in the past.”
 
 [Poem by Amsalia Ruverg (4901-4945)]
+`,
+	`“At long last, I've officially become a harmonic celmist of our clan, I can make the best illusions, I can fool a dragon… but, after all my achievements, I've been put on charge of setting fake stairs? Well… it's a very relaxing job, I guess?”
+
+[Diary of Nagazaseth Mei of the Dayoriah Clan]
+`,
+	`“To learn means often to unlearn, my master said. I tried to unlearn everything and relearn… but, now, why do all the textbooks of the Dayoriah Clan feel like they are nothing but lies?”
+
+[Piece of paper signed: the Unlearned Wiseman]
+`,
+	`“There was a beautiful, shining blue stone. I patted it and somehow I knew where the stairs where… I almost thanked the gods, but then I realized the stairs were going even deeper in the dungeon… Isn't that a trap?”
+
+[Piece of paper signed: I just want to see the sky]
+`,
+	`“When one is in a hurry, one arrives always late.”
+
+[Piece of paper signed: Perzontes. You breathe in, breathe out and take a short break]
+`,
+	`“It is sometimes easier to believe one understands than to accept one does not understand.”
+
+[Piece of paper signed: Faïssapi]
+`,
+	`“Teach me how to fight!
+ I taught him how to run.
+ Teach me how to flee!
+ I taught him how to walk.
+ And when he slowed down enough
+ I taught him how to think.”
+
+[Piece of paper signed: Nagouak]
+`,
+	`“Master Bael told me that we'll improve if we train.
+—Oh? Your master is right. By the way, is he doing well?
+—He's unimproving.”
+
+[Piece of paper signed: Zouybo the Wise Prankster]
 `,
 }

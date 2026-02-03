@@ -105,7 +105,7 @@ func (st Stair) Desc(g *Game) (desc string) {
 	case SealedStair:
 		desc = "Stairs lead to the next level of the Dayoriah Clan’s domain in Hareka’s Underground. These are sealed by an oric magical barrier that you have to disable by activating a corresponding seal stone. You will not be able to come back, because an oric barrier seals the stairs again when they are traversed by intruders. The upside of this is that enemies cannot follow you either."
 	case KnownFakeStair:
-		desc = "An illusion made by an harmonic celmist. It looks like stairs downwards, but it’s all fake."
+		desc = "An illusion made by a harmonic celmist. It looks like stairs downwards, but it’s all fake."
 	}
 	return desc
 }

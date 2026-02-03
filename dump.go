@@ -140,7 +140,7 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 		fmt.Fprintf(sb, "You were lignified %s.\n", times(n))
 	}
 	if n := g.Stats.Statuses[StatusIlluminated]; n > 0 {
-		fmt.Fprintf(sb, "You were illuminated by an harmonic celmist %s.\n", times(n))
+		fmt.Fprintf(sb, "You were illuminated by a harmonic celmist %s.\n", times(n))
 	}
 	if n := g.Stats.TimesBlocked; n > 0 {
 		fmt.Fprintf(sb, "You were blocked by an oric celmist barrier %s.\n", times(n))
