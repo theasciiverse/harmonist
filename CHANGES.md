@@ -1,8 +1,8 @@
-# v? ?
+# v1.0.0 2026-02-03
 
-This release is the first stable release of Harmonist. It polishes various
-gameplay aspects and brings many UI improvements, including many inspired from
-Shamogu.
+This release is quite major and is the first stable release of Harmonist.  It
+polishes various gameplay aspects and brings many UI improvements, including
+many inspired from Shamogu.
 
 Improved and reworked content:
 
@@ -58,6 +58,7 @@ Improved and reworked content:
   illumination, which was not much.
 * Some minor variety improvements in various vaults by better randomizing some
   parts of them.
+* Various other minor adjustments, including effect duration adjustments.
 
 UI, graphics, QoL:
 
