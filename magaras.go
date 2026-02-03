@@ -424,7 +424,6 @@ func (g *Game) Blink() bool {
 func (g *Game) BlinkPos(mpassable bool) gruid.Point {
 	losPos := []gruid.Point{}
 	for p, b := range g.Player.AFOV {
-		// XXX: skip if not seen by monster?
 		if !b {
 			continue
 		}

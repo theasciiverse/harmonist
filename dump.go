@@ -247,7 +247,6 @@ func (g *Game) DumpDungeon() string {
 			continue
 		}
 		var r rune
-		// XXX this can be simplified
 		switch kt {
 		case WallCell:
 			r = '#'

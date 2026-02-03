@@ -102,7 +102,6 @@ func (g *Game) LevelStats() {
 		g.Stats.DExplPerc[g.Map.Depth-3] > 93 && g.Stats.DExplPerc[g.Map.Depth-4] > 93 {
 		AchMasterExplorer.Get(g)
 	}
-	//g.Stats.DBurns[g.Depth] = g.Stats.CurBurns // XXX to avoid little dump info leak
 	nmons := len(g.Monsters)
 	kmons := 0
 	smons := 0
