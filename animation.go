@@ -226,7 +226,7 @@ func (md *model) MonsterProjectileAnimation(ray []gruid.Point, r rune, fg gruid.
 
 func (md *model) WaveDrawAt(p gruid.Point, fg gruid.Color) {
 	c := md.anims.mgrid.At(p)
-	md.anims.DrawReverse(p, c.Rune, c.Style.Fg)
+	md.anims.DrawReverse(p, c.Rune, fg)
 }
 
 func (md *model) NoiseAnimation(noises []gruid.Point) {
@@ -347,7 +347,6 @@ type wavestyle int
 
 const (
 	WaveHarmonicNoise wavestyle = iota
-	WaveNoise
 	WaveConfusion
 	WaveDaze
 	WaveTree
@@ -379,11 +378,6 @@ func (md *model) WaveAnimation(wave []int, ws wavestyle) {
 			}
 		case WaveTree:
 			fg := ColorYellow
-			if md.g.Player.Sees(p) {
-				md.WaveDrawAt(p, fg)
-			}
-		case WaveNoise:
-			fg := ColorOrange
 			if md.g.Player.Sees(p) {
 				md.WaveDrawAt(p, fg)
 			}
