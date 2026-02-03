@@ -254,7 +254,7 @@ func (g *Game) WallJump(p gruid.Point) (bool, error) {
 	if g.Stats.Jumps+g.Stats.WallJumps == 15 {
 		AchAcrobat.Get(g)
 	}
-	return true, nil
+	return false, nil
 }
 
 // HitNoise returns the amount of noise corresponding to a hit.
