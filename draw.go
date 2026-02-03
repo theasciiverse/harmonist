@@ -120,6 +120,7 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 		't': tst.WithFg(ColorGreen),
 		'W': st.WithFg(ColorViolet),
 		'l': st.WithFg(ColorForeground).WithBg(ColorBackgroundSecondary),
+		'm': st.WithFg(ColorForeground).WithBg(ColorBackground),
 		'L': st.WithFg(ColorYellow).WithBg(ColorBackgroundSecondary),
 		'p': st.WithFg(ColorBlue).WithBg(ColorBackgroundSecondary),
 		'R': st.WithFg(ColorRed),
@@ -141,9 +142,9 @@ func drawWelcome(gd gruid.Grid) gruid.Grid {
 @d#,@L,""@l#@t HARMONIST @d#@d^,@b)@zt@d#
 @d#,@pb@L,,"@l##@d#########@d^,,##
 @d #@L,,,@r,,,@l#@d#@oπ@d.@P>@d##,,,,,#
-@d @l#@L..@r.@Mg@r..+@d..@lG@d..@P+@d.,,,,#
+@d @l#@L..@r.@Mg@r..+@d..@mG@d..@P+@d.,,,,#
 @l#@p@@@L.@l#@d≈≈,.##@o☼@d.@o&@d##.,@T♣@d,",##
-@l#@L.@l#@d#≈≈≈@R♫@d.##@P+@d##..@lh@d,"#,@s∩@d#
+@l#@L.@l#@d#≈≈≈@R♫@d.##@P+@d##..@mh@d,"#,@s∩@d#
 @l#@L.@l.@d##≈≈≈.......,,""""##
 @t───────────────────────
 `
