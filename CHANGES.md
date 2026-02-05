@@ -1,3 +1,16 @@
+# v1.0.1 2026-02-03
+
+Very small fix release on same day as v1.0.0. In-game version still shows as
+v1.0.0 (because save-compatibility is preserved and… because I forgot to update
+that, hence the late update here, too).
+
+* Fix very recent regression with wall-jumping that made it not consume a turn:
+  not major in practice (because of exhaustion) and hard to notice (minor bugs
+  that help the player are hard to notice :p), but intelectually unsatisfying
+  to notice that just on release day: hence the fix release.
+* Also fix background color of a tile in the loading screen (very minor and
+  hard to notice without zooming, but there's at least two fixes that way).
+
 # v1.0.0 2026-02-03
 
 This release is quite major and is the first stable release of Harmonist.  It
