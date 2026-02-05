@@ -26,9 +26,10 @@ Website
 
 ![Harmonist introduction screen](https://anaseto.codeberg.page/games/harmonist/intro-screen-tiles.png)
 
-You can visit the [game's
-website](https://anaseto.codeberg.page/games/harmonist)
-for more information and tips about the game.
+You can visit the [project's development
+website](https://anaseto.codeberg.page/games/harmonist) for more information and
+tips about the game. The game can be played on the browser [on
+itch.io](https://anaseto.itch.io/harmonist), too.
 
 Install from Sources
 --------------------
