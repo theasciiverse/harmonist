@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"sort"
 	"strings"
+
+	"runtime/debug"
 )
 
 type statusSlice []status
@@ -22,67 +23,10 @@ func (ms monsSlice) Less(i, j int) bool {
 	return ms[i].Dangerousness() > ms[j].Dangerousness()
 }
 
-func (g *Game) DumpStatuses() string {
-	sts := sort.StringSlice{}
-	for st, c := range g.Player.Statuses {
-		if c > 0 {
-			sts = append(sts, st.String())
-		}
-	}
-	sort.Sort(sts)
-	if len(sts) == 0 {
-		return "You are free of any status effects."
-	}
-	return "Statuses:\n" + strings.Join(sts, "\n")
-}
-
-func (g *Game) SortedKilledMonsters() monsSlice {
-	var ms monsSlice
-	for mk, p := range g.Stats.KilledMons {
-		if p == 0 {
-			continue
-		}
-		ms = append(ms, mk)
-	}
-	sort.Sort(ms)
-	return ms
-}
-
+// Dump produces the game statistics full summary.
 func (g *Game) Dump() string {
 	sb := &strings.Builder{}
-	fmt.Fprintf(sb, " ♣ Game Summary — Harmonist %s ♣\n\n", Version)
-	if g.Wizard != WizardNone {
-		fmt.Fprintf(sb, "ENABLED WIZARD MODE.\n")
-	}
-	if g.Player.HP > 0 && g.win {
-		fmt.Fprintf(sb, "You escaped from Dayoriah Clan’s domain alive!\n")
-	} else if g.Player.HP <= 0 {
-		fmt.Fprintf(sb, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
-	} else {
-		fmt.Fprintf(sb, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
-	}
-	if g.LiberatedShaedra {
-		fmt.Fprint(sb, "You rescued Shaedra.\n")
-	} else {
-		fmt.Fprint(sb, "You did not rescue Shaedra.\n")
-	}
-	if g.LiberatedArtifact {
-		fmt.Fprint(sb, "You recovered the Gem Portal Artifact.\n")
-	} else {
-		fmt.Fprint(sb, "You did not recover the Gem Portal Artifact.\n")
-	}
-	fmt.Fprintf(sb, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
-	fmt.Fprintf(sb, "\n")
-	fmt.Fprintf(sb, "You have %d/%d HP, %d/%d MP and %d/%d bananas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas)
-	fmt.Fprintf(sb, "\n")
-	fmt.Fprint(sb, g.DumpStatuses())
-	fmt.Fprintf(sb, "\n")
-	fmt.Fprintf(sb, "\nMagaras:\n")
-	for _, mag := range g.Player.Magaras {
-		if mag.Kind != NoMagara {
-			fmt.Fprintf(sb, "- %s (charges: %d)\n", mag, mag.Charges)
-		}
-	}
+	g.writeDumpHead(sb)
 	fmt.Fprintf(sb, "\nInventory:\n")
 	if g.Player.Inventory.Body.Kind != NoItem {
 		fmt.Fprintf(sb, "- %s (body)\n", g.Player.Inventory.Body.ShortDesc(g))
@@ -98,11 +42,11 @@ func (g *Game) Dump() string {
 	}
 	fmt.Fprintf(sb, "\nDungeon:\n")
 	fmt.Fprintf(sb, "┌%s┐\n", strings.Repeat("─", MapWidth))
-	sb.WriteString(g.DumpDungeon())
+	sb.WriteString(g.dumpDungeon())
 	fmt.Fprintf(sb, "└%s┘\n", strings.Repeat("─", MapWidth))
 	if g.Stats.Killed > 0 {
 		fmt.Fprintf(sb, "\n")
-		fmt.Fprint(sb, g.DumpedKilledMonsters())
+		fmt.Fprint(sb, g.dumpedKilledMonsters())
 	}
 	if g.Stats.MagarasUsed > 0 {
 		fmt.Fprintf(sb, "\nMagara uses:\n")
@@ -117,13 +61,44 @@ func (g *Game) Dump() string {
 			sb.WriteString(s)
 		}
 	}
-	g.DetailedStatistics(sb)
+	g.dumpStatistics(sb)
 	fmt.Fprintf(sb, "\nTimeline:\n")
-	fmt.Fprint(sb, g.DumpStory())
+	fmt.Fprint(sb, g.dumpStory())
 	return sb.String()
 }
 
-func (g *Game) DetailedStatistics(sb *strings.Builder) {
+func (g *Game) dumpStatuses() string {
+	sts := sort.StringSlice{}
+	for st, c := range g.Player.Statuses {
+		if c <= 0 {
+			continue
+		}
+		if st.Flag() {
+			sts = append(sts, st.Short())
+		} else {
+			sts = append(sts, fmt.Sprintf("%s(%d)", st.Short(), c))
+		}
+	}
+	sort.Sort(sts)
+	if len(sts) == 0 {
+		return ""
+	}
+	return " " + strings.Join(sts, " ")
+}
+
+func (g *Game) sortedKilledMonsters() monsSlice {
+	var ms monsSlice
+	for mk, p := range g.Stats.KilledMons {
+		if p == 0 {
+			continue
+		}
+		ms = append(ms, mk)
+	}
+	sort.Sort(ms)
+	return ms
+}
+
+func (g *Game) dumpStatistics(sb *strings.Builder) {
 	fmt.Fprintf(sb, "\nStatistics:\n")
 	fmt.Fprintf(sb, "You evoked magaras %s (%d oric, %d harmonic, %d other).\n",
 		times(g.Stats.MagarasUsed), g.Stats.OricMagUse,
@@ -220,12 +195,12 @@ func (g *Game) DetailedStatistics(sb *strings.Builder) {
 	}
 }
 
-func (g *Game) DumpStory() string {
+func (g *Game) dumpStory() string {
 	return strings.Join(g.Stats.Story, "\n")
 }
 
-func (g *Game) DumpDungeon() string {
-	buf := bytes.Buffer{}
+func (g *Game) dumpDungeon() string {
+	sb := strings.Builder{}
 	it := g.Map.KnownTerrain.Iterator()
 	i := 0
 	for it.Next() {
@@ -233,15 +208,15 @@ func (g *Game) DumpDungeon() string {
 		kt := it.Cell()
 		if i%MapWidth == 0 {
 			if i == 0 {
-				buf.WriteRune('│')
+				sb.WriteRune('│')
 			} else {
-				buf.WriteString("│\n│")
+				sb.WriteString("│\n│")
 			}
 		}
 		if !IsKnown(kt) {
-			buf.WriteRune(' ')
+			sb.WriteRune(' ')
 			if i == MapSize-1 {
-				buf.WriteString("│\n")
+				sb.WriteString("│\n")
 			}
 			i++
 			continue
@@ -265,57 +240,78 @@ func (g *Game) DumpDungeon() string {
 				}
 			}
 		}
-		buf.WriteRune(r)
+		sb.WriteRune(r)
 		if i == MapSize-1 {
-			buf.WriteString("│\n")
+			sb.WriteString("│\n")
 		}
 		i++
 	}
-	return buf.String()
+	return sb.String()
 }
 
-func (g *Game) DumpedKilledMonsters() string {
-	buf := &bytes.Buffer{}
-	fmt.Fprint(buf, "Killed Monsters:\n")
-	ms := g.SortedKilledMonsters()
+func (g *Game) dumpedKilledMonsters() string {
+	sb := &strings.Builder{}
+	fmt.Fprint(sb, "Killed Monsters:\n")
+	ms := g.sortedKilledMonsters()
 	for _, mk := range ms {
-		fmt.Fprintf(buf, "- %s: %d\n", mk, g.Stats.KilledMons[mk])
+		fmt.Fprintf(sb, "- %s: %d\n", mk, g.Stats.KilledMons[mk])
 	}
-	return buf.String()
+	return sb.String()
 }
 
+// Simplified dump produces the short summary.
 func (g *Game) SimplifedDump(msg string, err error) string {
-	buf := &strings.Builder{}
-	fmt.Fprintf(buf, " ♣ Game Summary — Harmonist %s ♣\n\n", Version)
-	if g.Wizard != WizardNone {
-		fmt.Fprintf(buf, "ENABLED WIZARD MODE.\n")
-	}
-	if g.Player.HP > 0 && g.win {
-		fmt.Fprintf(buf, "You escaped from Dayoriah Clan’s domain alive!\n")
-	} else if g.Player.HP <= 0 {
-		fmt.Fprintf(buf, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
-	} else {
-		fmt.Fprintf(buf, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
-	}
-	if g.LiberatedShaedra {
-		fmt.Fprint(buf, "You rescued Shaedra.\n")
-	} else {
-		fmt.Fprint(buf, "You did not rescue Shaedra.\n")
-	}
-	if g.LiberatedArtifact {
-		fmt.Fprint(buf, "You recovered the Gem Portal Artifact.\n")
-	} else {
-		fmt.Fprint(buf, "You did not recover the Gem Portal Artifact.\n")
-	}
-	fmt.Fprintf(buf, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
-	fmt.Fprintf(buf, "\n")
+	sb := &strings.Builder{}
+	g.writeDumpHead(sb)
+	fmt.Fprintf(sb, "\n")
 	if err != nil {
-		fmt.Fprintf(buf, "Error writing dump: %v.\n", err)
+		fmt.Fprintf(sb, "Error writing dump: %v.\n", err)
 		log.Printf("error writing dump: %v", err)
 	} else {
-		fmt.Fprintln(buf, msg)
+		fmt.Fprintln(sb, msg)
 	}
-	return buf.String()
+	return sb.String()
+}
+
+func (g *Game) writeDumpHead(sb *strings.Builder) {
+	info, ok := debug.ReadBuildInfo()
+	var version string
+	if ok {
+		version = info.Main.Version
+	} else {
+		version = Version
+	}
+	fmt.Fprintf(sb, " ♣ Game Summary — Harmonist %s ♣\n\n", version)
+	if g.Wizard != WizardNone {
+		fmt.Fprintf(sb, "ENABLED WIZARD MODE.\n")
+	}
+	if g.Player.HP > 0 && g.win {
+		fmt.Fprintf(sb, "You escaped from Dayoriah Clan’s domain alive!\n")
+	} else if g.Player.HP <= 0 {
+		fmt.Fprintf(sb, "You died while exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
+	} else {
+		fmt.Fprintf(sb, "You are exploring depth %d of Dayoriah Clan’s domain.\n", g.Map.Depth)
+	}
+	if g.LiberatedShaedra {
+		fmt.Fprint(sb, "You rescued Shaedra.\n")
+	} else {
+		fmt.Fprint(sb, "You did not rescue Shaedra.\n")
+	}
+	if g.LiberatedArtifact {
+		fmt.Fprint(sb, "You recovered the Gem Portal Artifact.\n")
+	} else {
+		fmt.Fprint(sb, "You did not recover the Gem Portal Artifact.\n")
+	}
+	fmt.Fprintf(sb, "You spent %d turns in Hareka’s Underground.\n", g.Turn)
+	fmt.Fprintf(sb, "\n")
+	// fmt.Fprintf(sb, "You have %d/%d HP, %d/%d MP and %d/%d bananas.\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas)
+	fmt.Fprintf(sb, "HP:%d/%d MP:%d/%d ):%d/%d%s\n", g.Player.HP, g.Player.HPMax(), g.Player.MP, g.Player.MPMax(), g.Player.Bananas, MaxBananas, g.dumpStatuses())
+	fmt.Fprintf(sb, "\nMagaras:\n")
+	for _, mag := range g.Player.Magaras {
+		if mag.Kind != NoMagara {
+			fmt.Fprintf(sb, "- %s (charges: %d)\n", mag, mag.Charges)
+		}
+	}
 }
 
 func there(s string, n int) string {

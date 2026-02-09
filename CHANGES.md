@@ -1,6 +1,8 @@
 # v? ?
 
 * Properly support mouse wheel scrolling in browser version.
+* Improve end-of-game short summary screen, including status and magara
+  information there, as there enough space on the screen for that.
 
 # v1.0.1 2026-02-03
 
