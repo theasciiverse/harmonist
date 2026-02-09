@@ -486,9 +486,6 @@ func (g *Game) InitLevel() {
 	}
 
 	// initialize FOV
-	if g.Map.Depth == 1 {
-		g.LogStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
-	}
 	switch g.Map.Depth {
 	case WinDepth:
 		g.LogStyled("Finally! Shaedra should be imprisoned somewhere around here.", logSpecial)
@@ -502,6 +499,9 @@ func (g *Game) InitLevel() {
 	}
 	if g.Map.Depth > 1 {
 		g.md.CancelExamine()
+	}
+	if g.Map.Depth == 1 {
+		g.LogStyled("Press SPACE for menu and ? for help. Good luck!", logSpecial)
 	}
 }
 

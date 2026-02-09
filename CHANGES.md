@@ -3,6 +3,10 @@
 * Properly support mouse wheel scrolling in browser version.
 * Improve end-of-game short summary screen, including status and magara
   information there, as there enough space on the screen for that.
+* Ensure welcoming message on first level appears after messages about what the
+  player sees, to ensure it's always visible on first turn, even in rare cases
+  with various immediately visible notable items, so that a new player can
+  never miss it.
 
 # v1.0.1 2026-02-03
 
