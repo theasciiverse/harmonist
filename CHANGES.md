@@ -1,3 +1,7 @@
+# v? ?
+
+* Properly support mouse wheel scrolling in browser version.
+
 # v1.0.1 2026-02-03
 
 Very small fix release on same day as v1.0.0. In-game version still shows as
