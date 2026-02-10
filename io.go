@@ -4,11 +4,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 )
 
+// DataDir returns the game's data directory location.
 func DataDir() (string, error) {
 	var xdg string
 	if runtime.GOOS == "windows" {
@@ -30,6 +32,7 @@ func DataDir() (string, error) {
 	return dataDir, nil
 }
 
+// SaveFile writes save data to the given file.
 func SaveFile(filename string, data []byte) error {
 	dataDir, err := DataDir()
 	if err != nil {
@@ -57,6 +60,7 @@ func SaveFile(filename string, data []byte) error {
 	return err
 }
 
+// Save saves the game to the save file.
 func (g *Game) Save() error {
 	data, err := g.GameSave()
 	if err != nil {
@@ -65,14 +69,17 @@ func (g *Game) Save() error {
 	return SaveFile("save", data)
 }
 
+// RemoveSaveFile removes the save file if it exists.
 func RemoveSaveFile() error {
 	return RemoveDataFile("save")
 }
 
+// RemoveReplay removes the replay file if it exists.
 func RemoveReplay() {
 	RemoveDataFile("replay.part")
 }
 
+// Load loads an existing game from a saved file.
 func (g *Game) Load() (bool, error) {
 	dataDir, err := DataDir()
 	if err != nil {
@@ -93,12 +100,14 @@ func (g *Game) Load() (bool, error) {
 		return false, err
 	}
 	if lg.Version != Version {
+		log.Print("ignoring incompatible old save")
 		return false, nil
 	}
 	*g = *lg
 	return true, nil
 }
 
+// SaveConfig saves the game's config to the config file.
 func SaveConfig() error {
 	data, err := GameConfig.ConfigSave()
 	if err != nil {
@@ -107,6 +116,7 @@ func SaveConfig() error {
 	return SaveFile("config", data)
 }
 
+// LoadConfig loads game's config from the config file.
 func LoadConfig() (bool, error) {
 	dataDir, err := DataDir()
 	if err != nil {
@@ -127,12 +137,14 @@ func LoadConfig() (bool, error) {
 		return false, err
 	}
 	if c.Version != GameConfig.Version {
+		log.Print("ignoring incompatible old config")
 		return false, nil
 	}
 	GameConfig = *c
 	return true, nil
 }
 
+// RemoveDataFile removes the given file in the game's data directory.
 func RemoveDataFile(file string) error {
 	dataDir, err := DataDir()
 	if err != nil {
@@ -149,6 +161,8 @@ func RemoveDataFile(file string) error {
 	return nil
 }
 
+// WriteDump writes full game statistics and returns a success log message or
+// an error.
 func (g *Game) WriteDump() (string, error) {
 	dataDir, err := DataDir()
 	if err != nil {
