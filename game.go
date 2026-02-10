@@ -9,7 +9,7 @@ import (
 	"codeberg.org/anaseto/gruid/rl"
 )
 
-var Version string = "v1.0.0"
+var Version string = "v1.0.2"
 
 // Game contains the game logic's state, without ui stuff. Everything could be
 // in the model struct instead, with only the game logic's fiend exported, as

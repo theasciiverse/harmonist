@@ -26,7 +26,7 @@ func DataDir() (string, error) {
 	if err != nil {
 		err = os.MkdirAll(dataDir, 0755)
 		if err != nil {
-			return "", fmt.Errorf("building data directory: %v\n", err)
+			return "", fmt.Errorf("building data directory: %v", err)
 		}
 	}
 	return dataDir, nil
@@ -76,7 +76,9 @@ func RemoveSaveFile() error {
 
 // RemoveReplay removes the replay file if it exists.
 func RemoveReplay() {
-	RemoveDataFile("replay.part")
+	if err := RemoveDataFile("replay.part"); err != nil {
+		log.Printf("removing replay: %v", err)
+	}
 }
 
 // Load loads an existing game from a saved file.
@@ -101,6 +103,9 @@ func (g *Game) Load() (bool, error) {
 	}
 	if lg.Version != Version {
 		log.Print("ignoring incompatible old save")
+		if err := RemoveDataFile("save"); err != nil {
+			log.Printf("removing old save: %v", err)
+		}
 		return false, nil
 	}
 	*g = *lg
@@ -122,13 +127,13 @@ func LoadConfig() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	saveFile := filepath.Join(dataDir, "config")
-	_, err = os.Stat(saveFile)
+	configFile := filepath.Join(dataDir, "config")
+	_, err = os.Stat(configFile)
 	if err != nil {
 		// no save file, new game
 		return false, nil
 	}
-	data, err := os.ReadFile(saveFile)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		return false, err
 	}
@@ -138,6 +143,9 @@ func LoadConfig() (bool, error) {
 	}
 	if c.Version != GameConfig.Version {
 		log.Print("ignoring incompatible old config")
+		if err := RemoveDataFile("config"); err != nil {
+			log.Printf("removing old config: %v", err)
+		}
 		return false, nil
 	}
 	GameConfig = *c

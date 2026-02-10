@@ -1,4 +1,6 @@
-# v? ?
+# v1.0.2 2026-02-10
+
+Patch release with minor fixes and improvements:
 
 * Properly support mouse wheel scrolling in browser version.
 * Improve end-of-game short summary screen, including status and magara
