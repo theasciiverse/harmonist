@@ -1,3 +1,7 @@
+# v? ?
+
+* Ensure holed walls take monster color when a monster is crawling there.
+
 # v1.0.2 2026-02-10
 
 Patch release with minor fixes and improvements:
