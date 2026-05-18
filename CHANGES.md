@@ -1,6 +1,8 @@
 # v? ?
 
 * Ensure holed walls take monster color when a monster is crawling there.
+* Fix color markup in equip menu for magara description (for descriptions that
+  make use of color).
 
 # v1.0.2 2026-02-10
 
